@@ -1,0 +1,36 @@
+{
+  "name": "foliomon",
+  "version": "1.0.0",
+  "description": "Portfolio Monitor",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/nodemon/bin/nodemon.js ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jskarulis/foliomon.git"
+  },
+  "keywords": [
+    "TD",
+    "Ameritrade",
+    "API",
+    "Portfolio",
+    "RESTful"
+  ],
+  "author": "Joseph Skarulis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jskarulis/foliomon/issues"
+  },
+  "homepage": "https://github.com/jskarulis/foliomon#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "mongoose": "^5.5.1",
+    "nodemon": "^1.18.11",
+    "request": "^2.88.0",
+    "selenium-webdriver": "^4.0.0-alpha.1"
+  }
+}
