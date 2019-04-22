@@ -31,6 +31,8 @@
     "mongoose": "^5.5.1",
     "nodemon": "^1.18.11",
     "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "request-promise-native": "^1.0.7",
     "selenium-webdriver": "^4.0.0-alpha.1"
   }
 }
