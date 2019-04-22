@@ -2,26 +2,28 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const express = require('express');
-const app = express();
-const request = require('request');
+const request = require('request-promise-native');
+//const request = require('request-promise');
+//const request = require('request');
 //const axios = require("axios");
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 const bodyParser = require("body-parser");
+const config = require('./config/config');
+const routes = require('./routes/routes');
 const { Builder, By, Key, until } = require('selenium-webdriver');
-const config = require('./config/config.js');
-//const routes = require('./routes/routes.js');
 
+const app = express();
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
-var access_token = null;
-var expires_in = null; //1800;
-var refresh_token_expires_in = null; //7776000;
-var token_type = null; //"Bearer";
+// Moved authorization to routes.js
+app.use('/', routes);
 
-// TD Ameritrade will redirect to GET https://localhost:7777/foliomon if login() was successful
+// TD Ameritrade will GET redirectUrl if login() was successful
 // This will POST to the TD auth token URL to get the authorization code
-// On success, store the timestamp, auth code, and expiration for the app to refer to 
+// store the timestamp, auth code, and expiration for the app to refer to for TD API calls.
+/*
 app.get('/foliomon', function(req, res) {
 
     console.log('app get foliomon begin')
@@ -32,16 +34,18 @@ app.get('/foliomon', function(req, res) {
 
     var options = {
         // see the Authentication API's Post Access Token method for more information
+        // https://developer.tdameritrade.com/authentication/apis/post/token-0
         url: config.auth.tokenUrl,
         method: 'POST',
         headers: headers,
         // POST Body params
         form: {
-            'grant_type': 'authorization_code',
-            'access_type': 'offline',
-            'code': req.query.code, // get the code
-            'client_id': config.auth.clientId, // OAuth User UD
-            'redirect_uri': config.auth.redirectUrl
+            'grant_type': 'authorization_code', // The grant type of the oAuth scheme. Possible values are authorization_code, refresh_token 
+            //'refresh_token': refreshToken, // Required only if using refresh token grant 
+            'access_type': 'offline', // Set to offline to receive a refresh token 
+            'code': req.query.code, // Required if trying to use authorization code grant 
+            'client_id': config.auth.clientId, // OAuth User ID of the application 
+            'redirect_uri': config.auth.redirectUrl // Required if trying to use authorization code grant 
         }
     }
 
@@ -53,38 +57,34 @@ app.get('/foliomon', function(req, res) {
         if (!error && response.statusCode == 200) {
 
             // see Post Access Token response summary for what authReply contains
-            authReply = JSON.parse(body);
-
-            access_token = authReply.access_token;
-
-            expires_in = authReply.expires_in;
-            refresh_token_expires_in = authReply.refresh_token_expires_in;
-            token_type = authReply.token_type;
+            var authReply = JSON.parse(body);
 
             // the line below is for convenience to test that it's working after authenticating
-            res.send(authReply);
+            //res.send(authReply);
 
+            var tokenType = authReply.token_type; //"Bearer";
+            console.log(`app get foliomon response tokenType: ${tokenType}`);
+
+            var accessToken = authReply.access_token;
+            console.log(`app get foliomon response accessToken: ${accessToken}`);
+
+            var accessTokenExpiresIn = authReply.expires_in; //1800;
+            console.log(`app get foliomon response accessTokenExpiresIn: ${accessTokenExpiresIn}`);
+
+            var refreshToken = authReply.refresh_token;
+            console.log(`app get foliomon response refreshToken: ${refreshToken}`);
+
+            var refreshTokenExpiresIn = authReply.refresh_token_expires_in; //7776000;
+            console.log(`app get foliomon response refreshTokenExpiresIn: ${refreshTokenExpiresIn}`);
+
+            // Save the Access Token
+            router.put('/foliomon/saveAccessToken', tokenController.saveAccessToken);
+
+            // Save the Refresh Token
+            if (refreshToken) {
+                router.put('/foliomon/saveRefreshToken', tokenController.saveRefreshToken);
+            }
         }
-        /*else if (response.statusCode == 400) {
-	
-			// An error message indicating the validation problem with the request.
-
-		} else if (response.statusCode == 401) {
-		
-			// An error message indicating the caller must pass valid credentials in the request body.
-		
-		} else if (response.statusCode == 500) {
-
-			// An error message indicating there was an unexpected server error.
-		
-		} else if (response.statusCode == 403) {
-	
-			// An error message indicating the caller doesn't have access to the account in the request.
-
-		} else if (response.statusCode == 503) {
-
-			// An error message indicating there is a temporary problem responding.
-		}*/
     })
 
     function errorHandler(err, req, res, next) {
@@ -96,18 +96,6 @@ app.get('/foliomon', function(req, res) {
 
     console.log('app get foliomon end')
 });
-
-/*
-
-Go to a browser and enter your app's authentication URL in the format below. Remember to URLEncode the variables before adding them to the URL
-
-https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=Redirect URI&client_id=OAuth User ID
-
-
-https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A7777%2Ffoliomon&client_id=FOLIOMON%40AMER.OAUTHAP
-
-If the app is working, you should see the Post Access Token response in the browser
-
 */
 
 /**
@@ -119,30 +107,32 @@ If the app is working, you should see the Post Access Token response in the brow
  * 3 after submitting the form the TD site forwards to the page with the Allow button and Selenium clicks it
  * 4 TD auth site will redirect to GET the URL registered for the FOLIOMON app
  */
-const login = async() => {
-
+async function login() {
     let webDriver = await new Builder().forBrowser('firefox').build();
     try {
         console.log(`Attempt to login at authentication url: ${config.auth.authUrl}`);
         await webDriver.get(config.auth.authUrl);
-        await webDriver.findElement(By.id('username')).sendKeys(config.auth.userName);
+        await webDriver.wait(until.elementLocated(By.id('accept')), 5000);
+        await webDriver.findElement(By.id('username')).sendKeys(config.auth.username);
         await webDriver.findElement(By.id('password')).sendKeys(config.auth.password);
-        await webDriver.findElement(By.id('accept')).click()
+        await webDriver.findElement(By.id('accept')).click() //Log In button
             .then(() => console.log('Submitted login form, TD should now redirect to Allow page...'));
-        await webDriver.wait(until.elementLocated(By.id('allow')), 5000);
-        await webDriver.findElement(By.id('allow')).click()
+
+        await webDriver.wait(until.elementLocated(By.name('authorize')), 5000);
+        await webDriver.findElement(By.name('authorize')).click()
             .then(() => console.log(`Allowed access, TD should now redirect to GET foliomon url: ${config.auth.redirectUrl}`));
-        await webDriver.wait(until.urlIs(config.auth.redirectUrl), 10000)
+
+        await webDriver.wait(until.urlIs(config.auth.redirectUrl), 5000)
             .then(() => console.log('Logged into TD...'));
     } catch (err) {
         console.log(err);
     } finally {
-        console.log("login() webDriver quitting...");
+        console.log("login() Selenium webDriver quitting...");
         await webDriver.quit();
     }
 };
 
-const startServer = async() => {
+function startServer() {
     try {
         //console.log('startServer begin');
 
@@ -164,11 +154,6 @@ const startServer = async() => {
             console.log(`httpsServer running at https://${config.webServer.hostname}:${config.webServer.httpsPort}/`)
         });
 
-        // login to the TD Ameritrade page with Selenium
-        // which will then redirect to GET the redirect_uri
-        //   
-        //await login();
-
         //console.log('startServer end');
     } catch (err) {
         //console.log("entering catch block");
@@ -178,4 +163,48 @@ const startServer = async() => {
     }
 };
 
+/*
+
+Requests can be made by authenticating your application and a user in combination, or only authenticating your application (referred to as unauthenticated requests). Without user authentication and authorization, public resources like delayed data may be available.
+Unauthenticated Requests
+
+Right now, APIs offering this generally only require the OAuth User ID passed in to a parameter. In the future, we will move toward only supporting the OAuth 2.0 Client Credentials flow described in section 1.3.4 of RFC 6749 for this type of request.
+Authenticated Requests
+
+To authenticate a user, we use the OAuth 2.0 Authorization Code flow described in section 1.3.1 of RFC 6749. The best way to see this in action is to follow the steps on the simple auth guide
+
+Invoke the authentication window in the browser with the URL https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=Redirect URI&client_id=OAuth User ID@AMER.OAUTHAP.
+When the user has authenticated, a GET request will be made to your redirect URI with the authorization code passed as a parameter.
+This authorization code can then be passed as the code parameter to the Authentication API's Post Access Token method using the authorization_code grant type. To receive a refresh token which allows you to receive a new access token after the access token's expiration of 30 minutes, set the access type to offline.
+When you have POSTed details to the token endpoint and received your access token and refresh token, you can pass the access token as a bearer token by setting the Authorization header on all requests to "Bearer Access Token"
+
+*/
+async function runMainEventLoop() {
+    try {
+
+        // Fetch the refresh token from the db and check its expiration date time
+
+        // Fetch the refresh token from the db and check its expiration date time
+
+
+        // If the refresh token expired then do login to request a new access token 
+        // which the response will also include a refresh token and save both to db 
+
+        // login to the TD Ameritrade page with Selenium
+        // which will then redirect to GET the foliomon redirect_uri 
+        //await login();
+
+        // otherwise if the refresh token is not expired yet
+        // use it to request a new access token and save it
+
+
+    } catch (err) {
+        //console.log("entering catch block");
+        console.log(err);
+        //console.log("leaving catch block");
+        process.exit(1)
+    }
+};
+
 startServer();
+//runMainEventLoop();
