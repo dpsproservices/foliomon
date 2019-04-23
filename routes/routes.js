@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 //const accountController = require('../controllers/accountController');
 
 router.get('/foliomon', authController.authorize);
+router.get('/foliomon/reauthorize', authController.reauthorize);
 router.get('/foliomon/getAccessToken', authController.getAccessToken);
 router.put('/foliomon/saveAccessToken', authController.saveAccessToken);
 router.get('/foliomon/getRefreshToken', authController.getRefreshToken);

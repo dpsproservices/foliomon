@@ -3,9 +3,7 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const request = require('request-promise-native');
-//const request = require('request-promise');
-//const request = require('request');
-//const axios = require("axios");
+request.debug = true;
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const bodyParser = require("body-parser");
@@ -15,88 +13,10 @@ const { Builder, By, Key, until } = require('selenium-webdriver');
 
 const app = express();
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Moved authorization to routes.js
 app.use('/', routes);
-
-// TD Ameritrade will GET redirectUrl if login() was successful
-// This will POST to the TD auth token URL to get the authorization code
-// store the timestamp, auth code, and expiration for the app to refer to for TD API calls.
-/*
-app.get('/foliomon', function(req, res) {
-
-    console.log('app get foliomon begin')
-
-    var headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    var options = {
-        // see the Authentication API's Post Access Token method for more information
-        // https://developer.tdameritrade.com/authentication/apis/post/token-0
-        url: config.auth.tokenUrl,
-        method: 'POST',
-        headers: headers,
-        // POST Body params
-        form: {
-            'grant_type': 'authorization_code', // The grant type of the oAuth scheme. Possible values are authorization_code, refresh_token 
-            //'refresh_token': refreshToken, // Required only if using refresh token grant 
-            'access_type': 'offline', // Set to offline to receive a refresh token 
-            'code': req.query.code, // Required if trying to use authorization code grant 
-            'client_id': config.auth.clientId, // OAuth User ID of the application 
-            'redirect_uri': config.auth.redirectUrl // Required if trying to use authorization code grant 
-        }
-    }
-
-    // Post Access Token request
-    request(options, function(error, response, body) {
-
-        console.log('app get foliomon request begin')
-
-        if (!error && response.statusCode == 200) {
-
-            // see Post Access Token response summary for what authReply contains
-            var authReply = JSON.parse(body);
-
-            // the line below is for convenience to test that it's working after authenticating
-            //res.send(authReply);
-
-            var tokenType = authReply.token_type; //"Bearer";
-            console.log(`app get foliomon response tokenType: ${tokenType}`);
-
-            var accessToken = authReply.access_token;
-            console.log(`app get foliomon response accessToken: ${accessToken}`);
-
-            var accessTokenExpiresIn = authReply.expires_in; //1800;
-            console.log(`app get foliomon response accessTokenExpiresIn: ${accessTokenExpiresIn}`);
-
-            var refreshToken = authReply.refresh_token;
-            console.log(`app get foliomon response refreshToken: ${refreshToken}`);
-
-            var refreshTokenExpiresIn = authReply.refresh_token_expires_in; //7776000;
-            console.log(`app get foliomon response refreshTokenExpiresIn: ${refreshTokenExpiresIn}`);
-
-            // Save the Access Token
-            router.put('/foliomon/saveAccessToken', tokenController.saveAccessToken);
-
-            // Save the Refresh Token
-            if (refreshToken) {
-                router.put('/foliomon/saveRefreshToken', tokenController.saveRefreshToken);
-            }
-        }
-    })
-
-    function errorHandler(err, req, res, next) {
-        console.log(`app get foliomon errorHandler error: ${err}`)
-
-        res.status(500)
-        res.render('error', { error: err })
-    }
-
-    console.log('app get foliomon end')
-});
-*/
 
 /**
  * login()
@@ -179,13 +99,13 @@ This authorization code can then be passed as the code parameter to the Authenti
 When you have POSTed details to the token endpoint and received your access token and refresh token, you can pass the access token as a bearer token by setting the Authorization header on all requests to "Bearer Access Token"
 
 */
+
+
 async function runMainEventLoop() {
     try {
 
-        // Fetch the refresh token from the db and check its expiration date time
-
-        // Fetch the refresh token from the db and check its expiration date time
-
+        // Fetch the access token from the db and check its expiration date time
+        // GET /foliomon/getAccessToken
 
         // If the refresh token expired then do login to request a new access token 
         // which the response will also include a refresh token and save both to db 
@@ -196,12 +116,10 @@ async function runMainEventLoop() {
 
         // otherwise if the refresh token is not expired yet
         // use it to request a new access token and save it
-
+        // GET /foliomon/reauthorize
 
     } catch (err) {
-        //console.log("entering catch block");
         console.log(err);
-        //console.log("leaving catch block");
         process.exit(1)
     }
 };
