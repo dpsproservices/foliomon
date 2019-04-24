@@ -10,6 +10,9 @@ const bodyParser = require("body-parser");
 const config = require('./config/config');
 const routes = require('./routes/routes');
 const { Builder, By, Key, until } = require('selenium-webdriver');
+const schedule = require('node-schedule');
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
 
 const app = express();
 app.use(bodyParser.json());
@@ -17,6 +20,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Moved authorization to routes.js
 app.use('/', routes);
+
+//const httpServer = http.createServer(app);
+const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
 
 /**
  * login()
@@ -46,6 +52,8 @@ async function login() {
             .then(() => console.log('Logged into TD...'));
     } catch (err) {
         console.log(err);
+        // should cause process to exit
+        process.exit(1)
     } finally {
         console.log("login() Selenium webDriver quitting...");
         await webDriver.quit();
@@ -54,34 +62,42 @@ async function login() {
 
 function startServer() {
     try {
-        //console.log('startServer begin');
-
         // Connect MongoDB
         mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
             .then(() => console.log('MongoDB connected…'))
             .catch(err => console.log(err));
 
-        const httpServer = http.createServer(app);
-        const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
-
         // Set to 8080, but can be any port, code will only come over https, 
         // even if you specified http in your Redirect URI
+        /*
         httpServer.listen(config.webServer.httpPort, () => {
             console.log(`httpServer running at http://${config.webServer.hostname}:${config.webServer.httpPort}/`)
         });
+        */
 
         httpsServer.listen(config.webServer.httpsPort, () => {
             console.log(`httpsServer running at https://${config.webServer.hostname}:${config.webServer.httpsPort}/`)
         });
 
-        //console.log('startServer end');
     } catch (err) {
-        //console.log("entering catch block");
         console.log(err);
-        //console.log("leaving catch block");
         process.exit(1)
     }
 };
+
+// Gracefully stop the app server close db connection and exit
+process.on('SIGTERM', () => {
+    console.info('SIGTERM signal received.');
+    console.log('Closing http server.');
+    httpsServer.close(() => {
+        console.log('Https server closed.');
+        // boolean means [force], see in mongoose doc
+        mongoose.connection.close(false, () => {
+            console.log('MongoDb connection closed.');
+            process.exit(0);
+        });
+    });
+});
 
 /*
 
@@ -100,23 +116,70 @@ When you have POSTed details to the token endpoint and received your access toke
 
 */
 
+function authorizeApp() {
+    // Fetch the access token from the db and check its expiration date time
+    // GET /foliomon/getAccessToken
 
+    // If the refresh token expired then do login to request a new access token 
+    // which the response will also include a refresh token and save both to db 
+
+    // login to the TD Ameritrade page with Selenium
+    // which will then redirect to GET the foliomon redirect_uri 
+    //await login();
+
+    // otherwise if the refresh token is not expired yet
+    // use it to request a new access token and save it
+    // GET /foliomon/reauthorize
+}
+
+function runMarketOpenEvents() {
+
+};
+
+function runMarketCloseEvents() {
+
+};
+
+// Precondition: Run after web server starts and db is running and connected.
 async function runMainEventLoop() {
     try {
+        /*
+        RecurrenceRule properties
+        second(0 - 59)
+        minute(0 - 59)
+        hour(0 - 23)
+        date(1 - 31)
+        month(0 - 11) Jan = 0 , Dec = 11
+        year YYYY
+        dayOfWeek(0 - 6) Starting with Sunday = 0 , Saturday = 6
+        */
 
-        // Fetch the access token from the db and check its expiration date time
-        // GET /foliomon/getAccessToken
+        // Run authorize job every weekday M T W TH F every 20 minutes between 8:00 AM and 5:00 PM EST
+        var authorizeRecurrenceRule = { rule: '*/20 8-17 * * 1-5' };
+        var authorizeScheduleJob = schedule.scheduleJob(authorizeRecurrenceRule, function(jobRunAtDate) {
+            console.log('authorizeRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());
+            authorizeApp();
+        });
 
-        // If the refresh token expired then do login to request a new access token 
-        // which the response will also include a refresh token and save both to db 
+        // Run market pre-open job every weekday M T W TH F at 8:15 AM EST
+        var marketOpenRecurrenceRule = new schedule.RecurrenceRule();
+        marketOpenRecurrenceRule.dayOfWeek = [new schedule.Range(1, 5)];
+        marketOpenRecurrenceRule.hour = 8;
+        marketOpenRecurrenceRule.minute = 15;
+        var marketOpenScheduleJob = schedule.scheduleJob(marketOpenRecurrenceRule, function(jobRunAtDate) {
+            console.log('marketOpenRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());
+            runMarketOpenEvents();
+        });
 
-        // login to the TD Ameritrade page with Selenium
-        // which will then redirect to GET the foliomon redirect_uri 
-        //await login();
-
-        // otherwise if the refresh token is not expired yet
-        // use it to request a new access token and save it
-        // GET /foliomon/reauthorize
+        // Run market close job every weekday M T W TH F at 5:00 PM EST
+        var marketCloseRecurrenceRule = new schedule.RecurrenceRule();
+        marketCloseRecurrenceRule.dayOfWeek = [new schedule.Range(1, 5)];
+        marketCloseRecurrenceRule.hour = 17;
+        marketCloseRecurrenceRule.minute = 0;
+        var marketCloseScheduleJob = schedule.scheduleJob(marketCloseRecurrenceRule, function(jobRunAtDate) {
+            console.log('marketCloseRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());
+            runMarketCloseEvents();
+        });
 
     } catch (err) {
         console.log(err);
@@ -125,4 +188,4 @@ async function runMainEventLoop() {
 };
 
 startServer();
-//runMainEventLoop();
+runMainEventLoop();
