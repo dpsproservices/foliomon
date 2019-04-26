@@ -24,6 +24,8 @@ app.use('/', routes);
 //const httpServer = http.createServer(app);
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
 
+var authorized = false;
+
 /**
  * login()
  * 
@@ -116,20 +118,72 @@ When you have POSTed details to the token endpoint and received your access toke
 
 */
 
-function authorizeApp() {
+async function authorizeApp() {
+
+    var dateNow = new Date();
+    var isAccessTokenExpired = false;
+    var isRefreshTokenExpired = false;
+    var accessTokenExpirationDate = null;
+    var refreshTokenExpirationDate = null;
+    var accessTokenReply = null;
+    var refreshTokenReply = null;
+
     // Fetch the access token from the db and check its expiration date time
     // GET /foliomon/getAccessToken
+    request({ method: 'GET', url: '/foliomon/getAccessToken' })
+        .then(function(body) { // reply body parsed with implied status code 200
+            accessTokenReply = JSON.parse(body);
+            accessTokenExpirationDate = accessTokenReply.accessTokenExpirationDate;
+            if (accessTokenExpirationDate <= dateNow) {
+                isAccessTokenExpired = true;
+            }
+        })
+        .catch(function(err) { // handle all response status code other than OK 200
+            console.log(`Error in authorizeApp from /foliomon/getAccessToken ${err}`);
+            isAccessTokenExpired = true;
+        });
 
-    // If the refresh token expired then do login to request a new access token 
-    // which the response will also include a refresh token and save both to db 
+    // Fetch the refresh token from the db and check its expiration date time
+    // GET /foliomon/getRefreshToken
+    request({ method: 'GET', url: '/foliomon/getRefreshToken' })
+        .then(function(body) { // reply body parsed with implied status code 200
+            refreshTokenReply = JSON.parse(body);
+            refreshTokenExpirationDate = refreshTokenReply.refreshTokenExpirationDate;
+            if (refreshTokenExpirationDate <= dateNow) {
+                isRefreshTokenExpired = true;
+            }
+        })
+        .catch(function(err) { // handle all response status code other than OK 200
+            console.log(`Error in authorizeApp from /foliomon/getRefreshToken ${err}`);
+            isRefreshTokenExpired = true;
+        });
 
+    // if access token is expired but the refresh token is not expired yet
+    // use it to request a new access token and refresh token and save them
+    if (isAccessTokenExpired && !isRefreshTokenExpired) {
+        // GET /foliomon/reauthorize
+        request({ method: 'GET', url: '/foliomon/reauthorize' })
+            .then(function(body) { // reply body parsed with implied status code 200
+                //reauthTokenReply = JSON.parse(body);
+                console.log('authorizeApp got new tokens from /foliomon/reauthorize.');
+                authorized = true;
+            })
+            .catch(function(err) { // handle all response status code other than OK 200
+                console.log(`Error in authorizeApp from /foliomon/reauthorize ${err}`);
+            });
+    }
+
+    // when both access token and refresh token are expired
+    // or neither are available in the db then
     // login to the TD Ameritrade page with Selenium
     // which will then redirect to GET the foliomon redirect_uri 
-    //await login();
-
-    // otherwise if the refresh token is not expired yet
-    // use it to request a new access token and save it
-    // GET /foliomon/reauthorize
+    // which will request a new access token 
+    // and the response will also include a refresh token and save both to db
+    if (isAccessTokenExpired && isRefreshTokenExpired) {
+        authorized = false;
+        console.log('authorizeApp login to TD to get new tokens...');
+        //await login();
+    }
 }
 
 function runMarketOpenEvents() {
@@ -141,7 +195,7 @@ function runMarketCloseEvents() {
 };
 
 // Precondition: Run after web server starts and db is running and connected.
-async function runMainEventLoop() {
+function runMainEventLoop() {
     try {
         /*
         RecurrenceRule properties
