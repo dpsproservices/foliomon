@@ -1,8 +1,8 @@
 const config = require('../config/config.js');
 const request = require('request-promise-native');
 request.debug = true;
-const AccessToken = require('../models/AccessToken');
-const RefreshToken = require('../models/RefreshToken');
+const AccessToken = require('../models/auth/AccessToken');
+const RefreshToken = require('../models/auth/RefreshToken');
 
 // GET /foliomon/getAccessToken
 // get the Access Token from the db

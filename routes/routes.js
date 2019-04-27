@@ -25,4 +25,10 @@ router.put('/foliomon/accounts/:accountId', accountController.saveAccountById);
 // save multiple accounts upsert
 router.put('/foliomon/accounts', accountController.saveMultipleAccounts);
 
+// delete one account by accountId
+router.delete('/foliomon/accounts/:accountId', accountController.deleteAccountById);
+
+// delete all accounts
+router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
+
 module.exports = router;
