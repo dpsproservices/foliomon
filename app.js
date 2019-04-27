@@ -130,7 +130,7 @@ async function authorizeApp() {
 
     // Fetch the access token from the db and check its expiration date time
     // GET /foliomon/getAccessToken
-    request({ method: 'GET', url: '/foliomon/getAccessToken' })
+    request({ method: 'GET', url: '/foliomon/accesstoken' })
         .then(function(body) { // reply body parsed with implied status code 200
             accessTokenReply = JSON.parse(body);
             accessTokenExpirationDate = accessTokenReply.accessTokenExpirationDate;
@@ -139,13 +139,13 @@ async function authorizeApp() {
             }
         })
         .catch(function(err) { // handle all response status code other than OK 200
-            console.log(`Error in authorizeApp from /foliomon/getAccessToken ${err}`);
+            console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
             isAccessTokenExpired = true;
         });
 
     // Fetch the refresh token from the db and check its expiration date time
     // GET /foliomon/getRefreshToken
-    request({ method: 'GET', url: '/foliomon/getRefreshToken' })
+    request({ method: 'GET', url: '/foliomon/refreshtoken' })
         .then(function(body) { // reply body parsed with implied status code 200
             refreshTokenReply = JSON.parse(body);
             refreshTokenExpirationDate = refreshTokenReply.refreshTokenExpirationDate;
@@ -154,7 +154,7 @@ async function authorizeApp() {
             }
         })
         .catch(function(err) { // handle all response status code other than OK 200
-            console.log(`Error in authorizeApp from /foliomon/getRefreshToken ${err}`);
+            console.log(`Error in authorizeApp from /foliomon/refreshtoken ${err}`);
             isRefreshTokenExpired = true;
         });
 

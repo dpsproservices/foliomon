@@ -6,10 +6,10 @@ const accountController = require('../controllers/accountController');
 // Auth
 router.get('/foliomon', authController.authorize);
 router.get('/foliomon/reauthorize', authController.reauthorize);
-router.get('/foliomon/getAccessToken', authController.getAccessToken);
-router.put('/foliomon/saveAccessToken', authController.saveAccessToken);
-router.get('/foliomon/getRefreshToken', authController.getRefreshToken);
-router.put('/foliomon/saveRefreshToken', authController.saveRefreshToken);
+router.get('/foliomon/accesstoken', authController.getAccessToken);
+router.put('/foliomon/accesstoken', authController.saveAccessToken);
+router.get('/foliomon/refreshtoken', authController.getRefreshToken);
+router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
 
 // Account
 
