@@ -12,7 +12,7 @@ const routes = require('./routes/routes');
 const { Builder, By, Key, until } = require('selenium-webdriver');
 const schedule = require('node-schedule');
 const util = require('util');
-const setTimeoutPromise = util.promisify(setTimeout);
+//const setTimeoutPromise = util.promisify(setTimeout);
 
 const app = express();
 app.use(bodyParser.json());
