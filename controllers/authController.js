@@ -7,11 +7,12 @@ const RefreshToken = require('../models/auth/RefreshToken');
 // GET /foliomon/getAccessToken
 // get the Access Token from the db
 exports.getAccessToken = function(req, res) {
-    return AccessToken.findOne().exec()
+    AccessToken.findOne().exec()
         .then(function(foundToken) {
             if (foundToken) {
                 console.log(`Found access token: ${foundToken}`)
                 res.status(200).send({ accessToken: foundToken })
+                return foundToken;
             } else {
                 console.log('No access token found in database.')
                 res.status(404).send({ error: 'No access token found in database.' })
@@ -20,6 +21,21 @@ exports.getAccessToken = function(req, res) {
         .catch(function(err) {
             console.log(`Error fetching access token from database: ${err}`)
             res.status(500).send({ error: 'Error fetching access token from database.' })
+        });
+};
+
+exports.getToken = function(req, res) {
+    return AccessToken.findOne().exec()
+        .then(function(foundToken) {
+            if (foundToken) {
+                console.log(`Found access token: ${foundToken}`)
+                return foundToken;
+            } else {
+                console.log('No access token found in database.')
+            }
+        })
+        .catch(function(err) {
+            console.log(`Error fetching access token from database: ${err}`)
         });
 };
 
