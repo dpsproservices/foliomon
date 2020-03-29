@@ -11,6 +11,7 @@ const hostname = process.env.FOLIOMON_HOSTNAME;
 const httpPort = process.env.FOLIOMON_HTTP_PORT;
 const httpsPort = process.env.FOLIOMON_HTTPS_PORT;
 const baseUrl = process.env.FOLIOMON_BASE_URI;
+const apiUrl = process.env.FOLIOMON_API_URI;
 const mongoHostname = process.env.MONGO_HOSTNAME;
 const mongoDB = process.env.MONGO_DATABASE;
 const mongoUsername = process.env.MONGO_USERNAME;
@@ -122,7 +123,7 @@ const config = {
     },
 
     auth: {
-        baseUrl: baseUrl,
+        apiUrl: apiUrl,
         redirectUrl: redirectUrl,
         clientId: clientId,
         authUrl: authUrl,

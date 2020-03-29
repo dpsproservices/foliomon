@@ -7,7 +7,7 @@ const RefreshToken = require('../models/auth/RefreshToken');
 // GET /foliomon/getAccessToken
 // get the Access Token from the db
 exports.getAccessToken = function(req, res) {
-    AccessToken.findOne().exec()
+    return AccessToken.findOne().exec()
         .then(function(foundToken) {
             if (foundToken) {
                 console.log(`Found access token: ${foundToken}`)
@@ -182,7 +182,7 @@ exports.authorize = function(req, res) {
 
         var options = {
             method: 'POST',
-            uri: `${config.auth.baseUrl}/oauth2/token`,
+            uri: `${config.auth.apiUrl}/oauth2/token`,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
@@ -353,7 +353,7 @@ exports.reauthorize = async(req, res) => {
 
         var options = {
             method: 'POST',
-            uri: `${config.auth.baseUrl}/oauth2/token`,
+            uri: `${config.auth.apiUrl}/oauth2/token`,
             headers: {
                 'content-type': 'application/x-www-form-urlencoded'
             },
