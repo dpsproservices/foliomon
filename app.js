@@ -24,8 +24,6 @@ app.use('/', routes);
 //const httpServer = http.createServer(app);
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
 
-var authorized = false;
-
 /**
  * login()
  * 
@@ -62,10 +60,10 @@ async function login() {
     }
 };
 
-function startServer() {
+async function startServer() {
     try {
         // Connect MongoDB
-        mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
+        await mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
             .then(() => console.log('MongoDB connected…'))
             .catch(err => console.log(err));
 
@@ -77,13 +75,25 @@ function startServer() {
         });
         */
 
-        httpsServer.listen(config.webServer.httpsPort, () => {
+        await httpsServer.listen(config.webServer.httpsPort, () => {
             console.log(`httpsServer running at https://${config.webServer.hostname}:${config.webServer.httpsPort}/`)
         });
 
+        var isAppAuthorized = await authorizeApp();
+
+        if (isAppAuthorized) {
+            // Initialize the app data
+            await initializeApp();
+
+            // run the app scheduled jobs
+            runMainEventLoop();
+        } else {
+            //await login();
+            //process.exit(0);
+        }
     } catch (err) {
         console.log(err);
-        process.exit(1)
+        process.exit(1);
     }
 };
 
@@ -127,10 +137,15 @@ async function authorizeApp() {
     var refreshTokenExpirationDate = null;
     var accessTokenReply = null;
     var refreshTokenReply = null;
+    var authorized = false;
 
     // Fetch the access token from the db and check its expiration date time
     // GET /foliomon/getAccessToken
-    request({ method: 'GET', url: '/foliomon/accesstoken' })
+    await request({
+            method: 'GET',
+            url: `${config.webServer.baseUrl}/accesstoken`,
+            rejectUnauthorized: false
+        })
         .then(function(body) { // reply body parsed with implied status code 200
             accessTokenReply = JSON.parse(body);
             accessTokenExpirationDate = accessTokenReply.accessTokenExpirationDate;
@@ -145,7 +160,11 @@ async function authorizeApp() {
 
     // Fetch the refresh token from the db and check its expiration date time
     // GET /foliomon/getRefreshToken
-    request({ method: 'GET', url: '/foliomon/refreshtoken' })
+    await request({
+            method: 'GET',
+            url: `${config.webServer.baseUrl}/refreshtoken`,
+            rejectUnauthorized: false
+        })
         .then(function(body) { // reply body parsed with implied status code 200
             refreshTokenReply = JSON.parse(body);
             refreshTokenExpirationDate = refreshTokenReply.refreshTokenExpirationDate;
@@ -158,11 +177,21 @@ async function authorizeApp() {
             isRefreshTokenExpired = true;
         });
 
+    if (!isAccessTokenExpired && !isRefreshTokenExpired) {
+        authorized = true;
+        console.log('authorizeApp Tokens are valid...');
+        return authorized;
+    }
+
     // if access token is expired but the refresh token is not expired yet
     // use it to request a new access token and refresh token and save them
     if (isAccessTokenExpired && !isRefreshTokenExpired) {
         // GET /foliomon/reauthorize
-        request({ method: 'GET', url: '/foliomon/reauthorize' })
+        await request({
+                method: 'GET',
+                url: `${config.webServer.baseUrl}/reauthorize`,
+                rejectUnauthorized: false
+            })
             .then(function(body) { // reply body parsed with implied status code 200
                 //reauthTokenReply = JSON.parse(body);
                 console.log('authorizeApp got new tokens from /foliomon/reauthorize.');
@@ -171,6 +200,7 @@ async function authorizeApp() {
             .catch(function(err) { // handle all response status code other than OK 200
                 console.log(`Error in authorizeApp from /foliomon/reauthorize ${err}`);
             });
+        return authorized;
     }
 
     // when both access token and refresh token are expired
@@ -181,9 +211,58 @@ async function authorizeApp() {
     // and the response will also include a refresh token and save both to db
     if (isAccessTokenExpired && isRefreshTokenExpired) {
         authorized = false;
-        console.log('authorizeApp login to TD to get new tokens...');
-        //await login();
+        console.log('authorizeApp Need to login to TD to get new tokens...');
+        return authorized;
     }
+}
+
+async function initializeAccountsData() {
+
+    var isAccountsDataAvailable = false;
+    var accounts = null;
+
+    // Verify the accounts are stored otherwise get them and store them
+    // GET /foliomon/accounts
+    await request({
+            method: 'GET',
+            url: `${config.webServer.baseUrl}/accounts`,
+            rejectUnauthorized: false
+        })
+        .then(function(body) { // reply body parsed with implied status code 200
+            accountsReply = JSON.parse(body);
+            accounts = accountsReply.accounts; // array of accounts
+            isAccountsDataAvailable = true;
+        })
+        .catch(function(err) { // handle all response status code other than OK 200
+            console.log(`Error in initializeAccountsData from /foliomon/accounts ${err}`);
+            isAccountsDataAvailable = false;
+        });
+
+    if (!isAccountsDataAvailable) {
+        console.log('initializeAccountsData No accounts data available. Getting from TD...');
+        // Verify the accounts are stored otherwise get them and store them
+        // GET /foliomon/accounts
+        await request({
+                method: 'GET',
+                url: `${config.webServer.baseUrl}/accounts/init`,
+                rejectUnauthorized: false
+            })
+            .then(function(body) { // reply body parsed with implied status code 200
+                accountsReply = JSON.parse(body);
+                accounts = accountsReply.accounts; // array of accounts
+                isAccountsDataAvailable = true;
+            })
+            .catch(function(err) { // handle all response status code other than OK 200
+                console.log(`Error in initializeAccountsData from /foliomon/accounts/init ${err}`);
+                isAccountsDataAvailable = false;
+            });
+    }
+}
+
+function initializeApp() {
+
+    initializeAccountsData();
+
 }
 
 function runMarketOpenEvents() {
@@ -242,4 +321,3 @@ function runMainEventLoop() {
 };
 
 startServer();
-runMainEventLoop();
