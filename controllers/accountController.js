@@ -3,7 +3,7 @@ const request = require('request-promise-native');
 request.debug = true;
 const AccessToken = require('../models/auth/AccessToken');
 const Account = require('../models/securitiesAccount/Account');
-const { getAccessToken } = require('./authController.js');
+const { getToken } = require('./authController.js');
 
 // GET /foliomon/accounts
 // Get all Accounts
@@ -248,7 +248,7 @@ exports.initialize = async(req, res) => {
 
         const data = {};
 
-        const token = await getAccessToken();
+        const token = await getToken();
 
         const options = {
             method: 'GET',

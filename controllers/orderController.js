@@ -1,12 +1,12 @@
 const config = require('../config/config.js');
-const { getAccessToken } = require('./authController.js');
+const { getToken } = require('./authController.js');
 const axios = require('axios');
 
 exports.getAllOrders = async (req, res) => {
     try {
         console.log('orderController.getAllOrders begin');
 
-        const token = await getAccessToken();
+        const token = await getToken();
 
         const url = `${config.auth.apiUrl}/orders`;
 
