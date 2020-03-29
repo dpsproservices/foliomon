@@ -31,4 +31,7 @@ router.delete('/foliomon/accounts/:accountId', accountController.deleteAccountBy
 // delete all accounts
 router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
 
+// get all accounts from TD api to initialize db
+router.get('/foliomon/accounts/init', accountController.initialize);
+
 module.exports = router;
