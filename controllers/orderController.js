@@ -1,30 +1,14 @@
 const config = require('../config/config.js');
-//const Order = require('../models/auth/Order');
-const AccessToken = require('../models/auth/AccessToken');
+const { getAccessToken } = require('./authController.js');
 const axios = require('axios');
-
-const getToken = () => {
-    return AccessToken.findOne().exec()
-    .then(function(foundToken) {
-        if (foundToken) {
-            console.log(`Found access token: ${foundToken}`)
-            return foundToken;
-        } else {
-            console.log('No access token found in database.')
-        }
-    })
-    .catch(function(err) {
-        console.log(`Error fetching access token from database: ${err}`)
-    });
-}
 
 exports.getAllOrders = async (req, res) => {
     try {
         console.log('orderController.getAllOrders begin');
 
-        const token = await getToken();
+        const token = await getAccessToken();
 
-        const url = `${config.auth.baseUrl}/orders`;
+        const url = `${config.auth.apiUrl}/orders`;
 
         const data = {
             //accountId: Account number.
@@ -43,8 +27,6 @@ exports.getAllOrders = async (req, res) => {
 
         axios(options)
         .then(function(body) { // reply body parsed with implied status code 200 from TD
-            console.log("Order response:");
-            console.log(body);
             res.status(200).send(body.data);
         })
         .catch(function(err) { // handle all response status code other than OK 200

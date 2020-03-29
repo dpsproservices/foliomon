@@ -70,6 +70,8 @@ async function login() {
 
 async function startServer() {
     try {
+
+        console.log("Starting server...");
         // Connect MongoDB
         await mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
             .then(() => console.log('MongoDB connected…'))
@@ -195,7 +197,9 @@ async function authorizeApp() {
 
     // if access token is expired but the refresh token is not expired yet
     // use it to request a new access token and refresh token and save them
-    if (isAccessTokenExpired && !isRefreshTokenExpired) {
+    if(!isAccessTokenExpired) {
+        authorized = true;
+    } else if (isAccessTokenExpired && !isRefreshTokenExpired) {
         // GET /foliomon/reauthorize
         let body = {};
         try {
@@ -219,12 +223,14 @@ async function authorizeApp() {
     // which will then redirect to GET the foliomon redirect_uri 
     // which will request a new access token 
     // and the response will also include a refresh token and save both to db
-    console.log({isAccessTokenExpired, isRefreshTokenExpired});
     if (isAccessTokenExpired && isRefreshTokenExpired) {
         authorized = false;
         console.log('authorizeApp Need to login to TD to get new tokens...');
-        return authorized;
     }
+
+    console.log({ isAccessTokenExpired, isRefreshTokenExpired });
+
+    return authorized;
 }
 
 async function initializeAccountsData() {
@@ -299,7 +305,6 @@ function runMainEventLoop() {
         */
 
         // Run authorize job every weekday M T W TH F every 20 minutes between 8:00 AM and 5:00 PM EST
-        authorizeApp();
         var authorizeRecurrenceRule = { rule: '*/20 8-17 * * 1-5' };
         var authorizeScheduleJob = schedule.scheduleJob(authorizeRecurrenceRule, function(jobRunAtDate) {
             console.log('authorizeRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());
