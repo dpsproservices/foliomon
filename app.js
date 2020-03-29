@@ -32,8 +32,6 @@ app.use(express.static("front-end/build"));
 //const httpServer = http.createServer(app);
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
 
-var authorized = false;
-
 /**
  * login()
  * 
@@ -70,10 +68,10 @@ async function login() {
     }
 };
 
-function startServer() {
+async function startServer() {
     try {
         // Connect MongoDB
-        mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
+        await mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
             .then(() => console.log('MongoDB connected…'))
             .catch(err => console.log(err));
 
@@ -85,13 +83,25 @@ function startServer() {
         });
         */
 
-        httpsServer.listen(config.webServer.httpsPort, () => {
+        await httpsServer.listen(config.webServer.httpsPort, () => {
             console.log(`httpsServer running at https://${config.webServer.hostname}:${config.webServer.httpsPort}/`)
         });
 
+        var isAppAuthorized = await authorizeApp();
+
+        if (isAppAuthorized) {
+            // Initialize the app data
+            await initializeApp();
+
+            // run the app scheduled jobs
+            runMainEventLoop();
+        } else {
+            //await login();
+            //process.exit(0);
+        }
     } catch (err) {
         console.log(err);
-        process.exit(1)
+        process.exit(1);
     }
 };
 
@@ -212,9 +222,58 @@ async function authorizeApp() {
     console.log({isAccessTokenExpired, isRefreshTokenExpired});
     if (isAccessTokenExpired && isRefreshTokenExpired) {
         authorized = false;
-        console.log('authorizeApp login to TD to get new tokens...');
-        //await login();
+        console.log('authorizeApp Need to login to TD to get new tokens...');
+        return authorized;
     }
+}
+
+async function initializeAccountsData() {
+
+    var isAccountsDataAvailable = false;
+    var accounts = null;
+
+    // Verify the accounts are stored otherwise get them and store them
+    // GET /foliomon/accounts
+    await request({
+            method: 'GET',
+            url: `${config.webServer.baseUrl}/accounts`,
+            rejectUnauthorized: false
+        })
+        .then(function(body) { // reply body parsed with implied status code 200
+            accountsReply = JSON.parse(body);
+            accounts = accountsReply.accounts; // array of accounts
+            isAccountsDataAvailable = true;
+        })
+        .catch(function(err) { // handle all response status code other than OK 200
+            console.log(`Error in initializeAccountsData from /foliomon/accounts ${err}`);
+            isAccountsDataAvailable = false;
+        });
+
+    if (!isAccountsDataAvailable) {
+        console.log('initializeAccountsData No accounts data available. Getting from TD...');
+        // Verify the accounts are stored otherwise get them and store them
+        // GET /foliomon/accounts
+        await request({
+                method: 'GET',
+                url: `${config.webServer.baseUrl}/accounts/init`,
+                rejectUnauthorized: false
+            })
+            .then(function(body) { // reply body parsed with implied status code 200
+                accountsReply = JSON.parse(body);
+                accounts = accountsReply.accounts; // array of accounts
+                isAccountsDataAvailable = true;
+            })
+            .catch(function(err) { // handle all response status code other than OK 200
+                console.log(`Error in initializeAccountsData from /foliomon/accounts/init ${err}`);
+                isAccountsDataAvailable = false;
+            });
+    }
+}
+
+function initializeApp() {
+
+    initializeAccountsData();
+
 }
 
 function runMarketOpenEvents() {
@@ -274,4 +333,3 @@ function runMainEventLoop() {
 };
 
 startServer();
-runMainEventLoop();
