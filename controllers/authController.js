@@ -1,6 +1,6 @@
 const config = require('../config/config.js');
 const request = require('request-promise-native');
-request.debug = true;
+//request.debug = true;
 const AccessToken = require('../models/auth/AccessToken');
 const RefreshToken = require('../models/auth/RefreshToken');
 
@@ -182,9 +182,9 @@ exports.authorize = function(req, res) {
 
         var options = {
             method: 'POST',
-            url: config.auth.tokenUrl,
+            uri: `${config.auth.baseUrl}/oauth2/token`,
             headers: {
-                'content-type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             // POST Body params
             form: {
@@ -197,13 +197,14 @@ exports.authorize = function(req, res) {
         };
 
         // do Post Access Token request to TD
+        //axios.post(options.uri, qs.stringify(options.form), {
         request(options)
             .then(function(body) { // reply body parsed with implied status code 200 from TD
                 // see Post Access Token response summary
 
                 var authReply = JSON.parse(body);
 
-                console.log(`authController.authorize Post Access Token response body: ${body}`);
+                //console.log(`authController.authorize Post Access Token response body: ${body}`);
 
                 if (!authReply.token_type) {
                     console.log('authController.authorize Error invalid token_type in response body.');
@@ -309,8 +310,9 @@ exports.authorize = function(req, res) {
                 res.status(200).send(responseObject);
             })
             .catch(function(err) { // handle all response status code other than OK 200
-                console.log(`Error in authController.authorize error received from Post Access Token request: ${err}`)
-                res.status(500).send({ error: `Error response received from Post Access Token request: ${err}` })
+                console.log(`Error in authController.authorize error received from Post Access Token request: ${err}`);
+                //console.log(err.response);
+                res.status(500).send({ error: `Error response received from Post Access Token request: ${err}` });
             });
 
         console.log('authController.authorize end');
@@ -351,7 +353,7 @@ exports.reauthorize = async(req, res) => {
 
         var options = {
             method: 'POST',
-            url: config.auth.tokenUrl,
+            uri: `${config.auth.baseUrl}/oauth2/token`,
             headers: {
                 'content-type': 'application/x-www-form-urlencoded'
             },

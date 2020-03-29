@@ -2,8 +2,9 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const express = require('express');
+const cors = require('cors');
 const request = require('request-promise-native');
-request.debug = true;
+//request.debug = true;
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const bodyParser = require("body-parser");
@@ -13,13 +14,20 @@ const { Builder, By, Key, until } = require('selenium-webdriver');
 const schedule = require('node-schedule');
 const util = require('util');
 //const setTimeoutPromise = util.promisify(setTimeout);
+const path = require('path');
+require("dotenv").config();
 
 const app = express();
+if (process.env.NODE_ENV !== 'production') {
+    app.use(cors());
+}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Moved authorization to routes.js
 app.use('/', routes);
+
+app.use(express.static("front-end/build"));
 
 //const httpServer = http.createServer(app);
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
@@ -138,69 +146,71 @@ async function authorizeApp() {
     var accessTokenReply = null;
     var refreshTokenReply = null;
     var authorized = false;
+    var baseUrl = `https://${config.webServer.hostname}:${config.webServer.httpsPort}`;
 
     // Fetch the access token from the db and check its expiration date time
     // GET /foliomon/getAccessToken
-    await request({
+    try {
+        accessTokenReply = await request({
             method: 'GET',
-            url: `${config.webServer.baseUrl}/accesstoken`,
-            rejectUnauthorized: false
-        })
-        .then(function(body) { // reply body parsed with implied status code 200
-            accessTokenReply = JSON.parse(body);
-            accessTokenExpirationDate = accessTokenReply.accessTokenExpirationDate;
-            if (accessTokenExpirationDate <= dateNow) {
-                isAccessTokenExpired = true;
-            }
-        })
-        .catch(function(err) { // handle all response status code other than OK 200
-            console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
-            isAccessTokenExpired = true;
+            url: `${baseUrl}/foliomon/accesstoken`,
+            rejectUnauthorized: false // REMOVE before DEPLOYMENT
         });
+
+        // reply body parsed with implied status code 200
+        const parsed = JSON.parse(accessTokenReply);
+        accessTokenExpirationDate = new Date(parsed.accessToken.accessTokenExpirationDate);
+
+        if (accessTokenExpirationDate <= dateNow) {
+            isAccessTokenExpired = true;
+        }
+    } catch(err) { // handle all response status code other than OK 200
+        console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
+        isAccessTokenExpired = true;
+    }
+    
 
     // Fetch the refresh token from the db and check its expiration date time
     // GET /foliomon/getRefreshToken
-    await request({
+    try {
+        refreshTokenReply = await request({
             method: 'GET',
-            url: `${config.webServer.baseUrl}/refreshtoken`,
+            url: `${baseUrl}/foliomon/refreshtoken`,
             rejectUnauthorized: false
-        })
-        .then(function(body) { // reply body parsed with implied status code 200
-            refreshTokenReply = JSON.parse(body);
-            refreshTokenExpirationDate = refreshTokenReply.refreshTokenExpirationDate;
-            if (refreshTokenExpirationDate <= dateNow) {
-                isRefreshTokenExpired = true;
-            }
-        })
-        .catch(function(err) { // handle all response status code other than OK 200
-            console.log(`Error in authorizeApp from /foliomon/refreshtoken ${err}`);
-            isRefreshTokenExpired = true;
         });
 
-    if (!isAccessTokenExpired && !isRefreshTokenExpired) {
-        authorized = true;
-        console.log('authorizeApp Tokens are valid...');
-        return authorized;
+        // reply body parsed with implied status code 200
+        const parsed = JSON.parse(refreshTokenReply);
+        refreshTokenExpirationDate = new Date(parsed.refreshToken.refreshTokenExpirationDate);
+
+        if (refreshTokenExpirationDate <= dateNow) {
+            console.log(`Refresh token has expired!!!!! OH NO!`);
+            isRefreshTokenExpired = true;
+        }
+    } catch(err) { // handle all response status code other than OK 200
+        console.log(`Error in authorizeApp from /foliomon/refreshtoken ${err}`);
+        isRefreshTokenExpired = true;
     }
+
 
     // if access token is expired but the refresh token is not expired yet
     // use it to request a new access token and refresh token and save them
     if (isAccessTokenExpired && !isRefreshTokenExpired) {
         // GET /foliomon/reauthorize
-        await request({
+        let body = {};
+        try {
+            body = await request({
                 method: 'GET',
-                url: `${config.webServer.baseUrl}/reauthorize`,
+                url: `${baseUrl}/foliomon/reauthorize`,
                 rejectUnauthorized: false
-            })
-            .then(function(body) { // reply body parsed with implied status code 200
-                //reauthTokenReply = JSON.parse(body);
-                console.log('authorizeApp got new tokens from /foliomon/reauthorize.');
-                authorized = true;
-            })
-            .catch(function(err) { // handle all response status code other than OK 200
-                console.log(`Error in authorizeApp from /foliomon/reauthorize ${err}`);
             });
-        return authorized;
+            // reply body parsed with implied status code 200
+            //reauthTokenReply = JSON.parse(body);
+            console.log('authorizeApp got new tokens from /foliomon/reauthorize.');
+            authorized = true;
+        } catch(err) { // handle all response status code other than OK 200
+            console.log(`Error in authorizeApp from /foliomon/reauthorize ${err}`);
+        };
     }
 
     // when both access token and refresh token are expired
@@ -209,6 +219,7 @@ async function authorizeApp() {
     // which will then redirect to GET the foliomon redirect_uri 
     // which will request a new access token 
     // and the response will also include a refresh token and save both to db
+    console.log({isAccessTokenExpired, isRefreshTokenExpired});
     if (isAccessTokenExpired && isRefreshTokenExpired) {
         authorized = false;
         console.log('authorizeApp Need to login to TD to get new tokens...');
@@ -288,6 +299,7 @@ function runMainEventLoop() {
         */
 
         // Run authorize job every weekday M T W TH F every 20 minutes between 8:00 AM and 5:00 PM EST
+        authorizeApp();
         var authorizeRecurrenceRule = { rule: '*/20 8-17 * * 1-5' };
         var authorizeScheduleJob = schedule.scheduleJob(authorizeRecurrenceRule, function(jobRunAtDate) {
             console.log('authorizeRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());

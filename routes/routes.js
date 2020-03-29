@@ -2,14 +2,18 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
+const orderController = require('../controllers/orderController');
 
 // Auth
-router.get('/foliomon', authController.authorize);
+router.get('/foliomon/authorize', authController.authorize);
 router.get('/foliomon/reauthorize', authController.reauthorize);
 router.get('/foliomon/accesstoken', authController.getAccessToken);
 router.put('/foliomon/accesstoken', authController.saveAccessToken);
 router.get('/foliomon/refreshtoken', authController.getRefreshToken);
 router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
+
+// Order
+router.get('/foliomon/orders', orderController.getAllOrders);
 
 // Account
 

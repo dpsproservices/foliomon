@@ -2,4 +2,11 @@
 *.logs
 node_modules
 config.env
+.env
 *.pem
+*.key
+*.srl
+*.crt
+*.csr
+*.cnf
+*.ext
