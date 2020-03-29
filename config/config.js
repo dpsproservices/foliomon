@@ -10,9 +10,7 @@ if (dotenv.error) {
 const hostname = process.env.FOLIOMON_HOSTNAME;
 const httpPort = process.env.FOLIOMON_HTTP_PORT;
 const httpsPort = process.env.FOLIOMON_HTTPS_PORT;
-
-const baseUrl = process.env.FOLIOMON_BASE_URI
-
+const baseUrl = process.env.FOLIOMON_BASE_URI;
 const mongoHostname = process.env.MONGO_HOSTNAME;
 const mongoDB = process.env.MONGO_DATABASE;
 const mongoUsername = process.env.MONGO_USERNAME;
@@ -29,18 +27,15 @@ const redirectUrl = process.env.FOLIOMON_REDIRECT_URI;
 const clientId = process.env.FOLIOMON_CLIENT_ID;
 
 //const authUrl = `https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=${redirectUrl}&client_id=${clientId}`;
-//const authUrl = process.env.FOLIOMON_AUTH_URL;
+const authUrl = process.env.FOLIOMON_AUTH_URL;
 //const tokenUrl = 'https://api.tdameritrade.com/v1/oauth2/token';
-//const tokenUrl = process.env.FOLIOMON_TOKEN_URL;
+const tokenUrl = process.env.FOLIOMON_TOKEN_URL;
 
-// const authTokenExpiresInDefault = process.env.FOLIOMON_AUTH_TOKEN_EXPIRES_IN;
-// const refreshTokenExpiresInDefault = process.env.FOLIOMON_REFRESH_TOKEN_EXPIRES_IN;
-// const tokenTypeDefault = process.env.FOLIOMON_TOKEN_TYPE;
-
-const baseUrl = process.env.FOLIOMON_API_URL;
-
-// const username = process.env.FOLIOMON_USERNAME;
-// const password = process.env.FOLIOMON_PASSWORD;
+const authTokenExpiresInDefault = process.env.FOLIOMON_AUTH_TOKEN_EXPIRES_IN;
+const refreshTokenExpiresInDefault = process.env.FOLIOMON_REFRESH_TOKEN_EXPIRES_IN;
+const tokenTypeDefault = process.env.FOLIOMON_TOKEN_TYPE;
+const username = process.env.FOLIOMON_USERNAME;
+const password = process.env.FOLIOMON_PASSWORD;
 
 // TD Ameritrade API urls
 
