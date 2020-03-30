@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { Switch, Router, Route, Redirect } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { authorize, getAccessToken } from './utils/api';
 import { Main, Connect } from './pages';
+import { RouteWithLayout, NotFound, Orders } from './components';
 import theme from './theme';
 import queryString from 'query-string'
+
+const browserHistory = createBrowserHistory();
 
 function App() {
   const [token, setToken] = useState();
@@ -56,7 +61,19 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       {isFetching && <CircularProgress />}
-      {!isFetching && token ? <Main /> : <Connect />}
+      {token
+        ?
+          <Router history={browserHistory}>
+            <Switch>
+              <Redirect exact from="/" to="/orders" />
+              <RouteWithLayout exact path="/orders" layout={Main} component={Orders} />
+              <RouteWithLayout exact path="/not-found" layout={Main} component={NotFound} />
+              <Redirect to="/not-found" />
+            </Switch>
+          </Router>
+        :
+          <Connect />
+      }
     </ThemeProvider>
   );
 }

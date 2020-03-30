@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { Switch, Router, Route, Redirect } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/styles';
 //import { useMediaQuery } from '@material-ui/core';
-import { Sidebar, Topbar, Footer, NotFound, Orders } from '../../components';
-
-const browserHistory = createBrowserHistory();
+import { Sidebar, Topbar, Footer } from '../../components';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -24,8 +20,9 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Main = () => {
+const Main = props => {
   const classes = useStyles();
+  const { children } = props;
   //const theme = useTheme();
   const isDesktop = true;
   // const isDesktop = useMediaQuery(theme.breakpoints.up('lg'), {
@@ -57,13 +54,7 @@ const Main = () => {
         variant={isDesktop ? 'persistent' : 'temporary'}
       />
       <main className={classes.content}>
-        <Router history={browserHistory}>
-          <Switch>
-          <Route path="/orders" component={Orders} />
-          <Route path="/not-found" component={NotFound} />
-          <Redirect to="/not-found" />
-          </Switch>
-        </Router>
+        {children}
         <Footer />
       </main>
     </div>
