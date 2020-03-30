@@ -4,38 +4,51 @@ const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
 
-// Auth
+// Authentication Controller Routes
+
+// get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
 router.get('/foliomon/authorize', authController.authorize);
+
+// get a new Access Token and new Refresh Token from TD with a Refresh Token which hasnt expired
 router.get('/foliomon/reauthorize', authController.reauthorize);
+
+// get the Access Token stored in the database
 router.get('/foliomon/accesstoken', authController.getAccessToken);
+
+// save the Access Token into the database
 router.put('/foliomon/accesstoken', authController.saveAccessToken);
+
+// get the Reresh Token stored in the database
 router.get('/foliomon/refreshtoken', authController.getRefreshToken);
+
+// save the Refresh Token into the database
 router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
 
-// Order
-router.get('/foliomon/orders', orderController.getAllOrders);
+// Account Controller Routes
 
-// Account
-
-// get one account by accountId
+// get one account by its accountId from the database
 router.get('/foliomon/accounts/:accountId', accountController.getAccountById);
 
-// get all accounts available in db
+// get all accounts available from the database
 router.get('/foliomon/accounts', accountController.getAllAccounts);
 
-// save one account by accountId upsert
+// save one account by its accountId update it if it exists (upsert)
 router.put('/foliomon/accounts/:accountId', accountController.saveAccountById);
 
-// save multiple accounts upsert
-router.put('/foliomon/accounts', accountController.saveMultipleAccounts);
+// save multiple accounts into the database update them if they exist (upsert)
+router.put('/foliomon/accounts', accountController.saveAccounts);
 
-// delete one account by accountId
+// delete one account by its accountId from the database
 router.delete('/foliomon/accounts/:accountId', accountController.deleteAccountById);
 
-// delete all accounts
+// delete all accounts from the database
 router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
 
-// get all accounts from TD api to initialize db
+// get all accounts from TD api
 router.get('/foliomon/accounts/init', accountController.initialize);
+
+// Order Controller Routes
+
+router.get('/foliomon/orders', orderController.getAllOrders);
 
 module.exports = router;

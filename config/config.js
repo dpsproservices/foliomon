@@ -10,7 +10,7 @@ if (dotenv.error) {
 const hostname = process.env.FOLIOMON_HOSTNAME;
 const httpPort = process.env.FOLIOMON_HTTP_PORT;
 const httpsPort = process.env.FOLIOMON_HTTPS_PORT;
-const baseUrl = process.env.FOLIOMON_BASE_URI;
+const baseUrl = process.env.FOLIOMON_BASE_URI; //`https://${hostname}:${httpsPort}`;
 const apiUrl = process.env.FOLIOMON_API_URI;
 const mongoHostname = process.env.MONGO_HOSTNAME;
 const mongoDB = process.env.MONGO_DATABASE;
@@ -38,6 +38,7 @@ const tokenTypeDefault = process.env.FOLIOMON_TOKEN_TYPE;
 const username = process.env.FOLIOMON_USERNAME;
 const password = process.env.FOLIOMON_PASSWORD;
 
+/*
 // TD Ameritrade API urls
 
 // Auth
@@ -99,7 +100,7 @@ const tdUrlCancelSavedOrder = process.env.TDAPI_ORDERS_CANCEL_SAVED_ORDER;
 // Transactions
 
 // Watchlist
-
+*/
 const config = {
 
     webServer: {
@@ -135,8 +136,8 @@ const config = {
         },
         username: username,
         password: password
-    },
-
+    } //,
+/*
     api: {
         tdameritrade: {
             auth: {
@@ -161,7 +162,7 @@ const config = {
                 placeSavedOrder: tdUrlPlaceSavedOrder,
                 replaceSavedOrder: tdUrlReplaceSavedOrder,
                 cancelSavedOrder: tdUrlCancelSavedOrder
-            } /*,
+            },
             instruments: {
                 searchInstruments: tdUrlSearchInstruments,
                 getInstrument: tdUrlGetInstrument
@@ -189,12 +190,13 @@ const config = {
                 getWatchListSingleAccounts: tdUrlGetWatchListSingleAccounts,
                 replaceWatchlist: tdUrlReplaceWatchList,
                 updateWatchList: tdUrlUpdateWatchList
-            }*/
+            }
         },
         foliomon: {
 
         }
     }
+*/
 };
 //console.log("config:");
 //console.log(config);
