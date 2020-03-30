@@ -1,12 +1,13 @@
 const config = require('../config/config.js');
 const request = require('request-promise-native');
 request.debug = true;
+const axios = require('axios');
 const AccessToken = require('../models/auth/AccessToken');
 const Account = require('../models/securitiesAccount/Account');
 const { getToken } = require('./authController.js');
 
 // GET /foliomon/accounts
-// Get all Accounts
+// Get all Accounts from the database
 exports.getAllAccounts = function(req, res) {
     Account.find().exec()
         .then(function(foundAccounts) {
@@ -25,7 +26,7 @@ exports.getAllAccounts = function(req, res) {
 };
 
 // GET /foliomon/accounts/:accountId
-// Get single Account by accountId
+// Get single Account by accountId from the database
 exports.getAccountById = function(req, res) {
     const accountId = req.params.accountId;
     if (accountId) {
@@ -49,6 +50,7 @@ exports.getAccountById = function(req, res) {
     }
 };
 
+// verify the account request is valid
 function isValidAccountRequest(req) {
 
     if (!req.params.accountId) {
@@ -71,7 +73,8 @@ function isValidAccountRequest(req) {
 }
 
 // PUT /foliomon/accounts/:accountId
-// Save the Account by accountId UPSERT
+// Save the Account by its accountId into the database. 
+// update the Account if it exists (UPSERT)
 exports.saveAccountById = function(req, res) {
     try {
         const reqParamsAccountId = req.params.accountId;
@@ -113,6 +116,8 @@ exports.saveAccountById = function(req, res) {
     }
 };
 
+
+// verify the mu;tiple accounts in the request are valid
 function isValidMultipleAccountRequest(req) {
 
     // expected request body { accounts: [{...}] }
@@ -145,14 +150,15 @@ function isValidMultipleAccountRequest(req) {
 }
 
 // PUT /foliomon/accounts/
-// Save multiple Accounts to db
-exports.saveMultipleAccounts = function(req, res) {
+// Save multiple Accounts into the database
+// update them if they exist (UPSERT)
+exports.saveAccounts = function(req, res) {
     try {
 
         const reqValidation = isValidMultipleAccountRequest(req);
 
         if (!reqValidation.isValid) {
-            console.log(`accountController.saveMultipleAccounts ${reqValidation.message}`);
+            console.log(`accountController.saveAccounts ${reqValidation.message}`);
             res.status(404).send({ error: reqValidation.message });
         } else {
 
@@ -169,7 +175,7 @@ exports.saveMultipleAccounts = function(req, res) {
                 if (accounts.hasOwnProperty(index)) {
 
                     let account = accounts[index];
-                    console.log(`accountController.isValidMultipleAccountRequest account: ${JSON.stringify(account)}`);
+                    console.log(`accountController.saveAccounts account: ${JSON.stringify(account)}`);
 
                     let conditions = { accountId: account.accountId };
 
@@ -191,13 +197,13 @@ exports.saveMultipleAccounts = function(req, res) {
             res.status(200).send({ accounts: savedAccounts });
         }
     } catch (err) {
-        console.log(`Error in accountController.saveMultipleAccounts ${err}`);
+        console.log(`Error in accountController.saveAccounts ${err}`);
         res.status(500).send({ error: 'Unable to save accounts to database.' });
     }
 };
 
 // DELETE /foliomon/accounts/:accountId
-// Delete single Account by accountId
+// Delete single Account by its accountId from the database
 exports.deleteAccountById = function(req, res) {
     const accountId = req.params.accountId;
     if (accountId) {
@@ -222,7 +228,7 @@ exports.deleteAccountById = function(req, res) {
 };
 
 // DELETE /foliomon/accounts
-// Delete all Accounts
+// Delete all Accounts from the database
 exports.deleteAllAccounts = function(req, res) {
     Account.deleteMany().exec()
         .then(function(foundAccounts) {
@@ -241,7 +247,8 @@ exports.deleteAllAccounts = function(req, res) {
 };
 
 // GET /foliomon/accounts/init
-// request all accounts data from TD using access token
+// Get all accounts data which this user can access from TD with access token
+// Then save all the accounts into the database, update them if they exist using 
 exports.initialize = async(req, res) => {
     try {
         console.log('accountController.initialize begin');
@@ -257,11 +264,11 @@ exports.initialize = async(req, res) => {
             data
         };
 
-        request(options)
+        axios(options)
             .then(function(body) { // reply body parsed with implied status code 200 from TD
                 var accountReply = JSON.parse(body);
 
-                saveMultipleAccounts(accountReply);
+                saveAllAccounts(accountReply);
 
                 res.status(200).send(accountReply);
             })

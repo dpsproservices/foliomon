@@ -5,12 +5,12 @@ const express = require('express');
 const cors = require('cors');
 const request = require('request-promise-native');
 //request.debug = true;
+const axios = require('axios');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const bodyParser = require("body-parser");
 const config = require('./config/config');
 const routes = require('./routes/routes');
-const { Builder, By, Key, until } = require('selenium-webdriver');
 const schedule = require('node-schedule');
 const util = require('util');
 //const setTimeoutPromise = util.promisify(setTimeout);
@@ -31,42 +31,6 @@ app.use(express.static("front-end/build"));
 
 //const httpServer = http.createServer(app);
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
-
-/**
- * login()
- * 
- * Login and authorize the app to use the TD account using Selenium WebDriver for Firefox named geckodriver
- * 1 Selenium opens Firefox to the TD auth URL containing the redirect_uri and client_id
- * 2 enters the username and password for the TD account into the login form and submits it
- * 3 after submitting the form the TD site forwards to the page with the Allow button and Selenium clicks it
- * 4 TD auth site will redirect to GET the URL registered for the FOLIOMON app
- */
-async function login() {
-    let webDriver = await new Builder().forBrowser('firefox').build();
-    try {
-        console.log(`Attempt to login at authentication url: ${config.auth.authUrl}`);
-        await webDriver.get(config.auth.authUrl);
-        await webDriver.wait(until.elementLocated(By.id('accept')), 5000);
-        await webDriver.findElement(By.id('username')).sendKeys(config.auth.username);
-        await webDriver.findElement(By.id('password')).sendKeys(config.auth.password);
-        await webDriver.findElement(By.id('accept')).click() //Log In button
-            .then(() => console.log('Submitted login form, TD should now redirect to Allow page...'));
-
-        await webDriver.wait(until.elementLocated(By.name('authorize')), 5000);
-        await webDriver.findElement(By.name('authorize')).click()
-            .then(() => console.log(`Allowed access, TD should now redirect to GET foliomon url: ${config.auth.redirectUrl}`));
-
-        await webDriver.wait(until.urlIs(config.auth.redirectUrl), 5000)
-            .then(() => console.log('Logged into TD...'));
-    } catch (err) {
-        console.log(err);
-        // should cause process to exit
-        process.exit(1)
-    } finally {
-        console.log("login() Selenium webDriver quitting...");
-        await webDriver.quit();
-    }
-};
 
 async function startServer() {
     try {
@@ -96,7 +60,7 @@ async function startServer() {
             await initializeApp();
 
             // run the app scheduled jobs
-            runMainEventLoop();
+            //runMainEventLoop();
         } else {
             //await login();
             //process.exit(0);
@@ -153,10 +117,10 @@ async function authorizeApp() {
     // Fetch the access token from the db and check its expiration date time
     // GET /foliomon/getAccessToken
     try {
-        accessTokenReply = await request({
+        accessTokenReply = await axios({
             method: 'GET',
-            url: `${baseUrl}/foliomon/accesstoken`,
-            rejectUnauthorized: false // REMOVE before DEPLOYMENT
+            url: `${baseUrl}/foliomon/accesstoken`//,
+            //rejectUnauthorized: false // REMOVE before DEPLOYMENT
         });
 
         // reply body parsed with implied status code 200
@@ -169,16 +133,15 @@ async function authorizeApp() {
     } catch(err) { // handle all response status code other than OK 200
         console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
         isAccessTokenExpired = true;
-    }
-    
+    }    
 
     // Fetch the refresh token from the db and check its expiration date time
     // GET /foliomon/getRefreshToken
     try {
-        refreshTokenReply = await request({
+        refreshTokenReply = await axios({
             method: 'GET',
-            url: `${baseUrl}/foliomon/refreshtoken`,
-            rejectUnauthorized: false
+            url: `${baseUrl}/foliomon/refreshtoken`//,
+            //rejectUnauthorized: false
         });
 
         // reply body parsed with implied status code 200
@@ -186,7 +149,7 @@ async function authorizeApp() {
         refreshTokenExpirationDate = new Date(parsed.refreshToken.refreshTokenExpirationDate);
 
         if (refreshTokenExpirationDate <= dateNow) {
-            console.log(`Refresh token has expired!!!!! OH NO!`);
+            console.log(`Refresh token has expired.`);
             isRefreshTokenExpired = true;
         }
     } catch(err) { // handle all response status code other than OK 200
@@ -194,8 +157,8 @@ async function authorizeApp() {
         isRefreshTokenExpired = true;
     }
 
-
-    // if access token is expired but the refresh token is not expired yet
+    // if the access token exists and it isnt expired continue 
+    // otherwise if access token is expired but the refresh token is not expired yet
     // use it to request a new access token and refresh token and save them
     if(!isAccessTokenExpired) {
         authorized = true;
@@ -203,10 +166,10 @@ async function authorizeApp() {
         // GET /foliomon/reauthorize
         let body = {};
         try {
-            body = await request({
+            body = await axios({
                 method: 'GET',
-                url: `${baseUrl}/foliomon/reauthorize`,
-                rejectUnauthorized: false
+                url: `${baseUrl}/foliomon/reauthorize`//,
+                //rejectUnauthorized: false
             });
             // reply body parsed with implied status code 200
             //reauthTokenReply = JSON.parse(body);
@@ -240,10 +203,10 @@ async function initializeAccountsData() {
 
     // Verify the accounts are stored otherwise get them and store them
     // GET /foliomon/accounts
-    await request({
+    await axios({
             method: 'GET',
-            url: `${config.webServer.baseUrl}/accounts`,
-            rejectUnauthorized: false
+            url: `${config.webServer.baseUrl}/accounts`//,
+            //rejectUnauthorized: false
         })
         .then(function(body) { // reply body parsed with implied status code 200
             accountsReply = JSON.parse(body);
@@ -259,10 +222,10 @@ async function initializeAccountsData() {
         console.log('initializeAccountsData No accounts data available. Getting from TD...');
         // Verify the accounts are stored otherwise get them and store them
         // GET /foliomon/accounts
-        await request({
+        await axios({
                 method: 'GET',
-                url: `${config.webServer.baseUrl}/accounts/init`,
-                rejectUnauthorized: false
+                url: `${config.webServer.baseUrl}/accounts/init`//,
+                //rejectUnauthorized: false
             })
             .then(function(body) { // reply body parsed with implied status code 200
                 accountsReply = JSON.parse(body);

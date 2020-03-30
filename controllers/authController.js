@@ -1,8 +1,25 @@
 const config = require('../config/config.js');
 const request = require('request-promise-native');
+const axios = require('axios');
 //request.debug = true;
 const AccessToken = require('../models/auth/AccessToken');
 const RefreshToken = require('../models/auth/RefreshToken');
+
+// get the Access Token from the db
+exports.getToken = function () {
+    return AccessToken.findOne().exec()
+        .then(function (foundToken) {
+            if (foundToken) {
+                console.log(`Found access token: ${foundToken}`)
+                return foundToken;
+            } else {
+                console.log('No access token found in database.')
+            }
+        })
+        .catch(function (err) {
+            console.log(`Error fetching access token from database: ${err}`)
+        });
+};
 
 // GET /foliomon/getAccessToken
 // get the Access Token from the db
@@ -21,21 +38,6 @@ exports.getAccessToken = function(req, res) {
         .catch(function(err) {
             console.log(`Error fetching access token from database: ${err}`)
             res.status(500).send({ error: 'Error fetching access token from database.' })
-        });
-};
-
-exports.getToken = function(req, res) {
-    return AccessToken.findOne().exec()
-        .then(function(foundToken) {
-            if (foundToken) {
-                console.log(`Found access token: ${foundToken}`)
-                return foundToken;
-            } else {
-                console.log('No access token found in database.')
-            }
-        })
-        .catch(function(err) {
-            console.log(`Error fetching access token from database: ${err}`)
         });
 };
 
@@ -214,7 +216,7 @@ exports.authorize = function(req, res) {
 
         // do Post Access Token request to TD
         //axios.post(options.uri, qs.stringify(options.form), {
-        request(options)
+        axios(options)
             .then(function(body) { // reply body parsed with implied status code 200 from TD
                 // see Post Access Token response summary
 
@@ -383,7 +385,7 @@ exports.reauthorize = async(req, res) => {
         };
 
         // do Post Access Token request to TD
-        request(options)
+        axios(options)
             .then(function(body) { // reply body parsed with implied status code 200 from TD
                 // see Post Access Token response summary
                 var authReply = JSON.parse(body);
