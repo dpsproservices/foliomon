@@ -47,6 +47,9 @@ router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
 // get all accounts from TD api
 router.get('/foliomon/accounts/init', accountController.initialize);
 
+// get account with positions from TD api
+router.get('/foliomon/accounts/:accountId/positions', accountController.getPositionsByAccountId);
+
 // Order Controller Routes
 
 router.get('/foliomon/orders', orderController.getAllOrders);

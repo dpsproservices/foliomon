@@ -5,7 +5,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { authorize, getAccessToken } from './utils/api';
 import { Main, Connect } from './pages';
-import { RouteWithLayout, NotFound, Orders } from './components';
+import { RouteWithLayout, NotFound, Orders, Overview, Positions } from './components';
 import theme from './theme';
 import queryString from 'query-string'
 
@@ -65,8 +65,10 @@ function App() {
         ?
           <Router history={browserHistory}>
             <Switch>
-              <Redirect exact from="/" to="/orders" />
+              <Redirect exact from="/" to="/overview" />
+              <RouteWithLayout exact path="/overview" layout={Main} component={Overview} />
               <RouteWithLayout exact path="/orders" layout={Main} component={Orders} />
+              <RouteWithLayout exact path="/positions" layout={Main} component={Positions} />
               <RouteWithLayout exact path="/not-found" layout={Main} component={NotFound} />
               <Redirect to="/not-found" />
             </Switch>

@@ -1,10 +1,5 @@
-const config = require('../config/config.js');
-const request = require('request-promise-native');
-request.debug = true;
-const axios = require('axios');
-const AccessToken = require('../models/auth/AccessToken');
 const Account = require('../models/securitiesAccount/Account');
-const { getToken } = require('./authController.js');
+const AccountService = require('../services/AccountService');
 
 // GET /foliomon/accounts
 // Get all Accounts from the database
@@ -253,33 +248,59 @@ exports.initialize = async(req, res) => {
     try {
         console.log('accountController.initialize begin');
 
-        const data = {};
+        var isAccountsDataAvailable = false;
+        var accounts = null;
+    
+        // Verify the accounts are stored otherwise get them and store them
+        try {
+            accounts = await AccountService.getDbAccounts();
+            isAccountsDataAvailable = true;
+            res.status(200).send(accounts);
+        } catch(err) {
+            console.log(`Error in initializeAccountsData ${err}`);
+            isAccountsDataAvailable = false;
+        }
+    
+        if (!isAccountsDataAvailable) {
+            console.log('initializeAccountsData No accounts data available. Getting from TD...');
+    
+            try {
+                accounts = await AccountService.getApiAccounts();
+                if (accounts && accounts.length > 0)
+                    await AccountService.saveDbAccounts(accounts);
 
-        const token = await getToken();
-
-        const options = {
-            method: 'GET',
-            url: `${config.auth.apiUrl}/accounts`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data
-        };
-
-        axios(options)
-            .then(function(body) { // reply body parsed with implied status code 200 from TD
-                var accountReply = JSON.parse(body);
-
-                saveAllAccounts(accountReply);
-
-                res.status(200).send(accountReply);
-            })
-            .catch(function(err) { // handle all response status code other than OK 200
-                console.log(`Error in accountController.initialize error received from Account Init request: ${err}`)
-                res.status(500).send({ error: `Error response received from Account Init request: ${err}` })
-            });
+                res.status(200).send(accounts);
+            } catch(err) {
+                console.log(`Error in initializeAccountsData ${err}`);
+                res.status(500).send({ error: `Error in initializeAccountsData ${err}` })
+            }
+           
+        }
 
         console.log('accountController.initialize end');
     } catch (err) {
         console.log(`Error in accountController.initialize: ${err}`);
         res.status(500).send('Internal Server Error during Account Init request.');
+    }
+}
+
+exports.getPositionsByAccountId = async(req, res) => {
+    try {
+        console.log('accountController.getPositionsByAccountId begin');
+
+        const accountId = req.params.accountId;
+    
+        try {
+            accounts = await AccountService.getApiAccountPositions(accountId);
+            res.status(200).send(accounts);
+        } catch(err) {
+            console.log(`Error in getPositionsByAccountId ${err}`);
+            res.status(500).send({ error: `Error in getPositionsByAccountId ${err}` })
+        }
+
+        console.log('accountController.getPositionsByAccountId end');
+    } catch (err) {
+        console.log(`Error in accountController.getPositionsByAccountId: ${err}`);
+        res.status(500).send('Internal Server Error during Account positions request.');
     }
 }
