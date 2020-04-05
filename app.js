@@ -8,6 +8,8 @@ const request = require('request-promise-native');
 const axios = require('axios');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
+const TokenService = require('./services/TokenService');
+const AccountService = require('./services/AccountService');
 const bodyParser = require("body-parser");
 const config = require('./config/config');
 const routes = require('./routes/routes');
@@ -109,51 +111,32 @@ async function authorizeApp() {
     var isRefreshTokenExpired = false;
     var accessTokenExpirationDate = null;
     var refreshTokenExpirationDate = null;
-    var accessTokenReply = null;
-    var refreshTokenReply = null;
     var authorized = false;
-    var baseUrl = `https://${config.webServer.hostname}:${config.webServer.httpsPort}`;
 
     // Fetch the access token from the db and check its expiration date time
-    // GET /foliomon/getAccessToken
     try {
-        accessTokenReply = await axios({
-            method: 'GET',
-            url: `${baseUrl}/foliomon/accesstoken`//,
-            //rejectUnauthorized: false // REMOVE before DEPLOYMENT
-        });
-
-        // reply body parsed with implied status code 200
-        const parsed = JSON.parse(accessTokenReply);
-        accessTokenExpirationDate = new Date(parsed.accessToken.accessTokenExpirationDate);
+        accessToken = await TokenService.getAccessToken();
+        accessTokenExpirationDate = new Date(accessToken.accessTokenExpirationDate);
 
         if (accessTokenExpirationDate <= dateNow) {
             isAccessTokenExpired = true;
         }
-    } catch(err) { // handle all response status code other than OK 200
+    } catch(err) {
         console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
         isAccessTokenExpired = true;
     }    
 
     // Fetch the refresh token from the db and check its expiration date time
-    // GET /foliomon/getRefreshToken
     try {
-        refreshTokenReply = await axios({
-            method: 'GET',
-            url: `${baseUrl}/foliomon/refreshtoken`//,
-            //rejectUnauthorized: false
-        });
-
-        // reply body parsed with implied status code 200
-        const parsed = JSON.parse(refreshTokenReply);
-        refreshTokenExpirationDate = new Date(parsed.refreshToken.refreshTokenExpirationDate);
+        refreshToken = await TokenService.getRefreshToken();
+        refreshTokenExpirationDate = new Date(refreshToken.refreshTokenExpirationDate);
 
         if (refreshTokenExpirationDate <= dateNow) {
             console.log(`Refresh token has expired.`);
             isRefreshTokenExpired = true;
         }
-    } catch(err) { // handle all response status code other than OK 200
-        console.log(`Error in authorizeApp from /foliomon/refreshtoken ${err}`);
+    } catch(err) {
+        console.log(`Error in authorizeApp ${err}`);
         isRefreshTokenExpired = true;
     }
 
@@ -163,20 +146,15 @@ async function authorizeApp() {
     if(!isAccessTokenExpired) {
         authorized = true;
     } else if (isAccessTokenExpired && !isRefreshTokenExpired) {
-        // GET /foliomon/reauthorize
-        let body = {};
+
         try {
-            body = await axios({
-                method: 'GET',
-                url: `${baseUrl}/foliomon/reauthorize`//,
-                //rejectUnauthorized: false
-            });
-            // reply body parsed with implied status code 200
-            //reauthTokenReply = JSON.parse(body);
-            console.log('authorizeApp got new tokens from /foliomon/reauthorize.');
-            authorized = true;
+            const responseObject = await TokenService.reauthorize();
+            if (responseObject) {
+                console.log('authorizeApp got new tokens.');
+                authorized = true;
+            }
         } catch(err) { // handle all response status code other than OK 200
-            console.log(`Error in authorizeApp from /foliomon/reauthorize ${err}`);
+            console.log(`Error in authorizeApp ${err}`);
         };
     }
 
@@ -202,40 +180,25 @@ async function initializeAccountsData() {
     var accounts = null;
 
     // Verify the accounts are stored otherwise get them and store them
-    // GET /foliomon/accounts
-    await axios({
-            method: 'GET',
-            url: `${config.webServer.baseUrl}/accounts`//,
-            //rejectUnauthorized: false
-        })
-        .then(function(body) { // reply body parsed with implied status code 200
-            accountsReply = JSON.parse(body);
-            accounts = accountsReply.accounts; // array of accounts
-            isAccountsDataAvailable = true;
-        })
-        .catch(function(err) { // handle all response status code other than OK 200
-            console.log(`Error in initializeAccountsData from /foliomon/accounts ${err}`);
-            isAccountsDataAvailable = false;
-        });
+    try {
+        accounts = await AccountService.getDbAccounts();
+        isAccountsDataAvailable = true;
+    } catch(err) {
+        console.log(`Error in initializeAccountsData ${err}`);
+        isAccountsDataAvailable = false;
+    }
 
     if (!isAccountsDataAvailable) {
         console.log('initializeAccountsData No accounts data available. Getting from TD...');
-        // Verify the accounts are stored otherwise get them and store them
-        // GET /foliomon/accounts
-        await axios({
-                method: 'GET',
-                url: `${config.webServer.baseUrl}/accounts/init`//,
-                //rejectUnauthorized: false
-            })
-            .then(function(body) { // reply body parsed with implied status code 200
-                accountsReply = JSON.parse(body);
-                accounts = accountsReply.accounts; // array of accounts
-                isAccountsDataAvailable = true;
-            })
-            .catch(function(err) { // handle all response status code other than OK 200
-                console.log(`Error in initializeAccountsData from /foliomon/accounts/init ${err}`);
-                isAccountsDataAvailable = false;
-            });
+
+        try {
+            accounts = await AccountService.getApiAccounts();
+            if (accounts && accounts.length > 0)
+                await AccountService.saveDbAccounts(accounts);
+        } catch(err) {
+            console.log(`Error in initializeAccountsData ${err}`);
+        }
+       
     }
 }
 

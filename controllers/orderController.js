@@ -1,12 +1,12 @@
 const config = require('../config/config.js');
-const { getToken } = require('./authController.js');
+const TokenService = require('../services/TokenService');
 const axios = require('axios');
 
 exports.getAllOrders = async (req, res) => {
     try {
         console.log('orderController.getAllOrders begin');
 
-        const token = await getToken();
+        const token = await TokenService.getAccessToken();
 
         const url = `${config.auth.apiUrl}/orders`;
 
@@ -30,8 +30,8 @@ exports.getAllOrders = async (req, res) => {
             res.status(200).send(body.data);
         })
         .catch(function(err) { // handle all response status code other than OK 200
-            console.log(err.response);
-            console.log(`Error in authController.authorize error received from Get All Orders request: ${err}`);
+            //console.log(err.response);
+            console.log(`Error in authController.authorize error received from Get All Orders request: ${err.response.message}`);
             res.status(500).send({ error: `Error response received from Get All Ordersrequest: ${err}` });
         });
 
