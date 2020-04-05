@@ -19,7 +19,12 @@ const getDbAccounts = function() {
 };
 
 const saveDbAccounts = function(accounts) {
-    return Account.create(accounts)
+    // Accounts may be in nested format.
+    let formattedAccounts = accounts;
+    if (accounts && accounts[0] && accounts[0].securitiesAccount) {
+        formattedAccounts = accounts.map(a => a.securitiesAccount);
+    }
+    return Account.create(formattedAccounts)
         .then(function(result) {
             return result;
         })
@@ -48,6 +53,28 @@ const getApiAccounts = async () => {
     }
 }
 
+const getApiAccountPositions = async (accountId) => {
+
+    const token = await TokenService.getAccessToken();
+
+    const options = {
+        method: 'GET',
+        url: `${config.auth.apiUrl}/accounts/${accountId}`,
+        headers: { 'Authorization': `Bearer ${token.accessToken}` },
+        params: { fields: 'positions' }
+    };
+
+    try {
+        const response = await axios(options);
+        return response.data;
+    } catch (err) {
+        const message = response.message;
+        console.log(`Error in getApiAccounts: ${message}`);
+        throw new Error(`Error in getApiAccounts: ${message}`);
+    }
+}
+
 exports.getDbAccounts = getDbAccounts;
 exports.getApiAccounts = getApiAccounts;
 exports.saveDbAccounts = saveDbAccounts;
+exports.getApiAccountPositions = getApiAccountPositions;

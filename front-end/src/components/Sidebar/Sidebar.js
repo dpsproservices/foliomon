@@ -91,7 +91,7 @@ const Sidebar = props => {
             activeClassName={classes.active}
             className={classes.button}
             component={CustomRouterLink}
-            to="/"
+            to="/overview"
           >
             <div className={classes.icon}><DashboardIcon /></div>
             Overview
@@ -123,7 +123,7 @@ const Sidebar = props => {
             activeClassName={classes.active}
             className={classes.button}
             component={CustomRouterLink}
-            to="/"
+            to="/positions"
           >
             <div className={classes.icon}><InsertChartIcon /></div>
             Positions

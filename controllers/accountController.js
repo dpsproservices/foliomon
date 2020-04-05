@@ -1,7 +1,3 @@
-const config = require('../config/config.js');
-//const request = require('request-promise-native');
-//request.debug = true;
-const axios = require('axios');
 const Account = require('../models/securitiesAccount/Account');
 const AccountService = require('../services/AccountService');
 
@@ -285,5 +281,26 @@ exports.initialize = async(req, res) => {
     } catch (err) {
         console.log(`Error in accountController.initialize: ${err}`);
         res.status(500).send('Internal Server Error during Account Init request.');
+    }
+}
+
+exports.getPositionsByAccountId = async(req, res) => {
+    try {
+        console.log('accountController.getPositionsByAccountId begin');
+
+        const accountId = req.params.accountId;
+    
+        try {
+            accounts = await AccountService.getApiAccountPositions(accountId);
+            res.status(200).send(accounts);
+        } catch(err) {
+            console.log(`Error in getPositionsByAccountId ${err}`);
+            res.status(500).send({ error: `Error in getPositionsByAccountId ${err}` })
+        }
+
+        console.log('accountController.getPositionsByAccountId end');
+    } catch (err) {
+        console.log(`Error in accountController.getPositionsByAccountId: ${err}`);
+        res.status(500).send('Internal Server Error during Account positions request.');
     }
 }

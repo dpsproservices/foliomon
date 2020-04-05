@@ -16,3 +16,13 @@ export const getAllOrders = async () => {
   const url = `${API_URL}/orders`;
   return await axios.get(url);
 };
+
+export const getAccounts = async () => {
+  const url = `${API_URL}/accounts`;
+  return await axios.get(url);
+};
+
+export const getAccountPositions = async (accountId) => {
+  const url = `${API_URL}/accounts/${accountId}/positions`;
+  return await axios.get(url);
+};
