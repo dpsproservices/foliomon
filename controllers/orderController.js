@@ -98,7 +98,7 @@ exports.getOrderByAccountIdOrderId = async (req, res) => {
 
         var orders = null;
         const accountId = req.params.accountId;
-        const accountId = req.params.orderId;
+        const orderId = req.params.orderId;
 
         try {
             orders = await OrderService.getApiOrderByAccountIdOrderId(accountId, orderId);

@@ -1,6 +1,6 @@
 const config = require('../config/config.js');
 const axios = require('axios');
-const Account = require('../models/securitiesAccount/Account').default;
+const Account = require('../models/securitiesAccount/Account');
 const TokenService = require('./TokenService');
 
 const getDbAccounts = function() {
