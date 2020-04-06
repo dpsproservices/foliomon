@@ -21,7 +21,7 @@ const Orders = () => {
   return (
     <div>
       <ul>
-      {orders && orders.map(o => <li>o</li>)}
+      {orders && orders.map(o => <li>{o.orderType} {o.quantity} @ {o.price}, Status: {o.status}</li>)}
       </ul>
     </div>
   );

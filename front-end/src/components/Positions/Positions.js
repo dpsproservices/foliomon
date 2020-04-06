@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAccounts, getAccountPositions } from '../../utils/api';
+import { getAccountPositions, getAccounts } from '../../utils/api';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   Grid,

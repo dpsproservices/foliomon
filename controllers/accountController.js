@@ -1,4 +1,4 @@
-const Account = require('../models/securitiesAccount/Account').default;
+const Account = require('../models/securitiesAccount/Account');
 const AccountService = require('../services/AccountService');
 
 // GET /foliomon/accounts

@@ -1,4 +1,5 @@
-import { Schema, model } from 'mongoose';
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 //The class <securitiesAccount> has the following subclasses: 
 //CashAccount
@@ -752,4 +753,5 @@ const accountSchema = new Schema({
         type: String
     }
 });
-export default model('Account', accountSchema);
+
+module.exports = mongoose.model('Account', accountSchema);
