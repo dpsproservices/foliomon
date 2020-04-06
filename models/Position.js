@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 const positionSchema = new mongoose.Schema({
-    /*
     accountId: {
         type: String
     },
     positionDate: {
-        type: Date
+        type: String
     },
-    */
     shortQuantity: {
         type: Number
     },

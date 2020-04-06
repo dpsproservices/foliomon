@@ -6,18 +6,18 @@ const executionSchema = new mongoose.Schema({
         type: String
     },
     tradeDate: {
-        type: Date
+        type: String
     },
     activityType: {
         type: String,
-        eNum: [
+        enum: [
             'EXECUTION',
             'ORDER_ACTION'
         ]
     },
     executionType: {
         type: String,
-        eNum: [
+        enum: [
             'FILL'
         ]
     },
@@ -31,22 +31,19 @@ const executionSchema = new mongoose.Schema({
         items: [{
             properties: {
                 legId: {
-                    type: Number,
+                    type: Number
                 },
                 quantity: {
-                    type: Number,
-
+                    type: Number
                 },
                 mismarkedQuantity: {
-                    type: Number,
-
+                    type: Number
                 },
                 price: {
-                    type: Number,
-
+                    type: Number
                 },
                 time: {
-                    type: Date
+                    type: String
                 }
             }
         }]

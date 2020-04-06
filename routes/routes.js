@@ -44,14 +44,27 @@ router.delete('/foliomon/accounts/:accountId', accountController.deleteAccountBy
 // delete all accounts from the database
 router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
 
-// get all accounts from TD api
+// get all accounts from TD api save them to the database
 router.get('/foliomon/accounts/init', accountController.initialize);
 
 // get account with positions from TD api
 router.get('/foliomon/accounts/:accountId/positions', accountController.getPositionsByAccountId);
 
+// get account with orders from TD api
+router.get('/foliomon/accounts/:accountId/orders', accountController.getOrdersByAccountId);
+
 // Order Controller Routes
 
-router.get('/foliomon/orders', orderController.getAllOrders);
+// get all accounts orders from TD api save them to the database
+router.get('/foliomon/orders/init', orderController.initialize);
+
+// get all orders from TD api
+router.get('/foliomon/orders', orderController.getAllOrders); 
+
+// get account orders from TD api by account number
+router.get('/foliomon/orders/:accountId', orderController.getOrdersByAccountId);
+
+// get orders from TD api by its account number and order number
+router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrderByAccountIdOrderId);
 
 module.exports = router;

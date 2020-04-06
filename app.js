@@ -64,8 +64,7 @@ async function startServer() {
             // run the app scheduled jobs
             //runMainEventLoop();
         } else {
-            //await login();
-            //process.exit(0);
+            // send email to notify to login and refresh the tokens to continue
         }
     } catch (err) {
         console.log(err);
@@ -89,18 +88,29 @@ process.on('SIGTERM', () => {
 
 /*
 
-Requests can be made by authenticating your application and a user in combination, or only authenticating your application (referred to as unauthenticated requests). Without user authentication and authorization, public resources like delayed data may be available.
+Requests can be made by authenticating your application and a user in combination, 
+or only authenticating your application (referred to as unauthenticated requests). 
+Without user authentication and authorization, public resources like delayed data may be available.
+
 Unauthenticated Requests
 
-Right now, APIs offering this generally only require the OAuth User ID passed in to a parameter. In the future, we will move toward only supporting the OAuth 2.0 Client Credentials flow described in section 1.3.4 of RFC 6749 for this type of request.
+Right now, APIs offering this generally only require the OAuth User ID passed in to a parameter. 
+In the future, we will move toward only supporting the OAuth 2.0 Client Credentials flow 
+described in section 1.3.4 of RFC 6749 for this type of request.
 Authenticated Requests
 
-To authenticate a user, we use the OAuth 2.0 Authorization Code flow described in section 1.3.1 of RFC 6749. The best way to see this in action is to follow the steps on the simple auth guide
+To authenticate a user, we use the OAuth 2.0 Authorization Code flow described in section 1.3.1 of RFC 6749. 
+The best way to see this in action is to follow the steps on the simple auth guide
 
-Invoke the authentication window in the browser with the URL https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=Redirect URI&client_id=OAuth User ID@AMER.OAUTHAP.
+Invoke the authentication window in the browser with the URL 
+https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=Redirect URI&client_id=OAuth User ID@AMER.OAUTHAP.
 When the user has authenticated, a GET request will be made to your redirect URI with the authorization code passed as a parameter.
-This authorization code can then be passed as the code parameter to the Authentication API's Post Access Token method using the authorization_code grant type. To receive a refresh token which allows you to receive a new access token after the access token's expiration of 30 minutes, set the access type to offline.
-When you have POSTed details to the token endpoint and received your access token and refresh token, you can pass the access token as a bearer token by setting the Authorization header on all requests to "Bearer Access Token"
+This authorization code can then be passed as the code parameter to the Authentication API's Post Access Token method 
+using the authorization_code grant type. 
+To receive a refresh token which allows you to receive a new access token after the access token's expiration of 30 minutes, 
+set the access type to offline.
+When you have POSTed details to the token endpoint and received your access token and refresh token, 
+you can pass the access token as a bearer token by setting the Authorization header on all requests to "Bearer Access Token"
 
 */
 
@@ -122,7 +132,7 @@ async function authorizeApp() {
             isAccessTokenExpired = true;
         }
     } catch(err) {
-        console.log(`Error in authorizeApp from /foliomon/accesstoken ${err}`);
+        console.log(`Error in authorizeApp ${err}`);
         isAccessTokenExpired = true;
     }    
 
@@ -202,10 +212,38 @@ async function initializeAccountsData() {
     }
 }
 
+async function initializeOrdersData() {
+
+    var isOrdersDataAvailable = false;
+    var orders = null;
+
+    // Verify the orders are stored otherwise get them and store them
+    try {
+        orders = await OrdersService.getDbOrders();
+        isAccountsDataAvailable = true;
+    } catch (err) {
+        console.log(`Error in initializeOrdersData ${err}`);
+        isAccountsDataAvailable = false;
+    }
+
+    if (!isAccountsDataAvailable) {
+        console.log('initializeOrdersData No orders data available. Getting from TD...');
+
+        try {
+            orders = await OrdersService.getApiOrders();
+            if (orders && orders.length > 0)
+                await OrdersService.saveDbOrders(orders);
+        } catch (err) {
+            console.log(`Error in initializeOrdersData ${err}`);
+        }
+
+    }
+}
+
 function initializeApp() {
 
     initializeAccountsData();
-
+    initializeOrdersData();
 }
 
 function runMarketOpenEvents() {
