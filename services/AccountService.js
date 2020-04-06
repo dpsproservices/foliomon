@@ -1,6 +1,6 @@
 const config = require('../config/config.js');
 const axios = require('axios');
-const Account = require('../models/securitiesAccount/Account');
+const Account = require('../models/securitiesAccount/Account').default;
 const TokenService = require('./TokenService');
 
 const getDbAccounts = function() {
@@ -69,8 +69,29 @@ const getApiAccountPositions = async (accountId) => {
         return response.data;
     } catch (err) {
         const message = response.message;
-        console.log(`Error in getApiAccounts: ${message}`);
-        throw new Error(`Error in getApiAccounts: ${message}`);
+        console.log(`Error in getApiAccountPositions: ${message}`);
+        throw new Error(`Error in getApiAccountPositions: ${message}`);
+    }
+}
+
+const getApiAccountOrders = async (accountId) => {
+
+    const token = await TokenService.getAccessToken();
+
+    const options = {
+        method: 'GET',
+        url: `${config.auth.apiUrl}/accounts/${accountId}`,
+        headers: { 'Authorization': `Bearer ${token.accessToken}` },
+        params: { fields: 'orders' }
+    };
+
+    try {
+        const response = await axios(options);
+        return response.data;
+    } catch (err) {
+        const message = response.message;
+        console.log(`Error in getApiAccountOrders: ${message}`);
+        throw new Error(`Error in getApiAccountOrders: ${message}`);
     }
 }
 
@@ -78,3 +99,4 @@ exports.getDbAccounts = getDbAccounts;
 exports.getApiAccounts = getApiAccounts;
 exports.saveDbAccounts = saveDbAccounts;
 exports.getApiAccountPositions = getApiAccountPositions;
+exports.getApiAccountOrders = getApiAccountOrders;

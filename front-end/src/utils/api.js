@@ -12,11 +12,6 @@ export const getAccessToken = async () => {
   return await axios.get(url);
 };
 
-export const getAllOrders = async () => {
-  const url = `${API_URL}/orders`;
-  return await axios.get(url);
-};
-
 export const getAccounts = async () => {
   const url = `${API_URL}/accounts`;
   return await axios.get(url);
@@ -24,5 +19,20 @@ export const getAccounts = async () => {
 
 export const getAccountPositions = async (accountId) => {
   const url = `${API_URL}/accounts/${accountId}/positions`;
+  return await axios.get(url);
+};
+
+export const getAllOrders = async () => {
+  const url = `${API_URL}/orders`;
+  return await axios.get(url);
+};
+
+export const getAccountOrders = async (accountId) => {
+  const url = `${API_URL}/orders/${accountId}`;
+  return await axios.get(url);
+};
+
+export const getAccountOrder = async (accountId,orderId) => {
+  const url = `${API_URL}/orders/${accountId}/${orderId}`;
   return await axios.get(url);
 };

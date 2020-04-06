@@ -1,4 +1,4 @@
-const Account = require('../models/securitiesAccount/Account');
+const Account = require('../models/securitiesAccount/Account').default;
 const AccountService = require('../services/AccountService');
 
 // GET /foliomon/accounts
@@ -243,7 +243,7 @@ exports.deleteAllAccounts = function(req, res) {
 
 // GET /foliomon/accounts/init
 // Get all accounts data which this user can access from TD with access token
-// Then save all the accounts into the database, update them if they exist using 
+// Then save all the accounts into the database, update them if they exist 
 exports.initialize = async(req, res) => {
     try {
         console.log('accountController.initialize begin');
@@ -288,6 +288,7 @@ exports.getPositionsByAccountId = async(req, res) => {
     try {
         console.log('accountController.getPositionsByAccountId begin');
 
+        var accounts = null;
         const accountId = req.params.accountId;
     
         try {
@@ -302,5 +303,27 @@ exports.getPositionsByAccountId = async(req, res) => {
     } catch (err) {
         console.log(`Error in accountController.getPositionsByAccountId: ${err}`);
         res.status(500).send('Internal Server Error during Account positions request.');
+    }
+}
+
+exports.getOrdersByAccountId = async (req, res) => {
+    try {
+        console.log('accountController.getOrdersByAccountId begin');
+
+        var accounts = null;
+        const accountId = req.params.accountId;
+
+        try {
+            accounts = await AccountService.getApiAccountOrders(accountId);
+            res.status(200).send(accounts);
+        } catch (err) {
+            console.log(`Error in getOrdersByAccountId ${err}`);
+            res.status(500).send({ error: `Error in getOrdersByAccountId ${err}` })
+        }
+
+        console.log('accountController.getOrdersByAccountId end');
+    } catch (err) {
+        console.log(`Error in accountController.getOrdersByAccountId: ${err}`);
+        res.status(500).send('Internal Server Error during Account orders request.');
     }
 }

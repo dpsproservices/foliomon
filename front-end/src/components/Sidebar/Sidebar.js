@@ -97,23 +97,6 @@ const Sidebar = props => {
             Overview
           </Button>
         </ListItem>
-
-        <ListItem
-          className={classes.item}
-          disableGutters
-          key="Orders"
-        >
-          <Button
-            activeClassName={classes.active}
-            className={classes.button}
-            component={CustomRouterLink}
-            to="/orders"
-          >
-            <div className={classes.icon}><ViewListIcon /></div>
-            Orders
-          </Button>
-        </ListItem>
-
         <ListItem
           className={classes.item}
           disableGutters
@@ -127,6 +110,21 @@ const Sidebar = props => {
           >
             <div className={classes.icon}><InsertChartIcon /></div>
             Positions
+          </Button>
+        </ListItem>
+        <ListItem
+          className={classes.item}
+          disableGutters
+          key="Orders"
+        >
+          <Button
+            activeClassName={classes.active}
+            className={classes.button}
+            component={CustomRouterLink}
+            to="/orders"
+          >
+            <div className={classes.icon}><ViewListIcon /></div>
+            Orders
           </Button>
         </ListItem>
       </List>

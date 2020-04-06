@@ -1,43 +1,116 @@
 const config = require('../config/config.js');
 const TokenService = require('../services/TokenService');
 const axios = require('axios');
+const moment = require('moment');
+
+const Order = require('../models/Order');
+const OrderService = require('../services/OrderService');
+
+// GET /foliomon/orders/
+// Get all accounts orders which this user can access from TD with access token
+// Then save all the orders into the database, update them if they exist 
+exports.initialize = async (req, res) => {
+    try {
+        console.log('orderController.initialize begin');
+
+        var isOrdersDataAvailable = false;
+        var orders = null;
+
+        // Verify the orders are stored otherwise get them and store them
+        try {
+            orders = await OrderService.getDbOrders();
+            isOrdersDataAvailable = true;
+            res.status(200).send(orders);
+        } catch (err) {
+            console.log(`Error in orderController.initialize ${err}`);
+            isOrdersDataAvailable = false;
+        }
+
+        if (!isOrdersDataAvailable) {
+            console.log('orderController.initialize No orders data available. Getting from TD...');
+
+            try {
+                orders = await OrderService.getApiOrders();
+                if (orders && orders.length > 0)
+                    await OrderService.saveDbOrders(orders);
+
+                res.status(200).send(orders);
+            } catch (err) {
+                console.log(`Error in orderController.initialize ${err}`);
+                res.status(500).send({ error: `Error in orderController.initialize ${err}` })
+            }
+
+        }
+
+        console.log('orderController.initialize end');
+    } catch (err) {
+        console.log(`Error in orderController.initialize: ${err}`);
+        res.status(500).send('Internal Server Error during Orders Init request.');
+    }
+}
 
 exports.getAllOrders = async (req, res) => {
     try {
         console.log('orderController.getAllOrders begin');
 
-        const token = await TokenService.getAccessToken();
+        var orders = null;
 
-        const url = `${config.auth.apiUrl}/orders`;
-
-        const data = {
-            //accountId: Account number.
-            //maxResults: The maximum number of orders to retrieve.
-            //fromEnteredTime: yyyy-MM-dd. Date must be within 60 days from today's date.
-            //toEnteredTime:
-            //status: Specifies that only orders of this status should be returned.
-        };
-
-        const options = {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data,
-            url,
-        };
-
-        axios(options)
-        .then(function(body) { // reply body parsed with implied status code 200 from TD
-            res.status(200).send(body.data);
-        })
-        .catch(function(err) { // handle all response status code other than OK 200
-            //console.log(err.response);
-            console.log(`Error in authController.authorize error received from Get All Orders request: ${err.response.message}`);
-            res.status(500).send({ error: `Error response received from Get All Ordersrequest: ${err}` });
-        });
+        try {
+            orders = await OrderService.getApiOrders();
+            res.status(200).send(orders);
+        } catch (err) {
+            console.log(`Error in getAllOrders ${err}`);
+            res.status(500).send({ error: `Error in getAllOrders ${err}` })
+        }
 
         console.log('orderController.getAllOrders end');
     } catch (err) {
         console.log(`Error in orderController.getAllOrders: ${err}`);
         res.status(500).send('Internal Server Error during Get All Orders request.');
+    }
+}
+
+exports.getOrdersByAccountId = async (req, res) => {
+    try {
+        console.log('orderController.getOrdersByAccountId begin');
+
+        var orders = null;
+        const accountId = req.params.accountId;
+
+        try {
+            orders = await OrderService.getApiOrdersByAccountId(accountId);
+            res.status(200).send(orders);
+        } catch (err) {
+            console.log(`Error in getOrdersByAccountId ${err}`);
+            res.status(500).send({ error: `Error in getOrdersByAccountId ${err}` })
+        }
+
+        console.log('orderController.getOrdersByAccountId end');
+    } catch (err) {
+        console.log(`Error in orderController.getOrdersByAccountId: ${err}`);
+        res.status(500).send('Internal Server Error during Get Orders By Account Id request.');
+    }
+}
+
+exports.getOrderByAccountIdOrderId = async (req, res) => {
+    try {
+        console.log('orderController.getOrderByAccountIdOrderId begin');
+
+        var orders = null;
+        const accountId = req.params.accountId;
+        const accountId = req.params.orderId;
+
+        try {
+            orders = await OrderService.getApiOrderByAccountIdOrderId(accountId, orderId);
+            res.status(200).send(orders);
+        } catch (err) {
+            console.log(`Error in getOrderByAccountIdOrderId ${err}`);
+            res.status(500).send({ error: `Error in getOrderByAccountIdOrderId ${err}` })
+        }
+
+        console.log('orderController.getOrderByAccountIdOrderId end');
+    } catch (err) {
+        console.log(`Error in orderController.getOrderByAccountIdOrderId: ${err}`);
+        res.status(500).send('Internal Server Error during Get Order By Account Id Order Id request.');
     }
 }

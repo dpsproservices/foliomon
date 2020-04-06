@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 //The class <securitiesAccount> has the following subclasses: 
 //CashAccount
 //MarginAccount
 
 // Account:
-const accountSchema = new mongoose.Schema({
+const accountSchema = new Schema({
     type: {
         type: String,
         enum: [
@@ -23,7 +23,7 @@ const accountSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    isClosingOnlyReStricted: {
+    isClosingOnlyRestricted: {
         type: Boolean,
         default: false
     },
@@ -179,7 +179,7 @@ const accountSchema = new mongoose.Schema({
             type: String
         },
         releaseTime: {
-            type: Date
+            type: String
         },
         stopPrice: {
             type: Number
@@ -348,7 +348,7 @@ const accountSchema = new mongoose.Schema({
             ]
         },
         orderId: {
-            type: Number
+            type: String
         },
         cancelable: {
             type: Boolean,
@@ -379,10 +379,10 @@ const accountSchema = new mongoose.Schema({
             ]
         },
         enteredTime: {
-            type: Date
+            type: String
         },
         closeTime: {
-            type: Date
+            type: String
         },
         tag: {
             type: String
@@ -410,108 +410,346 @@ const accountSchema = new mongoose.Schema({
         }
     }],
     initialBalances: {
-        accruedInterest: Number,
-        availableFundsNonMarginableTrade: Number,
-        bondValue: Number,
-        buyingPower: Number,
-        cashBalance: Number,
-        cashAvailableForTrading: Number,
-        cashReceipts: Number,
-        dayTradingBuyingPower: Number,
-        dayTradingBuyingPowerCall: Number,
-        dayTradingEquityCall: Number,
-        equity: Number,
-        equityPercentage: Number,
-        liquidationValue: Number,
-        longMarginValue: Number,
-        longOptionMarketValue: Number,
-        longStockValue: Number,
-        maintenanceCall: Number,
-        maintenanceRequirement: Number,
-        margin: Number,
-        marginEquity: Number,
-        moneyMarketFund: Number,
-        mutualFundValue: Number,
-        regTCall: Number,
-        shortMarginValue: Number,
-        shortOptionMarketValue: Number,
-        shortStockValue: Number,
-        totalCash: Number,
-        isInCall: Boolean,
-        unsettledCash: Number,
-        pendingDeposits: Number,
-        marginBalance: Number,
-        shortBalance: Number,
-        accountValue: Number
+        accruedInterest: {
+            type: Number
+        },
+        availableFundsNonMarginableTrade: {
+            type: Number
+        },
+        bondValue: {
+            type: Number
+        },
+        buyingPower: {
+            type: Number
+        },
+        cashBalance: {
+            type: Number
+        },
+        cashAvailableForTrading: {
+            type: Number
+        },
+        cashAvailableForWithdrawal: {
+            type: Number
+        },
+        cashReceipts: {
+            type: Number
+        },
+        dayTradingBuyingPower: {
+            type: Number
+        },
+        dayTradingBuyingPowerCall: {
+            type: Number
+        },
+        dayTradingEquityCall: {
+            type: Number
+        },
+        equity: {
+            type: Number
+        },
+        equityPercentage: {
+            type: Number
+        },
+        liquidationValue: {
+            type: Number
+        },
+        longMarginValue: {
+            type: Number
+        },
+        longOptionMarketValue: {
+            type: Number
+        },
+        longStockValue: {
+            type: Number
+        },
+        maintenanceCall: {
+            type: Number
+        },
+        maintenanceRequirement: {
+            type: Number
+        },
+        margin: {
+            type: Number
+        },
+        marginEquity: {
+            type: Number
+        },
+        moneyMarketFund: {
+            type: Number
+        },
+        mutualFundValue: {
+            type: Number
+        },
+        regTCall: {
+            type: Number
+        },
+        shortMarginValue: {
+            type: Number
+        },
+        shortOptionMarketValue: {
+            type: Number
+        },
+        shortStockValue: {
+            type: Number
+        },
+        totalCash: {
+            type: Number
+        },
+        isInCall: {
+            type: Boolean,
+            default: false
+        },
+        unsettledCash: {
+            type: Number
+        },
+        cashDebitCallValue: {
+            type: Number
+        },        
+        pendingDeposits: {
+            type: Number
+        },
+        marginBalance: {
+            type: Number
+        },
+        shortBalance: {
+            type: Number
+        },
+        accountValue: {
+            type: Number
+        }
     },
     currentBalances: {
-        accruedInterest: Number,
-        cashBalance: Number,
-        cashReceipts: Number,
-        longOptionMarketValue: Number,
-        liquidationValue: Number,
-        longMarketValue: Number,
-        moneyMarketFund: Number,
-        savings: Number,
-        shortMarketValue: Number,
-        pendingDeposits: Number,
-        availableFunds: Number,
-        availableFundsNonMarginableTrade: Number,
-        buyingPower: Number,
-        buyingPowerNonMarginableTrade: Number,
-        dayTradingBuyingPower: Number,
-        dayTradingBuyingPowerCall: Number,
-        equity: Number,
-        equityPercentage: Number,
-        longMarginValue: Number,
-        maintenanceCall: Number,
-        maintenanceRequirement: Number,
-        marginBalance: Number,
-        regTCall: Number,
-        shortBalance: Number,
-        shortMarginValue: Number,
-        shortOptionMarketValue: Number,
-        sma: Number,
-        mutualFundValue: Number,
-        bondValue: Number,
-        isInCall: Boolean,
-        stockBuyingPower: Number,
-        optionBuyingPower: Number
+        accruedInterest: {
+            type: Number
+        },
+        cashBalance: {
+            type: Number
+        },
+        cashReceipts: {
+            type: Number
+        },
+        longOptionMarketValue: {
+            type: Number
+        },
+        liquidationValue: {
+            type: Number
+        },
+        longMarketValue: {
+            type: Number
+        },
+        moneyMarketFund: {
+            type: Number
+        },
+        savings: {
+            type: Number
+        },
+        shortMarketValue: {
+            type: Number
+        },
+        pendingDeposits: {
+            type: Number
+        },
+        availableFunds: {
+            type: Number
+        },
+        availableFundsNonMarginableTrade: {
+            type: Number
+        },
+        buyingPower: {
+            type: Number
+        },
+        buyingPowerNonMarginableTrade: {
+            type: Number
+        },
+        dayTradingBuyingPower: {
+            type: Number
+        },
+        dayTradingBuyingPowerCall: {
+            type: Number
+        },
+        equity: {
+            type: Number
+        },
+        equityPercentage: {
+            type: Number
+        },
+        longMarginValue: {
+            type: Number
+        },
+        maintenanceCall: {
+            type: Number
+        },
+        maintenanceRequirement: {
+            type: Number
+        },
+        marginBalance: {
+            type: Number
+        },
+        regTCall: {
+            type: Number
+        },
+        shortBalance: {
+            type: Number
+        },
+        shortMarginValue: {
+            type: Number
+        },
+        shortOptionMarketValue: {
+            type: Number
+        },
+        sma: {
+            type: Number
+        },
+        mutualFundValue: {
+            type: Number
+        },
+        bondValue: {
+            type: Number
+        },
+        isInCall: {
+            type: Boolean,
+            default: false
+        },
+        stockBuyingPower: {
+            type: Number
+        },
+        optionBuyingPower: {
+            type: Number
+        },
+        cashAvailableForTrading: {
+            type: Number
+        },
+        cashAvailableForWithdrawal: {
+            type: Number
+        },
+        cashCall: {
+            type: Number
+        },
+        longNonMarginableMarketValue: {
+            type: Number
+        },
+        cashDebitCallValue: {
+            type: Number
+        },
+        unsettledCash: {
+            type: Number
+        }          
     },
     projectedBalances: {
-        accruedInterest: Number,
-        cashBalance: Number,
-        cashReceipts: Number,
-        longOptionMarketValue: Number,
-        liquidationValue: Number,
-        longMarketValue: Number,
-        moneyMarketFund: Number,
-        savings: Number,
-        shortMarketValue: Number,
-        pendingDeposits: Number,
-        availableFunds: Number,
-        availableFundsNonMarginableTrade: Number,
-        buyingPower: Number,
-        buyingPowerNonMarginableTrade: Number,
-        dayTradingBuyingPower: Number,
-        dayTradingBuyingPowerCall: Number,
-        equity: Number,
-        equityPercentage: Number,
-        longMarginValue: Number,
-        maintenanceCall: Number,
-        maintenanceRequirement: Number,
-        marginBalance: Number,
-        regTCall: Number,
-        shortBalance: Number,
-        shortMarginValue: Number,
-        shortOptionMarketValue: Number,
-        sma: Number,
-        mutualFundValue: Number,
-        bondValue: Number,
-        isInCall: Boolean,
-        stockBuyingPower: Number,
-        optionBuyingPower: Number
+        accruedInterest: {
+            type: Number
+        },
+        cashBalance: {
+            type: Number
+        },
+        cashReceipts: {
+            type: Number
+        },
+        longOptionMarketValue: {
+            type: Number
+        },
+        liquidationValue: {
+            type: Number
+        },
+        longMarketValue: {
+            type: Number
+        },
+        moneyMarketFund: {
+            type: Number
+        },
+        savings: {
+            type: Number
+        },
+        shortMarketValue: {
+            type: Number
+        },
+        pendingDeposits: {
+            type: Number
+        },
+        cashAvailableForTrading: {
+            type: Number
+        },
+        cashAvailableForWithdrawal: {
+            type: Number
+        },
+        cashCall: {
+            type: Number
+        },
+        longNonMarginableMarketValue: {
+            type: Number
+        },
+        totalCash: {
+            type: Number
+        },
+        availableFunds: {
+            type: Number
+        },
+        availableFundsNonMarginableTrade: {
+            type: Number
+        },
+        buyingPower: {
+            type: Number
+        },
+        buyingPowerNonMarginableTrade: {
+            type: Number
+        },
+        dayTradingBuyingPower: {
+            type: Number
+        },
+        dayTradingBuyingPowerCall: {
+            type: Number
+        },
+        equity: {
+            type: Number
+        },
+        equityPercentage: {
+            type: Number
+        },
+        longMarginValue: {
+            type: Number
+        },
+        maintenanceCall: {
+            type: Number
+        },
+        maintenanceRequirement: {
+            type: Number
+        },
+        marginBalance: {
+            type: Number
+        },
+        regTCall: {
+            type: Number
+        },
+        shortBalance: {
+            type: Number
+        },
+        shortMarginValue: {
+            type: Number
+        },
+        shortOptionMarketValue: {
+            type: Number
+        },
+        sma: {
+            type: Number
+        },
+        mutualFundValue: {
+            type: Number
+        },
+        bondValue: {
+            type: Number
+        },
+        isInCall: {
+            type: Boolean,
+            default: false
+        },
+        stockBuyingPower: {
+            type: Number
+        },
+        optionBuyingPower: {
+            type: Number
+        }
     },
-    updateDate: Date
+    updateDate: {
+        type: String
+    }
 });
-module.exports = mongoose.model('Account', accountSchema);
+export default model('Account', accountSchema);
