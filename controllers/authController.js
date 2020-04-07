@@ -173,155 +173,18 @@ exports.saveRefreshToken = function(req, res) {
 // using the authorization code grant
 // and store them into the db together with their expiration date times
 // After the app is Approve to use the account TD redirects here
-exports.authorize = function(req, res) {
+exports.authorize = async (req, res) => {
     try {
         console.log('authController.authorize begin');
 
-        var tokenType = null;
-        var accessToken = null;
-        var accessTokenExpiresIn = null;
-        var refreshToken = null;
-        var refreshTokenExpiresIn = null;
+        const responseObject = await TokenService.authorize(req.query.code);
 
-        var options = {
-            method: 'POST',
-            uri: `${config.auth.apiUrl}/oauth2/token`,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            // POST Body params
-            form: {
-                'grant_type': 'authorization_code', // The grant type of the oAuth scheme. Possible values are authorization_code, refresh_token 
-                'access_type': 'offline', // Set to offline to also receive a refresh token 
-                'code': req.query.code, // Required if trying to use authorization code grant 
-                'client_id': config.auth.clientId, // OAuth User ID of the application 
-                'redirect_uri': config.auth.redirectUrl // Required if trying to use authorization code grant 
-            }
-        };
-
-        // do Post Access Token request to TD
-        //axios.post(options.uri, qs.stringify(options.form), {
-        axios(options)
-            .then(function(body) { // reply body parsed with implied status code 200 from TD
-                // see Post Access Token response summary
-
-                var authReply = JSON.parse(body);
-
-                //console.log(`authController.authorize Post Access Token response body: ${body}`);
-
-                if (!authReply.token_type) {
-                    console.log('authController.authorize Error invalid token_type in response body.');
-                    res.status(400).send({ error: 'Error invalid token_type in response body.' });
-                }
-
-                if (!authReply.access_token) {
-                    console.log('authController.authorize Error invalid access_token in response body.');
-                    res.status(400).send({ error: 'Error invalid access_token in response body.' });
-                }
-
-                if (!authReply.expires_in) {
-                    console.log('authController.authorize Error invalid expires_in in response body.');
-                    res.status(400).send({ error: 'Error invalid expires_in in response body.' });
-                }
-
-                if (!authReply.refresh_token) {
-                    console.log('authController.authorize Error invalid refresh_token in response body.');
-                    res.status(400).send({ error: 'Error invalid refresh_token in response body.' });
-                }
-
-                if (!authReply.refresh_token_expires_in) {
-                    console.log('authController.authorize Error invalid refresh_token_expires_in in response body.');
-                    res.status(400).send({ error: 'Error invalid refresh_token_expires_in in response body.' });
-                }
-
-                tokenType = authReply.token_type; // "Bearer";
-                console.log(`authController.authorize Post Access Token response tokenType: ${tokenType}`);
-
-                accessToken = authReply.access_token;
-                console.log(`authController.authorize Post Access Token response accessToken: ${accessToken}`);
-
-                accessTokenExpiresIn = authReply.expires_in; // 1800;
-                console.log(`authController.authorize Post Access Token response accessTokenExpiresIn: ${accessTokenExpiresIn}`);
-
-                refreshToken = authReply.refresh_token;
-                console.log(`authController.authorize Post Access Token response refreshToken: ${refreshToken}`);
-
-                refreshTokenExpiresIn = authReply.refresh_token_expires_in; // 7776000;
-                console.log(`authController.authorize Post Access Token response refreshTokenExpiresIn: ${refreshTokenExpiresIn}`);
-
-                var grantedDate = new Date(); // date time now it was just granted
-                var accessTokenExpirationDate = new Date();
-                accessTokenExpirationDate.setTime(grantedDate.getTime() + (accessTokenExpiresIn * 1000));
-
-                var refreshTokenExpirationDate = new Date();
-                refreshTokenExpirationDate.setTime(grantedDate.getTime() + (refreshTokenExpiresIn * 1000));
-
-                var conditions = {}; // no filter just replace first one found
-
-                let options = {
-                    new: true,
-                    upsert: true
-                };
-
-                var accessTokenUpdate = {
-                    tokenType: tokenType, // "Bearer"
-                    accessToken: accessToken,
-                    accessTokenExpiresInSeconds: accessTokenExpiresIn, // seconds to expire from now
-                    accessTokenGrantedDate: grantedDate, // date time access token was granted
-                    accessTokenExpirationDate: accessTokenExpirationDate // date time access token will expire (granted date + expires in)
-                };
-
-                var refreshTokenUpdate = {
-                    tokenType: tokenType, // "Bearer"
-                    refreshToken: refreshToken,
-                    refreshTokenExpiresInSeconds: refreshTokenExpiresIn, // seconds to expire from now
-                    refreshTokenGrantedDate: grantedDate, // date time refresh token was granted
-                    refreshTokenExpirationDate: refreshTokenExpirationDate // date time refresh token will expire (granted_date + expires_in)
-                };
-
-                AccessToken.findOneAndUpdate(conditions, accessTokenUpdate, options).exec()
-                    .then(function(savedAccessToken) {
-                        console.log(`authController.authorize Saved access token: ${savedAccessToken}`)
-                    })
-                    .catch(function(err) {
-                        console.log(`Error: in authController.authorize unable to save access token to database: ${err}`)
-                        res.status(500).send({ error: 'Unable to save access token.' })
-                    });
-
-                RefreshToken.findOneAndUpdate(conditions, refreshTokenUpdate, options).exec()
-                    .then(function(savedRefreshToken) {
-                        console.log(`authController.authorize Saved refresh token: ${savedRefreshToken}`)
-                    })
-                    .catch(function(err) {
-                        console.log(`Error in authController.authorize Unable to save refresh token to database: ${err}`)
-                        res.status(500).send({ error: 'Unable to save refresh token.' })
-                    });
-
-                var responseObject = {
-                    tokenType: tokenType,
-                    accessToken: accessToken,
-                    accessTokenExpiresInSeconds: accessTokenExpiresIn,
-                    accessTokenGrantedDate: grantedDate,
-                    accessTokenExpirationDate: accessTokenExpirationDate,
-                    refreshToken: refreshToken,
-                    refreshTokenExpiresInSeconds: refreshTokenExpiresIn,
-                    refreshTokenGrantedDate: grantedDate,
-                    refreshTokenExpirationDate: refreshTokenExpirationDate
-                };
-
-                console.log(`Received. access token expires: ${accessTokenExpirationDate} refresh token expires: ${refreshTokenExpirationDate}`);
-                res.status(200).send(responseObject);
-            })
-            .catch(function(err) { // handle all response status code other than OK 200
-                console.log(`Error in authController.authorize error received from Post Access Token request: ${err}`);
-                //console.log(err.response);
-                res.status(500).send({ error: `Error response received from Post Access Token request: ${err}` });
-            });
+        res.status(200).send(responseObject);
 
         console.log('authController.authorize end');
     } catch (err) {
         console.log(`Error in authController.authorize: ${err}`);
-        res.status(500).send('Internal Server Error during Post Access Token authorize request.');
+        res.status(404).send(err);
     }
 }
 
@@ -329,14 +192,17 @@ exports.authorize = function(req, res) {
 // request a new Access Token and also new Refresh Token from TD 
 // before access token expires every 30 minutes
 // using current refresh token from db which expires every 90 days
-exports.reauthorize = async(req, res) => {
+exports.reauthorize = async (req, res) => {
     try {
         console.log('authController.reauthorize begin');
 
         const responseObject = await TokenService.reauthorize();
 
         res.status(200).send(responseObject);
+
+        console.log('authController.reauthorize end');
     } catch(err) {
+        console.log(`Error in authController.reauthorize: ${err}`);
         res.status(404).send(err);
     }
 }
