@@ -205,48 +205,49 @@ exports.deleteAccountById = function(req, res) {
         Account.deleteOne({ accountId: accountId }).exec()
             .then(function(foundAccount) {
                 if (foundAccount) {
-                    console.log(`accountController.deleteAccountById Found account to delete: ${foundAccount}`)
-                    res.status(200).send({ account: foundAccount })
+                    console.log(`accountController.deleteAccountById Found account to delete: ${foundAccount}`);
+                    res.status(200).send({ account: foundAccount });
                 } else {
-                    console.log(`Error in accountController.deleteAccountById No account id ${accountId} found in database.`)
-                    res.status(404).send({ error: `No account id ${accountId} found in database.` })
+                    console.log(`Error in accountController.deleteAccountById No account id ${accountId} found in database.`);
+                    res.status(404).send({ error: `No account id ${accountId} found in database.` });
                 }
             })
             .catch(function(err) {
-                console.log(`Error in accountController.deleteAccountById deleting account from database: ${err}`)
-                res.status(500).send({ error: `Error deleting account id ${accountId} from database.` })
+                console.log(`Error in accountController.deleteAccountById deleting account from database: ${err}`);
+                res.status(500).send({ error: `Error deleting account id ${accountId} from database.` });
             });
     } else {
-        console.log(`Error in accountController.deleteAccountById deleting account from database: invalid account id ${accountId}`)
-        res.status(404).send({ error: `Error invalid account id ${accountId}` })
+        console.log(`Error in accountController.deleteAccountById deleting account from database: invalid account id ${accountId}`);
+        res.status(404).send({ error: `Error invalid account id ${accountId}` });
     }
 };
 
 // DELETE /foliomon/accounts
 // Delete all Accounts from the database
 exports.deleteAllAccounts = function(req, res) {
-    Account.deleteMany().exec()
-        .then(function(foundAccounts) {
-            if (foundAccounts) {
-                console.log(`accountController.deleteAllAccounts Found accounts to delete: ${foundAccounts}`)
-                res.status(200).send({ accounts: foundAccounts })
-            } else {
-                console.log('Error in accountController.deleteAllAccounts No accounts found in database.')
-                res.status(404).send({ error: 'No accounts found in database.' })
-            }
-        })
-        .catch(function(err) {
-            console.log(`Error in accountController.deleteAllAccounts deleting all accounts from database: ${err}`)
-            res.status(500).send({ error: 'Error deleting all accounts from database.' })
-        });
+    Account.deleteMany()
+    .then((foundAccounts) => {
+       if (foundAccounts) {
+            console.log(`accountController.deleteAllAccounts Found accounts to delete: ${foundAccounts}`);
+           res.status(200).send({ accounts: foundAccounts });
+       } 
+        else {
+            console.log('Error in accountController.deleteAllAccounts No accounts found in database.');
+            res.status(404).send({ error: 'No accounts found in database.' });
+        }
+    })
+    .catch(function(err) {
+        console.log(`Error in accountController.deleteAllAccounts deleting all accounts from database: ${err}`);
+        res.status(500).send({ error: 'Error deleting all accounts from database.' });
+    });
 };
 
-// GET /foliomon/accounts/init
+// GET /foliomon/accounts/refresh
 // Get all accounts data which this user can access from TD with access token
-// Then save all the accounts into the database, update them if they exist 
-exports.initialize = async(req, res) => {
-    try {
-        console.log('accountController.initialize begin');
+// Then save all the accounts into the database, update them if they exist
+exports.refreshAccounts = async (req, res) => {
+     try {
+         console.log('accountController.refreshAccounts begin');
 
         var isAccountsDataAvailable = false;
         var accounts = null;
@@ -257,32 +258,33 @@ exports.initialize = async(req, res) => {
             isAccountsDataAvailable = true;
             res.status(200).send(accounts);
         } catch(err) {
-            console.log(`Error in initializeAccountsData ${err}`);
+            console.log(`Error in refreshAccounts ${err}`);
             isAccountsDataAvailable = false;
         }
     
         if (!isAccountsDataAvailable) {
-            console.log('initializeAccountsData No accounts data available. Getting from TD...');
+            console.log('refreshAccounts No accounts data available. Getting from TD...');
     
             try {
                 accounts = await AccountService.getApiAccounts();
-                if (accounts && accounts.length > 0)
+                if (accounts && accounts.length > 0) {
                     await AccountService.saveDbAccounts(accounts);
+                }
 
                 res.status(200).send(accounts);
             } catch(err) {
-                console.log(`Error in initializeAccountsData ${err}`);
-                res.status(500).send({ error: `Error in initializeAccountsData ${err}` })
+                console.log(`Error in refreshAccounts ${err}`);
+                res.status(500).send({ error: `Error in refreshAccounts ${err}` });
             }
            
         }
 
-        console.log('accountController.initialize end');
-    } catch (err) {
-        console.log(`Error in accountController.initialize: ${err}`);
+        console.log('accountController.refreshAccounts end');
+    } catch(err) {
+        console.log(`Error in accountController.refreshAccounts: ${err}`);
         res.status(500).send('Internal Server Error during Account Init request.');
     }
-}
+};
 
 exports.getPositionsByAccountId = async(req, res) => {
     try {
