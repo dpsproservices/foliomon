@@ -14,7 +14,7 @@ const baseUrl = process.env.FOLIOMON_BASE_URI; //`https://${hostname}:${httpsPor
 const apiUrl = process.env.FOLIOMON_API_URI;
 const mongoHostname = process.env.MONGO_HOSTNAME;
 const mongoDB = process.env.MONGO_DATABASE;
-const mongoUsername = process.env.MONGO_USERNAME;
+const mongoUsername = process.env.MONGO_USERNAME; //db.createUser({user:’foliomon’,pwd: ‘foliomon’,roles:["readWrite"]})
 const mongoPassword = process.env.MONGO_PASSWORD;
 const mongoPort = process.env.MONGO_PORT;
 const mongoUrl = `mongodb://${mongoHostname}:${mongoPort}/${mongoDB}?authSource=admin`;

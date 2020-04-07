@@ -1,6 +1,6 @@
 const config = require('../config/config.js');
 const axios = require('axios');
-const Order = require('../models/Order').default;
+const Order = require('../models/Order');
 const TokenService = require('./TokenService');
 const moment = require('moment');
 
