@@ -1,9 +1,3 @@
-const config = require('../config/config.js');
-const TokenService = require('../services/TokenService');
-const axios = require('axios');
-const moment = require('moment');
-
-const Order = require('../models/Order');
 const OrderService = require('../services/OrderService');
 
 // GET /foliomon/orders/
