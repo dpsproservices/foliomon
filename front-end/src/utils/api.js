@@ -17,6 +17,11 @@ export const getAccounts = async () => {
   return await axios.get(url);
 };
 
+export const getUser = async () => {
+  const url = `${API_URL}/user`;
+  return await axios.get(url);
+};
+
 export const refreshAccounts = async () => {
   const url = `${API_URL}/accounts/refresh`;
   return await axios.get(url);

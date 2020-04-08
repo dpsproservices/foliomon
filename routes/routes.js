@@ -3,6 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
+const userController = require('../controllers/userController');
 
 // Authentication Controller Routes
 
@@ -66,5 +67,8 @@ router.get('/foliomon/orders/:accountId', orderController.getOrdersByAccountId);
 
 // get orders from TD api by its account number and order number
 router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrderByAccountIdOrderId);
+
+// User Controller Routes
+router.get('/foliomon/user', userController.getUserPrincipals);
 
 module.exports = router;
