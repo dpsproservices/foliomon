@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const TokenService = require('./services/TokenService');
 const AccountService = require('./services/AccountService');
+const OrderService = require('./services/OrderService');
 const bodyParser = require("body-parser");
 const config = require('./config/config');
 const routes = require('./routes/routes');
@@ -219,7 +220,7 @@ async function initializeOrdersData() {
 
     // Verify the orders are stored otherwise get them and store them
     try {
-        orders = await OrdersService.getDbOrders();
+        orders = await OrderService.getDbOrders();
         isAccountsDataAvailable = true;
     } catch (err) {
         console.log(`Error in initializeOrdersData ${err}`);
@@ -230,9 +231,9 @@ async function initializeOrdersData() {
         console.log('initializeOrdersData No orders data available. Getting from TD...');
 
         try {
-            orders = await OrdersService.getApiOrders();
+            orders = await OrderService.getApiOrders();
             if (orders && orders.length > 0)
-                await OrdersService.saveDbOrders(orders);
+                await OrderService.saveDbOrders(orders);
         } catch (err) {
             console.log(`Error in initializeOrdersData ${err}`);
         }
