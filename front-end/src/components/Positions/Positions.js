@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getAccountPositions, getAccounts, getUser } from '../../utils/api';
 import { makeStyles } from '@material-ui/core/styles';
 import {
+  colors,
   Grid,
   Table,
   TableBody,
@@ -28,6 +29,12 @@ const useStyles = makeStyles(theme => ({
   },
   tableRow: {
     '&:nth-child(even)': { background: '#f5f5f5' }
+  },
+  upTick: {
+    color: colors.green[400]
+  },
+  downTick: {
+    color: colors.red[500]
   }
 }));
 
@@ -51,6 +58,28 @@ const Positions = () => {
         }).join('&');
   };
 
+  const getCredentials = (user) => {
+    //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
+    const tokenTimeStampAsDateObj = new Date(user.streamerInfo.tokenTimestamp);
+    const tokenTimeStampAsMs = tokenTimeStampAsDateObj.getTime();
+
+    const credentials = {
+      "userid": user.accounts[0].accountId,
+      "token": user.streamerInfo.token,
+      "company": user.accounts[0].company,
+      "segment": user.accounts[0].segment,
+      "cddomain": user.accounts[0].accountCdDomainId,
+      "usergroup": user.streamerInfo.userGroup,
+      "accesslevel": user.streamerInfo.accessLevel,
+      "authorized": "Y",
+      "timestamp": tokenTimeStampAsMs,
+      "appid": user.streamerInfo.appId,
+      "acl": user.streamerInfo.acl
+    };
+
+    return jsonToQueryString(credentials);
+  };
+
   useEffect(() => {
     if (user && isLoggedIn && positions) {
       const symbols = positions.map(p => p.instrument.symbol).toString();
@@ -71,28 +100,32 @@ const Positions = () => {
       };
 
       ws.send(JSON.stringify(request));
+
+      // return () => {
+      //   const logout = {
+      //     "requests": [
+      //       {
+      //         "service": "ADMIN",
+      //         "command": "LOGOUT",
+      //         "requestid": requestid,
+      //         "account": user.accounts[0].accountId,
+      //         "source": user.streamerInfo.appId,
+      //         "parameters": {
+      //             "credential": getCredentials(user),
+      //             "token": user.streamerInfo.token,
+      //             "version": "1.0"
+      //         }
+      //       }
+      //     ]
+      //   };
+  
+      //   ws.send(JSON.stringify(logout));
+      // };
     }
   }, [isLoggedIn, positions]);
 
   useEffect(() => {
     if (isConnected && user) {
-      //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
-      const tokenTimeStampAsDateObj = new Date(user.streamerInfo.tokenTimestamp);
-      const tokenTimeStampAsMs = tokenTimeStampAsDateObj.getTime();
-
-      const credentials = {
-        "userid": user.accounts[0].accountId,
-        "token": user.streamerInfo.token,
-        "company": user.accounts[0].company,
-        "segment": user.accounts[0].segment,
-        "cddomain": user.accounts[0].accountCdDomainId,
-        "usergroup": user.streamerInfo.userGroup,
-        "accesslevel": user.streamerInfo.accessLevel,
-        "authorized": "Y",
-        "timestamp": tokenTimeStampAsMs,
-        "appid": user.streamerInfo.appId,
-        "acl": user.streamerInfo.acl
-      };
 
       const request = {
         "requests": [
@@ -103,7 +136,7 @@ const Positions = () => {
             "account": user.accounts[0].accountId,
             "source": user.streamerInfo.appId,
             "parameters": {
-                "credential": jsonToQueryString(credentials),
+                "credential": getCredentials(user),
                 "token": user.streamerInfo.token,
                 "version": "1.0"
             }
@@ -136,16 +169,44 @@ const Positions = () => {
             setIsLoggedIn(true);
         }
 
+        if (message.response && message.response.length === 1
+          && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGOUT'
+          && message.response[0].content.code === 0) {
+            setIsLoggedIn(false);
+            ws.close();
+        }
+
         if (message.data && message.data.length === 1
           && message.data[0].service === 'QUOTE') {
             const { content } = message.data[0];
             content && content.forEach(row => {
-              const bidPrice = row['1'];
-              const askPrice = row['2'];
-              const lastPrice = row['3'];
+              let bidPrice = row['1'];
+              let askPrice = row['2'];
+              let lastPrice = row['3'];
               const symbol = row.key;
-              const newPrice = { bidPrice, askPrice, lastPrice };
-              setPrices(prevPrices => ({ ...prevPrices, [symbol]: newPrice }));
+              setPrices(prevPrices => {
+                const prevPrice = prevPrices[symbol];
+                const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
+                const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
+                const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
+                bidPrice = bidPrice || prevBidPrice || 0;
+                askPrice = askPrice || prevAskPrice || 0;
+                lastPrice = lastPrice || prevLastPrice || 0;
+                const bidDirection = bidPrice > prevBidPrice ? 'up' : bidPrice == prevBidPrice ? 'none' : 'down';
+                const askDirection = askPrice > prevAskPrice ? 'up' : askPrice == prevAskPrice ? 'none' : 'down';;
+                const lastDirection = lastPrice > prevLastPrice ? 'up' : lastPrice == prevLastPrice ? 'none' : 'down';;
+                return ({
+                  ...prevPrices,
+                  [symbol]: {
+                    bidPrice,
+                    askPrice,
+                    lastPrice,
+                    bidDirection,
+                    askDirection,
+                    lastDirection
+                  }
+                });
+              });
             });
           }
       };
@@ -195,6 +256,17 @@ const Positions = () => {
     setActiveAccount(event.target.value);
   };
 
+  const getPriceClass = (direction) => {
+    if (direction === 'up') {
+      return classes.upTick;
+    }
+    if (direction === 'down') {
+      return classes.downTick;
+    }
+    
+    return '';
+  };
+
   return (
     <Grid container className={classes.root} spacing={2} direction="row" justify="center">
       <Grid item xs={11}>
@@ -219,18 +291,25 @@ const Positions = () => {
                 <TableCell>Symbol</TableCell>
                 <TableCell align="right">Long Quantity</TableCell>
                 <TableCell align="right">Short Quantity</TableCell>
-                <TableCell align="right">Avg. Price</TableCell>
-                <TableCell align="right">Bid Price</TableCell>
-                <TableCell align="right">Ask Price</TableCell>
-                <TableCell align="right">Last Price</TableCell>
-                <TableCell align="right">Market Value</TableCell>
+                <TableCell align="right">Avg. Price $</TableCell>
+                <TableCell align="right">Bid Price $</TableCell>
+                <TableCell align="right">Ask Price $</TableCell>
+                <TableCell align="right">Last Price $</TableCell>
+                <TableCell align="right">Market Value $</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {positions && positions.map((row) => {
                 const { symbol } = row.instrument;
                 const symbolPrices = prices[symbol];
-                const { bidPrice, askPrice, lastPrice } = symbolPrices || {};
+                const {
+                  bidPrice,
+                  askPrice,
+                  lastPrice,
+                  bidDirection,
+                  askDirection,
+                  lastDirection
+                 } = symbolPrices || {};
                 return (
                   <TableRow key={symbol} className={classes.tableRow}>
                     <TableCell component="th" scope="row">
@@ -238,11 +317,11 @@ const Positions = () => {
                     </TableCell>
                     <TableCell align="right">{row.longQuantity}</TableCell>
                     <TableCell align="right">{row.shortQuantity}</TableCell>
-                    <TableCell align="right">${row.averagePrice.toFixed(2)}</TableCell>
-                    <TableCell align="right">${bidPrice && bidPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right">${askPrice && askPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right">${lastPrice && lastPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right">${row.marketValue.toFixed(2)}</TableCell>
+                    <TableCell align="right">{row.averagePrice.toFixed(2)}</TableCell>
+                    <TableCell align="right" className={getPriceClass(bidDirection)}>{bidPrice && bidPrice.toFixed(2)}</TableCell>
+                    <TableCell align="right" className={getPriceClass(askDirection)}>{askPrice && askPrice.toFixed(2)}</TableCell>
+                    <TableCell align="right" className={getPriceClass(lastDirection)}>{lastPrice && lastPrice.toFixed(2)}</TableCell>
+                    <TableCell align="right">{row.marketValue.toFixed(2)}</TableCell>
                   </TableRow>);
               })}
             </TableBody>
