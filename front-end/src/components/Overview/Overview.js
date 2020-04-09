@@ -45,7 +45,7 @@ const Overview = () => {
   return (
     <Grid container className={classes.root} spacing={2} direction="row" justify="center">
       {accounts && accounts.map(a => (
-        <Grid item xs={11}>
+        <Grid item xs={11} key={a._id}>
           <Card className={classes.card}>
             <CardContent>
               <Typography variant="h5" component="h2">
