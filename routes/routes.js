@@ -5,6 +5,7 @@ const accountController = require('../controllers/accountController');
 const watchlistController = require('../controllers/watchlistController');
 const orderController = require('../controllers/orderController');
 const userController = require('../controllers/userController');
+const instrumentController = require('../controllers/instrumentController');
 
 // Authentication Controller Routes
 
@@ -79,5 +80,11 @@ router.get('/foliomon/accounts/watchlists', watchlistController.getWatchlists);
 
 // Get all watchlists for one single account
 router.get('/foliomon/accounts/:accountId/watchlists', watchlistController.getAccountWatchlists);
+
+// Instrument Controller Routes
+router.post('/foliomon/instruments', instrumentController.getInstruments);
+
+// Get chart data, price history
+router.post('/foliomon/instrument/pricehistory', instrumentController.getPriceHistory);
 
 module.exports = router;

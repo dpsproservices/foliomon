@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getAccountPositions, getAccounts, getUser } from '../../utils/api';
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -42,6 +42,7 @@ var ws;
 var requestid = 0;
 
 const Positions = () => {
+  const isMounted = useRef(null);
   const [accounts, setAccounts] = useState();
   const [positions, setPositions] = useState();
   const [prices, setPrices] = useState({});
@@ -81,6 +82,40 @@ const Positions = () => {
   };
 
   useEffect(() => {
+    // executed when component mounted
+    isMounted.current = true;
+    return () => {
+      // executed when unmounted
+      isMounted.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (ws && user && isLoggedIn && !isMounted.current) {
+        const logout = {
+          "requests": [
+            {
+              "service": "ADMIN",
+              "command": "LOGOUT",
+              "requestid": requestid++,
+              "account": user.accounts[0].accountId,
+              "source": user.streamerInfo.appId,
+              "parameters": {
+                  "credential": getCredentials(user),
+                  "token": user.streamerInfo.token,
+                  "version": "1.0"
+              }
+            }
+          ]
+        };
+        console.log("Logging out...")
+        ws.send(JSON.stringify(logout));
+      };
+    }
+  }, [user, isLoggedIn]);
+
+  useEffect(() => {
     if (user && isLoggedIn && positions) {
       const symbols = positions.map(p => p.instrument.symbol).toString();
       const request = {
@@ -100,27 +135,6 @@ const Positions = () => {
       };
 
       ws.send(JSON.stringify(request));
-
-      // return () => {
-      //   const logout = {
-      //     "requests": [
-      //       {
-      //         "service": "ADMIN",
-      //         "command": "LOGOUT",
-      //         "requestid": requestid,
-      //         "account": user.accounts[0].accountId,
-      //         "source": user.streamerInfo.appId,
-      //         "parameters": {
-      //             "credential": getCredentials(user),
-      //             "token": user.streamerInfo.token,
-      //             "version": "1.0"
-      //         }
-      //       }
-      //     ]
-      //   };
-  
-      //   ws.send(JSON.stringify(logout));
-      // };
     }
   }, [isLoggedIn, positions]);
 
@@ -132,7 +146,7 @@ const Positions = () => {
           {
             "service": "ADMIN",
             "command": "LOGIN",
-            "requestid": requestid,
+            "requestid": requestid++,
             "account": user.accounts[0].accountId,
             "source": user.streamerInfo.appId,
             "parameters": {
@@ -163,17 +177,20 @@ const Positions = () => {
         // listen to data sent from the websocket server
         const message = JSON.parse(evt.data);
         console.log(message);
-        if (message.response && message.response.length === 1
-          && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGIN'
-          && message.response[0].content.code === 0) {
-            setIsLoggedIn(true);
-        }
 
         if (message.response && message.response.length === 1
           && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGOUT'
           && message.response[0].content.code === 0) {
-            setIsLoggedIn(false);
+            if (isMounted.current) setIsLoggedIn(false);
             ws.close();
+        }
+
+        if (!isMounted.current) return;
+
+        if (message.response && message.response.length === 1
+          && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGIN'
+          && message.response[0].content.code === 0) {
+            setIsLoggedIn(true);
         }
 
         if (message.data && message.data.length === 1
@@ -184,6 +201,7 @@ const Positions = () => {
               let askPrice = row['2'];
               let lastPrice = row['3'];
               const symbol = row.key;
+
               setPrices(prevPrices => {
                 const prevPrice = prevPrices[symbol];
                 const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
@@ -279,7 +297,7 @@ const Positions = () => {
           onChange={handleChange}
         >
           <MenuItem value=""><em>Select</em></MenuItem>
-          {accounts && accounts.map(a => <MenuItem value={a.accountId}>{a.accountId}</MenuItem>)}
+          {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
         </Select>
       </Grid>
 
