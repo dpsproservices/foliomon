@@ -18,6 +18,14 @@ import SearchIcon from '@material-ui/icons/Search';
 const useStyles = makeStyles(theme => ({
   results: {
     zIndex: 100
+  },
+  paper: {
+    height: '300px',
+    overflow: 'scroll'
+  },
+  spinner: {
+    padding: '50px',
+    margin: 'auto atuo'
   }
 }));
 
@@ -40,7 +48,7 @@ const Search = ({ onSelect }) => {
     const getStocks = async () => {
       try {
         setIsLoading(true);
-        const req = { symbol: `${searchString}*`, projection: 'symbol-regex' };
+        const req = { symbol: `${searchString}.*`, projection: 'symbol-regex' };
         const res = await getInstruments(req);
         console.log(res.data);
         setResults(res.data);
@@ -76,24 +84,23 @@ const Search = ({ onSelect }) => {
             }
           />
         </Grid>
-        {isLoading && 
-          <Grid container spacing={2} direction="row" justify="center" className={classes.results}>
-            <Grid item xs={4}>
-              <CircularProgress size={28} />
-            </Grid>
-          </Grid>
-        }
+
         {results &&
           <Grid container spacing={2} direction="row" justify="flex-start" className={classes.results}>
             <Grid item xs={12}>
-              <Paper variant="outlined" square elevation={4}>
-                <List aria-label="search-results" dense>
-                  {Object.keys(results).map(r => (
-                    <ListItem button key={r} onClick={handleClick(results[r].symbol)}>
-                      <ListItemText primary={results[r].symbol} secondary={results[r].description} />
-                    </ListItem>
-                  ))}
-                </List>
+              <Paper variant="outlined" square elevation={4} className={classes.paper}>
+                {isLoading
+                  ?
+                    <CircularProgress size={38} className={classes.spinner} />
+                  :
+                    <List aria-label="search-results" dense>
+                      {Object.keys(results).map(r => (
+                        <ListItem button key={r} onClick={handleClick(results[r].symbol)}>
+                          <ListItemText primary={results[r].symbol} secondary={results[r].description} />
+                        </ListItem>
+                      ))}
+                    </List>
+                }
               </Paper>
             </Grid>
           </Grid>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CircularProgress } from '@material-ui/core';
 import * as Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import { getPriceHistory } from '../../utils/api';
@@ -70,7 +71,12 @@ const Chart = ({ symbol }) => {
 
   return (
     <div>
-      <HighchartsReact highcharts={Highcharts} constructorType={'stockChart'} options={options} />
+      {isLoading
+        ?
+          <CircularProgress size={38} />
+        :
+          <HighchartsReact highcharts={Highcharts} constructorType={'stockChart'} options={options} />
+      }
     </div>
   );
 };

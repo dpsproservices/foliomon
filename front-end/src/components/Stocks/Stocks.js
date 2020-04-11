@@ -6,7 +6,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Typography,
-  Divider
+  Divider,
+  CircularProgress
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { getInstruments } from '../../utils/api';
@@ -54,82 +55,86 @@ const Stocks = () => {
           <Search onSelect={getStockFundamentals} />
         </Grid>
       </Grid>
-      {data &&
-        <Fragment>
-          <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
-            <Grid item xs={4}>
-              <Chart symbol={selectedSymbol} />
+      {isLoading
+        ?
+          <CircularProgress size={38} />
+        :
+          data &&
+          <Fragment>
+            <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
+              <Grid item xs={4}>
+                <Chart symbol={selectedSymbol} />
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="h1">{selectedSymbol}    [{data.exchange}]</Typography>
+                <Typography variant="body1">{data.description}</Typography>
+              </Grid>
             </Grid>
-            <Grid item xs={4}>
-              <Typography variant="h1">{selectedSymbol}    [{data.exchange}]</Typography>
-              <Typography variant="body1">{data.description}</Typography>
+            <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
+              <Grid item xs={4}>
+                <List className={classes.list}>
+                  <ListItem>
+                    <ListItemText primary="52 Week Range"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.low52} - {data.fundamental.high52}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="Dividend Amount/Yield"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.dividendAmount} / {data.fundamental.dividendYield}%
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="Ex-Dividend Date"/>
+                    <ListItemSecondaryAction>
+                      {divDate.getMonth()+1}/{divDate.getDate()}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="Avg. Volume"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.vol10DayAvg}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid item xs={4}>
+                <List>
+                  <ListItem>
+                    <ListItemText primary="P/E Ratio"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.peRatio}x
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="EPS"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.epsTTM}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="Market Cap"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.marketCap}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Divider component="li" />
+                  <ListItem>
+                    <ListItemText primary="Shares Outstanding"/>
+                    <ListItemSecondaryAction>
+                      {data.fundamental.sharesOutstanding}
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                </List>
+              </Grid>
             </Grid>
-          </Grid>
-          <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
-            <Grid item xs={4}>
-              <List className={classes.list}>
-                <ListItem>
-                  <ListItemText primary="52 Week Range"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.low52} - {data.fundamental.high52}
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="Dividend Amount/Yield"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.dividendAmount} / {data.fundamental.dividendYield}%
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="Ex-Dividend Date"/>
-                  <ListItemSecondaryAction>
-                    {divDate.getMonth()+1}/{divDate.getDate()}
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="Avg. Volume"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.vol10DayAvg}
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </List>
-            </Grid>
-            <Grid item xs={4}>
-              <List>
-                <ListItem>
-                  <ListItemText primary="P/E Ratio"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.peRatio}x
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="EPS"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.epsTTM}
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="Market Cap"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.marketCap}
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider component="li" />
-                <ListItem>
-                  <ListItemText primary="Shares Outstanding"/>
-                  <ListItemSecondaryAction>
-                    {data.fundamental.sharesOutstanding}
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </List>
-            </Grid>
-          </Grid>
-        </Fragment>
+          </Fragment>
       }
     </Grid>
   );
