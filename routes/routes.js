@@ -75,4 +75,7 @@ router.get('/foliomon/user', userController.getUserPrincipals);
 // Instrument Controller Routes
 router.post('/foliomon/instruments', instrumentController.getInstruments);
 
+// Get chart data, price history
+router.post('/foliomon/instrument/pricehistory', instrumentController.getPriceHistory);
+
 module.exports = router;

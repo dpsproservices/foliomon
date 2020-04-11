@@ -10,7 +10,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
   CircularProgress
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 
 const Search = ({ onSelect }) => {
   const [isLoading, setIsLoading] = useState();
-  const [searchString, setSearchString] = useState();
+  const [searchString, setSearchString] = useState('');
   const [results, setResults] = useState();
   const classes = useStyles();
 
@@ -88,7 +87,7 @@ const Search = ({ onSelect }) => {
           <Grid container spacing={2} direction="row" justify="flex-start" className={classes.results}>
             <Grid item xs={12}>
               <Paper variant="outlined" square elevation={4}>
-                <List component="nav" aria-label="search-results">
+                <List aria-label="search-results" dense>
                   {Object.keys(results).map(r => (
                     <ListItem button key={r} onClick={handleClick(results[r].symbol)}>
                       <ListItemText primary={results[r].symbol} secondary={results[r].description} />

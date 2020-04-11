@@ -31,6 +31,35 @@ const api = {
             console.log(`Error in getInstrument: ${message}`);
             throw new Error(`Error in getInstrument: ${message}`);
         }
+    },
+    getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
+        const token = await TokenService.getAccessToken();
+
+        const params = {
+            period,
+            periodType,
+            frequency,
+            frequencyType,
+            startDate,
+            endDate,
+            //needExtendedHoursData
+        };
+
+        const options = {
+            method: 'GET',
+            url: `${config.auth.apiUrl}/marketdata/${symbol}/pricehistory`,
+            params: params,          
+            headers: { 'Authorization': `Bearer ${token.accessToken}` }      
+        };
+
+        try {
+            const response = await axios(options);
+            return response.data;
+        } catch (err) {
+            const message = response.message;
+            console.log(`Error in getPriceHistory: ${message}`);
+            throw new Error(`Error in getPriceHistory: ${message}`);
+        }
     }
 }
 
