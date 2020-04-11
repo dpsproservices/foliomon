@@ -6,4 +6,6 @@ export { default as NotFound } from './NotFound';
 export { default as Orders } from './Orders';
 export { default as Overview } from './Overview';
 export { default as Positions } from './Positions';
+export { default as Stocks } from './Stocks';
+export { default as Search } from './Search';
 export { default as RouteWithLayout } from './RouteWithLayout';

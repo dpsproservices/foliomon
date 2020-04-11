@@ -7,6 +7,7 @@ import { Drawer, List, ListItem, Button, colors } from '@material-ui/core';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ViewListIcon from '@material-ui/icons/ViewList';
 import InsertChartIcon from '@material-ui/icons/InsertChart';
+import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 
 const useStyles = makeStyles(theme => ({
     drawer: {
@@ -125,6 +126,21 @@ const Sidebar = props => {
           >
             <div className={classes.icon}><ViewListIcon /></div>
             Orders
+          </Button>
+        </ListItem>
+        <ListItem
+          className={classes.item}
+          disableGutters
+          key="Stocks"
+        >
+          <Button
+            activeClassName={classes.active}
+            className={classes.button}
+            component={CustomRouterLink}
+            to="/stocks"
+          >
+            <div className={classes.icon}><TrendingUpIcon /></div>
+            Stocks
           </Button>
         </ListItem>
       </List>

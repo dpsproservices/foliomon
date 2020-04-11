@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
 const userController = require('../controllers/userController');
+const instrumentController = require('../controllers/instrumentController');
 
 // Authentication Controller Routes
 
@@ -70,5 +71,8 @@ router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrderByAcc
 
 // User Controller Routes
 router.get('/foliomon/user', userController.getUserPrincipals);
+
+// Instrument Controller Routes
+router.post('/foliomon/instruments', instrumentController.getInstruments);
 
 module.exports = router;
