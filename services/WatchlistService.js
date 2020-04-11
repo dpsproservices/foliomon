@@ -1,5 +1,6 @@
 const config = require('../config/config.js');
 const axios = require('axios');
+const { UnauthorizedTokenError, NotFoundError, ForbiddenError, ServerError, TemporaryError } = require('./ServiceErrors');
 const TokenService = require('./TokenService');
 const Watchlist = require('../models/Watchlist');
 
@@ -20,18 +21,25 @@ const api = function() {
         const options = {
             method: 'GET',
             url: `${config.auth.apiUrl}/accounts/watchlists`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.accessToken}` },
+            validateStatus: function (status) {
+                return status === 200 || status === 401;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in watchlistApiService.getWatchlists: ${message}`);
-            throw new Error(`Error in getWatchlists: ${message}`);
+            if (status === 200) {
+                return response.data;
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            }
+        } catch (err) {            
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
-    };
+    }
 
     // Get Watchlists for Single Account from the TD API
     const getAccountWatchlists = async (accountId) => {
@@ -41,16 +49,25 @@ const api = function() {
         const options = {
             method: 'GET',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.accessToken}` },
+            validateStatus: function (status) {
+                return status === 200 || status === 401 || status === 403;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
+            const status = response.status;
+            const message = response.message;            
+            if (status === 200) {
+                return response.data;
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            }
         } catch (err) {
-            const message = response.message;
-            console.log(`Error in watchlistApiService.getAccountWatchlists: ${message}`);
-            throw new Error(`Error in getAccountWatchlists: ${message}`);
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
@@ -62,16 +79,29 @@ const api = function() {
         const options = {
             method: 'GET',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.accessToken}` },
+            validateStatus: function (status) {
+                return status === 200 || status === 400 || status === 401 || status === 403 || status === 404;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in watchlistApiService.getApiWatchlist: ${message}`);
-            throw new Error(`Error in getApiWatchlist: ${message}`);
+            if (status === 200) {
+                return response.data;
+            } else if (status === 400) {
+                throw new InvalidRequestError(`Invalid Request: ${message}`);
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            } else if (status === 404) {
+                throw new NotFoundError('Requested watchlist not found for specified account.');                
+            }
+        } catch (err) {
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
@@ -85,16 +115,27 @@ const api = function() {
             method: 'POST',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist
+            data: watchlist,
+            validateStatus: function (status) {
+                return status === 200 || status === 400 || status === 401 || status === 403;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in createWatchlist: ${message}`);
-            throw new Error(`Error in createWatchlist: ${message}`);
+            if (status === 200) {
+                return response.data;
+            } else if (status === 400) {
+                throw new InvalidRequestError(`Invalid Request: ${message}`);
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            }
+        } catch (err) {            
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
@@ -108,72 +149,67 @@ const api = function() {
             method: 'PUT',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist
+            data: watchlist,
+            validateStatus: function (status) {
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in replaceWatchlist: ${message}`);
-            throw new Error(`Error in replaceWatchlist: ${message}`);
+            if (status === 200 || status === 204) {
+                return response.data;
+            } else if (status === 400) {
+                throw new InvalidRequestError(`Invalid Request: ${message}`);
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            }
+        } catch (err) {
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
-    /*
-    Partially update watchlist for a specific account: change watchlist name,
-    add to the beginning/end of a watchlist, update or delete items in a watchlist.
-    This method does not verify that the symbol or asset type are valid.
-    */
+    
+    // Partially update watchlist for a specific account: change watchlist name,
+    // add to the beginning/end of a watchlist, update or delete items in a watchlist.
+    // This method does not verify that the symbol or asset type are valid.
     const updateWatchlist = async (accountId, watchlist) => {
 
         const token = await TokenService.getAccessToken();
-
-        /*
-        const updatedWatchlist = {
-            name: string,
-            watchlistId: string,
-            watchlistItems: [
-                {
-                    //quantity: 0,
-                    //averagePrice: 0,
-                    //commission: 0,
-                    //purchasedDate: DateParam\,
-                    instrument: {
-                        symbol: 'TEST1',
-                        assetType: 'EQUITY'
-                    },
-                    sequenceId: 0 // likely this sequence index which determines specific watchlist item to update
-                },
-                {
-                    instrument: {
-                        symbol: 'TEST2',
-                        assetType: 'EQUITY'
-                    },
-                    sequenceId: 1 // likely this sequence index which determines specific watchlist item to update
-                }
-            ]
-        }
-        */
 
         const options = {
             method: 'PATCH',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist
+            data: watchlist,
+            validateStatus: function (status) {
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in updateWatchlist: ${message}`);
-            throw new Error(`Error in updateWatchlist: ${message}`);
+            if (status === 200 || status === 204) {
+                return response.data;
+            } else if (status === 400) {
+                throw new InvalidRequestError(`Invalid Request: ${message}`);
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            }
+        } catch (err) {
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
+    // DELETE /foliomon/accounts/:accountId/watchlists/:watchlistId
     // Delete Specific watchlist for a specific account from the TD API
     const deleteWatchlist = async (accountId, watchlistId) => {
 
@@ -182,16 +218,27 @@ const api = function() {
         const options = {
             method: 'DELETE',
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` }
+            headers: { 'Authorization': `Bearer ${token.accessToken}` },
+            validateStatus: function (status) {
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+            }
         };
 
         try {
             const response = await axios(options);
-            return response.data;
-        } catch (err) {
+            const status = response.status;
             const message = response.message;
-            console.log(`Error in watchlistApiService.deleteWatchlist: ${message}`);
-            throw new Error(`Error in deleteWatchlist: ${message}`);
+            if (status === 200 || status === 204) {
+                return response.data;
+            } else if (status === 400) {
+                throw new InvalidRequestError(`Invalid Request: ${message}`);
+            } else if (status === 401) {
+                throw new UnauthorizedTokenError(`Invalid Access Token: ${message}`);
+            } else if (status === 403) {
+                throw new ForbiddenError('User does not have permission to access the specified account.');
+            }
+        } catch (err) {
+            throw new ServerError(`Unexpected Server Error: ${message}`);
         }
     }
 
@@ -210,104 +257,177 @@ const db = function() {
                 if (foundWatchlists && (foundWatchlists.length > 0)) {
                     return foundWatchlists;
                 } else {
-                    console.log('Error in watchlistService.getWatchlists No watchlists found in database.')
-                    throw new Error('No watchlists found in database.');
+                    //throw new NotFoundError('No watchlists found in database.');
+                    return []; // 200 OK when accounts dont have any watchlists
                 }
             })
             .catch(function (err) {
-                throw new Error('Error fetching all watchlists from database.');
+                throw new ServerError('Error fetching all watchlists from database.');
             });
     }
 
     // Fetch watchlists of one account from the database
     const getAccountWatchlists = function (accountId) {
-        return Watchlist.findOne({ accountId: accountId }).exec()
-            .then(function (foundWatchlists) {
-                if (foundWatchlists && (foundWatchlists.length > 0)) {
-                    return foundWatchlists;
-                } else {
-                    console.log(`Error in watchlistService.getAccountWatchlists No watchlists for account id ${accountId} found in database.`)
-                    throw new Error(`Error No watchlists for account id ${accountId} found in database.`);
-                }
-            })
-            .catch(function (err) {
-                throw new Error(`Error fetching account watchlists for account id ${accountId} from database.`);
-            });
-    }
-
-    // Save one or more watchlists of one or more accounts to the database
-    const saveWatchlists = function (watchlists) {
-        return Watchlist.create(watchlists)
-            .then(function (result) {
-                return result;
-            })
-            .catch(function (err) {
-                throw new Error('Error saving watchlists to database.');
-            });
-    }
-
-    // DELETE /foliomon/accounts/:accountId
-    // Delete single Account by its accountId from the database
-    const deleteWatchlist = function (accountId, watchlistId) {
-        if (accountId && watchlistId) {
-            Watchlist.deleteOne({ accountId: accountId, watchlistId: watchlistId }).exec()
-                .then(function (foundWatchlist) {
-                    if (foundWatchlist) {
-                        console.log(`accountController.deleteAccountById Found account to delete: ${foundWatchlist}`);
-                        res.status(200).send({ watchlist: foundWatchlist });
+        if(accountId) {
+            return Watchlist.findOne({ accountId: accountId }).exec()
+                .then(function (foundWatchlists) {
+                    if (foundWatchlists && (foundWatchlists.length > 0)) {
+                        return foundWatchlists;
                     } else {
-                        console.log(`Error in accountController.deleteAccountById No account id ${accountId} found in database.`);
-                        res.status(404).send({ error: `No account id ${accountId} found in database.` });
+                        //throw new NotFoundError(`Error No watchlists found in database for account id ${accountId}.`);
+                        return []; // 200 OK when account doesnt have any watchlist
                     }
                 })
                 .catch(function (err) {
-                    console.log(`Error in accountController.deleteAccountById deleting account from database: ${err}`);
-                    res.status(500).send({ error: `Error deleting account id ${accountId} from database.` });
+                    throw new ServerError(`Error fetching watchlists from database for account id ${accountId}.`);
                 });
         } else {
-            console.log(`Error in accountController.deleteAccountById deleting account from database: invalid account id ${accountId}`);
-            res.status(404).send({ error: `Error invalid account id ${accountId}` });
+            throw new InvalidRequestError(`Invalid account id: ${accountId}`);
         }
     }
 
+    // Fetch specific watchlist of one account from the database
+    const getWatchlist = function (accountId, watchlistId) {
+        if (accountId && watchlistId) {        
+            return Watchlist.findOne({ accountId: accountId, watchlistId: watchlistId }).exec()
+                .then(function (foundWatchlist) {
+                    if (foundWatchlist) {
+                        return foundWatchlist;
+                    } else {                    
+                        throw new NotFoundError(`Error No watchlist found in database for account id ${accountId} with watchlist id ${watchlistId}.`);
+                    }
+                })
+                .catch(function (err) {
+                    throw new ServerError(`Error fetching watchlist from database for account id ${accountId} with watchlist id ${watchlistId}.`);
+                });
+        } else {
+            throw new InvalidRequestError(`Invalid Request: account id: ${accountId} watchlist id: ${watchlistId}`);
+        }            
+    }    
+
+    // Create one or more watchlists of one or more accounts into the database
+    const createWatchlists = function (watchlists) {
+        if (watchlists) {          
+            return Watchlist.create(watchlists)
+                .then(function (createdWatchlists) {
+                    return createdWatchlists;
+                })
+                .catch(function (err) {
+                    throw new ServerError(`Error creating watchlist(s) in database: ${err}`);
+                });
+        } else {
+            throw new InvalidRequestError(`Invalid Request: watchlists: ${watchlists}`);
+        }              
+    }
+
+    // Replace Specific watchlist for a specific account with the TD API
+    // does not verify that the symbol or asset type are valid.
+    const replaceWatchlist = function (watchlist) {
+        if (watchlist) {  
+            let filter = { accountId: watchlist.accountId, watchlistId: watchlist.watchlistId };
+
+            let replacement = watchlist;
+            replacement.updateDate = new Date(); // date time now
+
+            let options = {
+                omitUndefined: true
+            };
+
+            return Watchlist.findOneAndReplace(filter, replacement, options).exec()
+                .then(function (replacedWatchlist) {
+                    return replacedWatchlist;
+                })
+                .catch(function (err) {
+                    throw new ServerError(`Error replacing watchlist in database: ${err}`);
+                });
+        } else {
+            throw new InvalidRequestError(`Invalid Request: watchlist: ${watchlist}`);
+        }                   
+    }
+
+    // Partially update watchlist for a specific account: change watchlist name,
+    // add to the beginning/end of a watchlist, update or delete items in a watchlist.
+    // This method does not verify that the symbol or asset type are valid.
     const updateWatchlist = function (watchlist) {
+        if (watchlist) {
+            let conditions = { accountId: watchlist.accountId, watchlistId: watchlist.watchlistId };
 
-        let conditions = { accountId: watchlist.accountId, watchlistId: watchlist.watchlistId };
+            let update = watchlist;
+            update.updateDate = new Date(); // date time now
 
-        let update = req.body;
-        update.updateDate = new Date(); // date time now
+            let options = {
+                new: true,
+                upsert: true
+            };
 
-        let options = {
-            new: true,
-            upsert: true
-        };
+            return Watchlist.findOneAndUpdate(conditions, update, options).exec()
+                .then(function (updatedWatchlist) {
+                    return updatedWatchlist;
+                })
+                .catch(function (err) {
+                    throw new ServerError(`Error updating watchlist in database: ${err}`);
+                });
+        } else {
+            throw new InvalidRequestError(`Invalid Request: watchlist: ${watchlist}`);
+        }
+    }    
 
-        Watchlist.findOneAndUpdate(conditions, update, options).exec()
-            .then(function (savedAccount) {
-                console.log(`accountController.saveAccountById Saved account: ${savedAccount}`)
-                res.status(200).send({ account: savedAccount })
+    // Delete all watchlists from the database
+    const deleteWatchlists = function () {
+        return Watchlist.deleteMany()
+            .then((deletedWatchlists) => {
+                if (deletedWatchlists) {
+                    return deletedWatchlists;
+                } else {
+                    //throw new NotFoundError('No watchlists found in database.');
+                    return []; // 200 OK when accounts dont have any watchlists
+                }
             })
             .catch(function (err) {
-                console.log(`Error in accountController.saveAccountById Unable to save account to database: ${err}`)
-                res.status(500).send({ error: 'Unable to save account to database.' })
+                throw new ServerError(`Error deleting all watchlists from database: ${err}`);
             });
     }
+
+    // Delete all watchlists of a specific account from the database
+    const deleteAccountWatchlists = function (accountId) {
+        if (accountId) {
+            return Watchlist.deleteMany({ accountId: accountId }).exec()
+                .then(function (deletedWatchlists) {
+                    if (deletedWatchlists) {
+                        return deletedWatchlists;
+                    } else {
+                        //throw new NotFoundError(`Error No watchlists found in database for account id ${accountId}.`);
+                        return []; // 200 OK when account doesnt have any watchlist
+                    }
+                })
+                .catch(function (err) {
+                    throw new ServerError(`Error deleting account watchlists from database: ${err}`);
+                });
+        } else {
+            throw new InvalidRequestError(`Invalid Request: account id: ${accountId}`);
+        }  
+    }     
+
+    // Delete watchlist for a specific account from the database
+    const deleteWatchlist = function (accountId, watchlistId) {
+        if (accountId && watchlistId) {
+            return Watchlist.deleteOne({ accountId: accountId, watchlistId: watchlistId }).exec()
+                .then(function (foundWatchlist) {
+                    if (foundWatchlist) {
+                        console.log(`watchlistService.deleteAccountById Found account to delete: ${foundWatchlist}`);
+                    } else {
+                        console.log(`Error in watchlistService.deleteAccountById No account id ${accountId} found in database.`);
+                    }
+                })
+                .catch(function (err) {
+                    console.log(`Error in watchlistService.deleteAccountById deleting account from database: ${err}`);
+                });
+        } else {
+            console.log(`Error in watchlistService.deleteAccountById deleting account from database: invalid account id ${accountId}`);
+        }
+    }    
 
 }
 
 exports.api = api;
 exports.db = db;
-
-/*
-exports.getWatchlists = getWatchlists;
-exports.getAccountWatchlists = getAccountWatchlists;
-exports.getWatchlist = getWatchlist;
-exports.createWatchlist = createWatchlist;
-exports.replaceWatchlist = replaceWatchlist;
-exports.updateWatchlist = updateWatchlist;
-exports.deleteWatchlist = deleteWatchlist;
-
-exports.getWatchlists = getWatchlists;
-exports.getAccountWatchlists = getAccountWatchlists;
-exports.saveWatchlists = saveWatchlists;
-*/

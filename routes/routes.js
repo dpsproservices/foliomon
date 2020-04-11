@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
+const watchlistController = require('../controllers/watchlistController');
 const orderController = require('../controllers/orderController');
 const userController = require('../controllers/userController');
 
@@ -70,5 +71,13 @@ router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrderByAcc
 
 // User Controller Routes
 router.get('/foliomon/user', userController.getUserPrincipals);
+
+// Watchlist Routes
+
+// Get all watchlists for all of the user's linked accounts
+router.get('/foliomon/accounts/watchlists', watchlistController.getWatchlists); 
+
+// Get all watchlists for one single account
+router.get('/foliomon/accounts/:accountId/watchlists', watchlistController.getAccountWatchlists);
 
 module.exports = router;
