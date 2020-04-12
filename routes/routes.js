@@ -88,10 +88,13 @@ router.get('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.g
 router.post('/foliomon/watchlists/:accountId', watchlistController.createWatchlist);
 
 // Replace an existing watchlist in a specific account
-router.put('/foliomon/watchlists/:accountId', watchlistController.replaceWatchlist);
+router.put('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.replaceWatchlist);
 
 // Partially update watchlist of a specific account
-router.patch('/foliomon/watchlists/:accountId', watchlistController.updateWatchlist);
+router.patch('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.updateWatchlist);
+
+// Delete specific watchlist of a specific account
+router.delete('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
 
 // Instrument Controller Routes
 router.post('/foliomon/instruments', instrumentController.getInstruments);

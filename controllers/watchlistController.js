@@ -12,127 +12,222 @@ exports.getWatchlists = async (req, res) => {
         const watchlists = await WatchlistService.api.getWatchlists();
         res.status(200).send(watchlists);
     } catch (err) {
-        //logger.error(`Error occured ${err.stack}`);
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
-        } else if (error instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
-        }
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;            
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        } 
+
+        res.status(status).send({ error: error });
     }
 }
 
 // Get Watchlists for Single Account
 exports.getAccountWatchlists = async (req, res) => {
-    try {
-        const accountId = req.params.accountId;
+    let accountId = req.params.accountId;
+    try {        
         const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
         res.status(200).send(watchlists);
     } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
-            res.status(403).send({ error: err.message });
-        } else if (err instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+
+        res.status(status).send({ error: error });        
     }
 }
 
 // Get specific watchlist for a specific account
 exports.getWatchlist = async (req, res) => {
+    let accountId = req.params.accountId;
+    let watchlistId = req.params.watchlistId;    
     try {
-        const accountId = req.params.accountId;
-        const watchlistId = req.params.watchlistId;
         const watchlist = await WatchlistService.api.getWatchlist(accountId, watchlistId);
         res.status(200).send(watchlist);
     } catch (err) {
-        console.log({err});
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof BadRequestError) {
-            res.status(400).send({ error: err.message });
+            status = 400;
+            error = `Bad Request ${err.message}`;
         } else if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
-            res.status(403).send({ error: err.message });
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
         } else if (err instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
+            status = 404;
+            error = `Watchlist id ${watchlistId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+
+        res.status(status).send({ error: error });                
     }
 }
 
 // Create a new watchlist in a specific account
 exports.createWatchlist = async (req, res) => {
+    let accountId = req.params.accountId;
+    let watchlist = req.body;    
     try {
-        const accountId = req.params.accountId;
-        const watchlist = req.body;
-        console.log({req});
         const data = await WatchlistService.api.createWatchlist(accountId, watchlist);
         res.status(201).send(data);
     } catch (err) {
-        console.log({ err });
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof BadRequestError) {
-            res.status(400).send({ error: err.message });
+            status = 400;
+            error = `Bad Request ${err.message}`;
         } else if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
-            res.status(403).send({ error: err.message });
-        } else if (err instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+
+        res.status(status).send({ error: error });  
     }
 }
 
 // Replace an existing watchlist in a specific account
 exports.replaceWatchlist = async (req, res) => {
+    let accountId = req.params.accountId;
+    let watchlistId = req.params.watchlistId;
+    let watchlist = req.body;    
     try {
-        const accountId = req.params.accountId;
-        const watchlist = req.body;
-        console.log({ req });
-        const data = await WatchlistService.api.replaceWatchlist(accountId, watchlist);
+        const data = await WatchlistService.api.replaceWatchlist(accountId, watchlistId, watchlist);
         res.status(204).send(data);
     } catch (err) {
-        console.log({ err });
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof BadRequestError) {
-            res.status(400).send({ error: err.message });
+            status = 400;
+            error = `Bad Request ${err.message}`;
         } else if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
-            res.status(403).send({ error: err.message });
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
         } else if (err instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
+            status = 404;
+            error = `Watchlist id ${watchlistId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+
+        res.status(status).send({ error: error });  
     }
 }
 
 // Partially update watchlist of a specific account
 exports.updateWatchlist = async (req, res) => {
+    let accountId = req.params.accountId;
+    let watchlistId = req.params.watchlistId;
+    let watchlist = req.body;        
     try {
-        const accountId = req.params.accountId;
-        const watchlist = req.body;
-        console.log({ req });
-        const data = await WatchlistService.api.updateWatchlist(accountId, watchlist);
+        const data = await WatchlistService.api.updateWatchlist(accountId, watchlistId, watchlist);
         res.status(204).send(data);
     } catch (err) {
-        console.log({ err });
+        var status = 500; // default
+        var error = err.message;
+
         if (err instanceof BadRequestError) {
-            res.status(400).send({ error: err.message });
+            status = 400;
+            error = `Bad Request ${err.message}`;
         } else if (err instanceof UnauthorizedError) {
-            res.status(401).send({ error: err.message });
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
-            res.status(403).send({ error: err.message });
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
         } else if (err instanceof NotFoundError) {
-            res.status(404).send({ error: err.message });
-        } else {
-            res.status(500).send({ error: err.message });
+            status = 404;
+            error = `Watchlist id ${watchlistId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+
+        res.status(status).send({ error: error });  
+    }
+}
+
+// Delete specific watchlist of a specific account
+exports.deleteWatchlist = async (req, res) => {
+    let accountId = req.params.accountId;
+    let watchlistId = req.params.watchlistId;   
+    try {
+        const data = await WatchlistService.api.deleteWatchlist(accountId, watchlistId);
+        res.status(204).send(data);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+
+        if (err instanceof BadRequestError) {
+            status = 400;
+            error = `Bad Request ${err.message}`;
+        } else if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account: ${accountId}`;
+        } else if (err instanceof NotFoundError) {
+            status = 404;
+            error = `Watchlist id ${watchlistId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+
+        res.status(status).send({ error: error });  
     }
 }

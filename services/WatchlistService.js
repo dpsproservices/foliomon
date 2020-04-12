@@ -14,221 +14,261 @@ const api = {
 
     // Get all watchlists for all of the user's linked accounts from the TD API
     getWatchlists: async () => {
-        const token = await TokenService.getAccessToken();
+        try {
+            const token = await TokenService.getAccessToken();
 
-        const options = {
-            method: 'GET',
-            url: `${config.auth.apiUrl}/accounts/watchlists`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            validateStatus: function (status) {
-                return status === 200 || status === 401;
+            const options = {
+                method: 'GET',
+                url: `${config.auth.apiUrl}/accounts/watchlists`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 401 || status === 503;
+                }
+            };
+        
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200) {
+                return data;
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {            
+                throw new InternalServerError(message);
             }
-        };
-    
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200) {
-            return data;
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else {            
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+        } catch(err) {
+            throw err;
+        }          
     },
 
     // Get Watchlists of Single Account from the TD API
     getAccountWatchlists: async (accountId) => {
-        const token = await TokenService.getAccessToken();
+        try {
+            const token = await TokenService.getAccessToken();
 
-        const options = {
-            method: 'GET',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            validateStatus: function (status) {
-                return status === 200 || status === 401 || status === 403;
+            const options = {
+                method: 'GET',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 401 || status === 403 || status === 503;
+                }
+            };
+
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;       
+            if (status === 200) {
+                return data;
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {   
+                throw new InternalServerError(message);
             }
-        };
-
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;       
-        if (status === 200) {
-            return data;
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else {
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+        } catch(err) {
+            throw err;
+        }          
     },
 
     // Get specific watchlist of a specific account from the TD API
     getWatchlist: async (accountId,watchlistId) => {
-        const token = await TokenService.getAccessToken();
+        try {
+            const token = await TokenService.getAccessToken();
 
-        const options = {
-            method: 'GET',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            validateStatus: function (status) {
-                return status === 200 || status === 400 || status === 401 || status === 403 || status === 404;
+            const options = {
+                method: 'GET',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                }
+            };
+
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 404) {
+                throw new NotFoundError(message);                
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {   
+                throw new InternalServerError(message);
             }
-        };
-
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200) {
-            return data;
-        } else if (status === 400) {
-            throw new BadRequestError(`Bad Request ${error}`);
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else if (status === 404) {
-            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);                
-        } else{
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+        } catch(err) {
+            throw err;
+        }          
     },
 
     // Create Specific watchlist of a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
     createWatchlist: async (accountId, watchlist) => {
-        const token = await TokenService.getAccessToken();
+        try {
+            const token = await TokenService.getAccessToken();
 
-        const options = {
-            method: 'POST',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist,
-            validateStatus: function (status) {
-                return status === 200 || status === 201 || status === 400 || status === 401 || status === 403;
+            const options = {
+                method: 'POST',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                data: watchlist,
+                validateStatus: function (status) {
+                    return status === 200 || status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
+                }
+            };
+
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200 || status === 201) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {           
+                throw new InternalServerError(message);
             }
-        };
-
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200 || status === 201) {
-            return data;
-        } else if (status === 400) {
-            throw new BadRequestError(`Bad Request ${error}`);
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else {            
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+        } catch(err) {
+            throw err;
+        }           
     },
 
     // Replace an existing watchlist in a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
-    replaceWatchlist: async (accountId, watchlist) => {
-        const token = await TokenService.getAccessToken();
-        const watchlistId = watchlist.watchlistId;
-        const options = {
-            method: 'PUT',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist,
-            validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
-            }
-        };
+    replaceWatchlist: async (accountId, watchlistId, watchlist) => {
+        try {
+            const token = await TokenService.getAccessToken();
+            const options = {
+                method: 'PUT',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                data: watchlist,
+                validateStatus: function (status) {
+                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                }
+            };
 
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200 || status === 204) {
-            return data;
-        } else if (status === 400) {
-            throw new BadRequestError(`Bad Request ${error}`);
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else if (status === 404) {
-            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
-        } else {
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200 || status === 204) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 404) {
+                throw new NotFoundError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {   
+                throw new InternalServerError(message);
+            }
+        } catch(err) {
+            throw err;
+        }          
     },
 
     // Partially update watchlist of a specific account: change watchlist name,
     // add to the beginning/end of a watchlist, update or delete items in a watchlist.
     // This method does not verify that the symbol or asset type are valid.
-    updateWatchlist: async (accountId, watchlist) => {
-        const token = await TokenService.getAccessToken();
-        const watchlistId = watchlist.watchlistId;
-        const options = {
-            method: 'PATCH',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            data: watchlist,
-            validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
-            }
-        };
+    updateWatchlist: async (accountId, watchlistId, watchlist) => {
+        try {
+            const token = await TokenService.getAccessToken();
+            const options = {
+                method: 'PATCH',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                data: watchlist,
+                validateStatus: function (status) {
+                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                }
+            };
 
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200 || status === 204) {
-            return data;
-        } else if (status === 400) {
-            throw new BadRequestError(`Bad Request ${error}`);
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else if (status === 404) {
-            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
-        } else {
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200 || status === 204) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 404) {
+                throw new NotFoundError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {
+                throw new InternalServerError(message);
+            }
+        } catch(err) {
+            throw err;
+        }         
     },
 
     // Delete specific watchlist of a specific account from the TD API
     deleteWatchlist: async (accountId, watchlistId) => {
-        const token = await TokenService.getAccessToken();
+        try {
+            const token = await TokenService.getAccessToken();
 
-        const options = {
-            method: 'DELETE',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-            headers: { 'Authorization': `Bearer ${token.accessToken}` },
-            validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
+            const options = {
+                method: 'DELETE',
+                url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                }
+            };
+
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200 || status === 204) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 403) {
+                throw new ForbiddenError(message);
+            } else if (status === 404) {
+                throw new NotFoundError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {
+                throw new InternalServerError(message);
             }
-        };
-
-        const response = await axios(options);
-        const status = response.status;
-        const data = response.data;
-        const error = response.data.error;
-        if (status === 200 || status === 204) {
-            return data;
-        } else if (status === 400) {
-            throw new BadRequestError(`Bad Request ${error}`);
-        } else if (status === 401) {
-            throw new UnauthorizedError(`Invalid Access Token: ${error}`);
-        } else if (status === 403) {
-            throw new ForbiddenError('User does not have permission to access the specified account.');
-        } else if (status === 404) {
-            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
-        } else {
-            throw new InternalServerError(`Internal Server Error: ${error}`);
-        }
+        } catch(err){
+            throw err;
+        } 
     }
 
 };
