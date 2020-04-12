@@ -47,9 +47,9 @@ export const getAccountOrder = async (accountId,orderId) => {
   return await axios.get(url);
 };
 
-export const getInstruments = async (body) => {
+export const getInstruments = (body) => {
   const url = `${API_URL}/instruments`;
-  return await axios.post(url, body);
+  return axios.post(url, body);
 };
 
 export const getPriceHistory = async (body) => {

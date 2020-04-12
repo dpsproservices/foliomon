@@ -1,78 +1,33 @@
 import _ from 'lodash'
-import React, { useState, useEffect } from 'react'
-import { getInstruments } from '../../utils/api';
+import React, { useState } from 'react'
 import {
   Grid,
   Input,
   InputLabel,
-  InputAdornment,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress
+  InputAdornment
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
-
-const useStyles = makeStyles(theme => ({
-  results: {
-    zIndex: 100
-  },
-  paper: {
-    height: '300px',
-    overflow: 'scroll'
-  },
-  spinner: {
-    padding: '50px',
-    margin: 'auto atuo'
-  }
-}));
+import SearchResults from './SearchResults';
 
 const Search = ({ onSelect }) => {
-  const [isLoading, setIsLoading] = useState();
   const [searchString, setSearchString] = useState('');
-  const [results, setResults] = useState();
-  const classes = useStyles();
 
   const handleChange = (event) => {
-    setSearchString(event.target.value.trim());
+    const newValue = event.target.value.trim();
+    setSearchString(newValue);
   };
 
-  const handleClick = (symbol) => (event) => {
-    setResults(null);
-    onSelect(symbol);
+  const handleClear = () => {
+    setSearchString('');
   };
-
-  useEffect(() => {
-    const getStocks = async () => {
-      try {
-        setIsLoading(true);
-        const req = { symbol: `${searchString}.*`, projection: 'symbol-regex' };
-        const res = await getInstruments(req);
-        console.log(res.data);
-        setResults(res.data);
-      } catch (error) {
-        console.log(error);
-        setResults(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (searchString) {
-      getStocks();
-    } else {
-      setResults(null);
-    }
-  }, [searchString]);
 
   return (
     <Grid container>
       <Grid container spacing={2} direction="row" justify="flex-start">
-        <Grid item xs={12}>
+        <Grid item xs={8}>
           <InputLabel htmlFor="search-input">Search</InputLabel>
           <Input
+            fullWidth
             id="search-input"
             autoComplete="off"
             value={searchString}
@@ -85,26 +40,7 @@ const Search = ({ onSelect }) => {
           />
         </Grid>
 
-        {results &&
-          <Grid container spacing={2} direction="row" justify="flex-start" className={classes.results}>
-            <Grid item xs={12}>
-              <Paper variant="outlined" square elevation={4} className={classes.paper}>
-                {isLoading
-                  ?
-                    <CircularProgress size={38} className={classes.spinner} />
-                  :
-                    <List aria-label="search-results" dense>
-                      {Object.keys(results).map(r => (
-                        <ListItem button key={r} onClick={handleClick(results[r].symbol)}>
-                          <ListItemText primary={results[r].symbol} secondary={results[r].description} />
-                        </ListItem>
-                      ))}
-                    </List>
-                }
-              </Paper>
-            </Grid>
-          </Grid>
-        }
+        <SearchResults onSelect={onSelect} searchString={searchString} clearSearch={handleClear} />
       </Grid>
     </Grid>
   );
