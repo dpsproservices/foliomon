@@ -75,11 +75,14 @@ router.get('/foliomon/user', userController.getUserPrincipals);
 
 // Watchlist Routes
 
-// Get all watchlists for all of the user's linked accounts
-router.get('/foliomon/accounts/watchlists', watchlistController.getWatchlists); 
+// Get all watchlists of all of the user's linked accounts
+router.get('/foliomon/watchlists', watchlistController.getWatchlists); 
 
-// Get all watchlists for one single account
-router.get('/foliomon/accounts/:accountId/watchlists', watchlistController.getAccountWatchlists);
+// Get all watchlists of one single account
+router.get('/foliomon/watchlists/:accountId', watchlistController.getAccountWatchlists);
+
+// Get Specific watchlist of a specific account
+router.get('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.getWatchlist);
 
 // Instrument Controller Routes
 router.post('/foliomon/instruments', instrumentController.getInstruments);
