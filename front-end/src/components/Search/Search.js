@@ -76,7 +76,7 @@ const Search = ({ onSelect }) => {
             id="search-input"
             autoComplete="off"
             value={searchString}
-            onChange={_.debounce(handleChange, 1000, { leading: true })}
+            onChange={_.debounce(handleChange, 500, { leading: true })}
             endAdornment={
               <InputAdornment position="end">
                 <SearchIcon />

@@ -62,7 +62,7 @@ const Stocks = () => {
           data &&
           <Fragment>
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
-              <Grid item xs={4}>
+              <Grid item xs={6}>
                 <Chart symbol={selectedSymbol} />
               </Grid>
               <Grid item xs={4}>
