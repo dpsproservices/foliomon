@@ -1,4 +1,4 @@
-const { UnauthorizedTokenError, NotFoundError, ForbiddenError, ServerError, TemporaryError } = require('../services/ServiceErrors');
+const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const WatchlistService = require('../services/WatchlistService');
 
 /*=============================================================================
@@ -11,35 +11,128 @@ exports.getWatchlists = async (req, res) => {
     try {
         const watchlists = await WatchlistService.api.getWatchlists();
         res.status(200).send(watchlists);
-    } catch (error) {
+    } catch (err) {
         //logger.error(`Error occured ${err.stack}`);
-        if (error instanceof UnauthorizedTokenError) {
-            res.status(401).send({ error: error.message });
+        if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
         } else if (error instanceof NotFoundError) {
-            res.status(404).send({ error: error.message });
+            res.status(404).send({ error: err.message });
         } else {
-            res.status(500).send({ error: error.message });
+            res.status(500).send({ error: err.message });
         }
     }
 }
 
-// GET /foliomon/accounts/:accountId/watchlists
 // Get Watchlists for Single Account
 exports.getAccountWatchlists = async (req, res) => {
     try {
         const accountId = req.params.accountId;
         const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
         res.status(200).send(watchlists);
-    } catch (error) {
-        //logger.error(`Error occured ${err.stack}`);
-        if (error instanceof UnauthorizedTokenError) {
-            res.status(401).send({ error: error.message });
-        } else if (error instanceof ForbiddenError) {
-            res.status(403).send({ error: error.message });
-        } else if (error instanceof NotFoundError) {
-            res.status(404).send({ error: error.message });
+    } catch (err) {
+        if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
         } else {
-            res.status(500).send({ error: error.message });
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Get specific watchlist for a specific account
+exports.getWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlistId = req.params.watchlistId;
+        const watchlist = await WatchlistService.api.getWatchlist(accountId, watchlistId);
+        res.status(200).send(watchlist);
+    } catch (err) {
+        console.log({err});
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Create a new watchlist in a specific account
+exports.createWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({req});
+        const data = await WatchlistService.api.createWatchlist(accountId, watchlist);
+        res.status(201).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Replace an existing watchlist in a specific account
+exports.replaceWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({ req });
+        const data = await WatchlistService.api.replaceWatchlist(accountId, watchlist);
+        res.status(204).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Partially update watchlist of a specific account
+exports.updateWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({ req });
+        const data = await WatchlistService.api.updateWatchlist(accountId, watchlist);
+        res.status(204).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
         }
     }
 }
