@@ -92,7 +92,7 @@ const api = {
         } else if (status === 403) {
             throw new ForbiddenError('User does not have permission to access the specified account.');
         } else if (status === 404) {
-            throw new NotFoundError('Requested watchlist not found for specified account.');                
+            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);                
         } else{
             throw new InternalServerError(`Internal Server Error: ${error}`);
         }
@@ -109,7 +109,7 @@ const api = {
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
             data: watchlist,
             validateStatus: function (status) {
-                return status === 200 || status === 400 || status === 401 || status === 403;
+                return status === 200 || status === 201 || status === 400 || status === 401 || status === 403;
             }
         };
 
@@ -117,7 +117,7 @@ const api = {
         const status = response.status;
         const data = response.data;
         const error = response.data.error;
-        if (status === 200) {
+        if (status === 200 || status === 201) {
             return data;
         } else if (status === 400) {
             throw new BadRequestError(`Bad Request ${error}`);
@@ -130,18 +130,18 @@ const api = {
         }
     },
 
-    // Replace Specific watchlist of a specific account with the TD API
+    // Replace an existing watchlist in a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
     replaceWatchlist: async (accountId, watchlist) => {
         const token = await TokenService.getAccessToken();
-
+        const watchlistId = watchlist.watchlistId;
         const options = {
             method: 'PUT',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
+            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
             data: watchlist,
             validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
             }
         };
 
@@ -157,6 +157,8 @@ const api = {
             throw new UnauthorizedError(`Invalid Access Token: ${error}`);
         } else if (status === 403) {
             throw new ForbiddenError('User does not have permission to access the specified account.');
+        } else if (status === 404) {
+            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
         } else {
             throw new InternalServerError(`Internal Server Error: ${error}`);
         }
@@ -167,14 +169,14 @@ const api = {
     // This method does not verify that the symbol or asset type are valid.
     updateWatchlist: async (accountId, watchlist) => {
         const token = await TokenService.getAccessToken();
-
+        const watchlistId = watchlist.watchlistId;
         const options = {
             method: 'PATCH',
-            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
+            url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
             data: watchlist,
             validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
             }
         };
 
@@ -190,6 +192,8 @@ const api = {
             throw new UnauthorizedError(`Invalid Access Token: ${error}`);
         } else if (status === 403) {
             throw new ForbiddenError('User does not have permission to access the specified account.');
+        } else if (status === 404) {
+            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
         } else {
             throw new InternalServerError(`Internal Server Error: ${error}`);
         }
@@ -204,7 +208,7 @@ const api = {
             url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
             headers: { 'Authorization': `Bearer ${token.accessToken}` },
             validateStatus: function (status) {
-                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403;
+                return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404;
             }
         };
 
@@ -220,6 +224,8 @@ const api = {
             throw new UnauthorizedError(`Invalid Access Token: ${error}`);
         } else if (status === 403) {
             throw new ForbiddenError('User does not have permission to access the specified account.');
+        } else if (status === 404) {
+            throw new NotFoundError(`Watchlist id ${watchlistId} not found.`);
         } else {
             throw new InternalServerError(`Internal Server Error: ${error}`);
         }

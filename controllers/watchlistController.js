@@ -64,3 +64,75 @@ exports.getWatchlist = async (req, res) => {
         }
     }
 }
+
+// Create a new watchlist in a specific account
+exports.createWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({req});
+        const data = await WatchlistService.api.createWatchlist(accountId, watchlist);
+        res.status(201).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Replace an existing watchlist in a specific account
+exports.replaceWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({ req });
+        const data = await WatchlistService.api.replaceWatchlist(accountId, watchlist);
+        res.status(204).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}
+
+// Partially update watchlist of a specific account
+exports.updateWatchlist = async (req, res) => {
+    try {
+        const accountId = req.params.accountId;
+        const watchlist = req.body;
+        console.log({ req });
+        const data = await WatchlistService.api.updateWatchlist(accountId, watchlist);
+        res.status(204).send(data);
+    } catch (err) {
+        console.log({ err });
+        if (err instanceof BadRequestError) {
+            res.status(400).send({ error: err.message });
+        } else if (err instanceof UnauthorizedError) {
+            res.status(401).send({ error: err.message });
+        } else if (err instanceof ForbiddenError) {
+            res.status(403).send({ error: err.message });
+        } else if (err instanceof NotFoundError) {
+            res.status(404).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: err.message });
+        }
+    }
+}

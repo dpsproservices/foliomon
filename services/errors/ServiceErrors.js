@@ -2,6 +2,10 @@
 TD API Service HTTP Response Errors
 =============================================================================*/
 
+// HTTP 201 Created
+// status 201 received in the service will be sent as status 201 in the response to the controller
+// the response data will be empty
+
 // HTTP 204 No Content
 // status 204 received in the service will be sent as status 200 in the response to the controller
 // the response data will be empty

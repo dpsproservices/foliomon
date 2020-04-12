@@ -84,6 +84,15 @@ router.get('/foliomon/watchlists/:accountId', watchlistController.getAccountWatc
 // Get Specific watchlist of a specific account
 router.get('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.getWatchlist);
 
+// Create a new watchlist in a specific account
+router.post('/foliomon/watchlists/:accountId', watchlistController.createWatchlist);
+
+// Replace an existing watchlist in a specific account
+router.put('/foliomon/watchlists/:accountId', watchlistController.replaceWatchlist);
+
+// Partially update watchlist of a specific account
+router.patch('/foliomon/watchlists/:accountId', watchlistController.updateWatchlist);
+
 // Instrument Controller Routes
 router.post('/foliomon/instruments', instrumentController.getInstruments);
 
