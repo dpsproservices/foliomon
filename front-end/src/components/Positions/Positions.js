@@ -18,10 +18,13 @@ import {
 const useStyles = makeStyles(theme => ({
   root: {
     paddingTop: '25px',
-    height: '100vh'
+    //height: '100vh'
   },
   table: {
     minWidth: 650
+  },
+  selectRow: {
+    height: '100px'
   },
   select: {
     margin: theme.spacing(1),
@@ -286,67 +289,70 @@ const Positions = () => {
   };
 
   return (
-    <Grid container className={classes.root} spacing={2} direction="row" justify="center">
-      <Grid item xs={11}>
-        <InputLabel id="account-select-label">Account</InputLabel>
-        <Select
-          className={classes.select}
-          labelId="account-select-label"
-          id="account-select"
-          value={activeAccount}
-          onChange={handleChange}
-        >
-          <MenuItem value=""><em>Select</em></MenuItem>
-          {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
-        </Select>
+    <Grid container className={classes.root}>
+      <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center" className={classes.selectRow}>
+        <Grid item xs={11}>
+          <InputLabel id="account-select-label">Account</InputLabel>
+          <Select
+            className={classes.select}
+            labelId="account-select-label"
+            id="account-select"
+            value={activeAccount}
+            onChange={handleChange}
+          >
+            <MenuItem value=""><em>Select</em></MenuItem>
+            {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
+          </Select>
+        </Grid>
       </Grid>
+      <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center">
+        <Grid item xs={11}>
+          <TableContainer component={Paper} elevation={4}>
+            <Table className={classes.table} aria-label="table" size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Symbol</TableCell>
+                  <TableCell align="right">Long Quantity</TableCell>
+                  <TableCell align="right">Short Quantity</TableCell>
+                  <TableCell align="right">Avg. Price $</TableCell>
+                  <TableCell align="right">Bid Price $</TableCell>
+                  <TableCell align="right">Ask Price $</TableCell>
+                  <TableCell align="right">Last Price $</TableCell>
+                  <TableCell align="right">Market Value $</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {positions && positions.map((row) => {
+                  const { symbol } = row.instrument;
+                  const symbolPrices = prices[symbol];
+                  const {
+                    bidPrice,
+                    askPrice,
+                    lastPrice,
+                    bidDirection,
+                    askDirection,
+                    lastDirection
+                  } = symbolPrices || {};
+                  return (
+                    <TableRow key={symbol} className={classes.tableRow}>
+                      <TableCell component="th" scope="row">
+                        {symbol}
+                      </TableCell>
+                      <TableCell align="right">{row.longQuantity}</TableCell>
+                      <TableCell align="right">{row.shortQuantity}</TableCell>
+                      <TableCell align="right">{row.averagePrice.toFixed(2)}</TableCell>
+                      <TableCell align="right" className={getPriceClass(bidDirection)}>{bidPrice && bidPrice.toFixed(2)}</TableCell>
+                      <TableCell align="right" className={getPriceClass(askDirection)}>{askPrice && askPrice.toFixed(2)}</TableCell>
+                      <TableCell align="right" className={getPriceClass(lastDirection)}>{lastPrice && lastPrice.toFixed(2)}</TableCell>
+                      <TableCell align="right">{row.marketValue.toFixed(2)}</TableCell>
+                    </TableRow>);
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
 
-      <Grid item xs={11}>
-        <TableContainer component={Paper} elevation={4}>
-          <Table className={classes.table} aria-label="table" size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Symbol</TableCell>
-                <TableCell align="right">Long Quantity</TableCell>
-                <TableCell align="right">Short Quantity</TableCell>
-                <TableCell align="right">Avg. Price $</TableCell>
-                <TableCell align="right">Bid Price $</TableCell>
-                <TableCell align="right">Ask Price $</TableCell>
-                <TableCell align="right">Last Price $</TableCell>
-                <TableCell align="right">Market Value $</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {positions && positions.map((row) => {
-                const { symbol } = row.instrument;
-                const symbolPrices = prices[symbol];
-                const {
-                  bidPrice,
-                  askPrice,
-                  lastPrice,
-                  bidDirection,
-                  askDirection,
-                  lastDirection
-                 } = symbolPrices || {};
-                return (
-                  <TableRow key={symbol} className={classes.tableRow}>
-                    <TableCell component="th" scope="row">
-                      {symbol}
-                    </TableCell>
-                    <TableCell align="right">{row.longQuantity}</TableCell>
-                    <TableCell align="right">{row.shortQuantity}</TableCell>
-                    <TableCell align="right">{row.averagePrice.toFixed(2)}</TableCell>
-                    <TableCell align="right" className={getPriceClass(bidDirection)}>{bidPrice && bidPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right" className={getPriceClass(askDirection)}>{askPrice && askPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right" className={getPriceClass(lastDirection)}>{lastPrice && lastPrice.toFixed(2)}</TableCell>
-                    <TableCell align="right">{row.marketValue.toFixed(2)}</TableCell>
-                  </TableRow>);
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
       </Grid>
-
     </Grid>
   );
 }
