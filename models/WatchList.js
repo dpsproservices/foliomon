@@ -70,6 +70,9 @@ const watchlistSchema = new mongoose.Schema({
                 ]
             }
         }
-    ]
+    ],
+    updateDate: {
+        type: Date
+    }
 });
 module.exports = mongoose.model('Watchlist', watchlistSchema);
