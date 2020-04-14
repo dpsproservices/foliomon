@@ -99,4 +99,7 @@ router.post('/foliomon/instruments', instrumentController.getInstruments);
 // Get chart data, price history
 router.post('/foliomon/instrument/pricehistory', instrumentController.getPriceHistory);
 
+// Get top 10 (up or down) movers by value or percent for a particular market
+router.post('/foliomon/instrument/movers', instrumentController.getMovers);
+
 module.exports = router;

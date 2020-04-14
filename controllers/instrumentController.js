@@ -22,6 +22,17 @@ const controller = {
         console.log(`Error in getPriceHistory ${err}`);
         res.status(500).send({ error: `Error in getPriceHistory ${err}` })
     }
+  },
+  getMovers: async (req, res) => {
+    const { index, direction, change } = req.body;
+
+    try {
+        const reply = await InstrumentService.getMovers(index, direction, change);
+        res.status(200).send(reply);
+    } catch (err) {
+        console.log(`Error in getMovers ${err}`);
+        res.status(500).send({ error: `Error in getMovers ${err}` })
+    }
   }
 };
 

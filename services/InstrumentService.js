@@ -23,14 +23,8 @@ const api = {
             headers: { 'Authorization': `Bearer ${token.accessToken}` }      
         };
 
-        try {
-            const response = await axios(options);
-            return response.data;
-        } catch (err) {
-            const message = response.message;
-            console.log(`Error in getInstrument: ${message}`);
-            throw new Error(`Error in getInstrument: ${message}`);
-        }
+        const response = await axios(options);
+        return response.data;
     },
     getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
         const token = await TokenService.getAccessToken();
@@ -52,14 +46,26 @@ const api = {
             headers: { 'Authorization': `Bearer ${token.accessToken}` }      
         };
 
-        try {
-            const response = await axios(options);
-            return response.data;
-        } catch (err) {
-            const message = response.message;
-            console.log(`Error in getPriceHistory: ${message}`);
-            throw new Error(`Error in getPriceHistory: ${message}`);
-        }
+        const response = await axios(options);
+        return response.data;
+    },
+    getMovers: async (index, direction, change) => {
+        const token = await TokenService.getAccessToken();
+
+        const params = {
+            direction,
+            change
+        };
+
+        const options = {
+            method: 'GET',
+            url: `${config.auth.apiUrl}/marketdata/${index}/movers`,
+            params: params,          
+            headers: { 'Authorization': `Bearer ${token.accessToken}` }      
+        };
+
+        const response = await axios(options);
+        return response.data;
     }
 }
 

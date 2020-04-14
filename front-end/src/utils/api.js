@@ -56,3 +56,8 @@ export const getPriceHistory = async (body) => {
   const url = `${API_URL}/instrument/pricehistory`;
   return await axios.post(url, body);
 };
+
+export const getMovers = async (body) => {
+  const url = `${API_URL}/instrument/movers`;
+  return await axios.post(url, body);
+};

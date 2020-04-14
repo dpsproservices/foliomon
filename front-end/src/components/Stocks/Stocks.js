@@ -1,6 +1,7 @@
-import React, { Fragment, useCallback, useState } from 'react';
+import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import {
   Grid,
+  Box,
   List,
   ListItem,
   ListItemText,
@@ -13,6 +14,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { getInstruments } from '../../utils/api';
 import Search from '../Search';
 import Chart from '../Chart';
+import Movers from '../Movers';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -23,25 +25,38 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Stocks = () => {
+const Stocks = ({ match } ) => {
   const [isLoading, setIsLoading] = useState();
   const [result, setResult] = useState();
-  const [selectedSymbol, setSelectedSymbol] = useState();
+  const [selectedSymbol, setSelectedSymbol] = useState(match && match.params && match.params.symbol);
   const classes = useStyles();
 
-  const getStockFundamentals = useCallback(async (symbol) => {
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (selectedSymbol) {
+          setIsLoading(true);
+          const req = { symbol: selectedSymbol, projection: 'fundamental' };
+          const res = await getInstruments(req);
+          console.log(res.data);
+          setResult(res.data);
+        }
+      } catch (error) {
+        console.log(error);
+        setResult(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getData();
+  }, [selectedSymbol]);
+
+  const handleSelect = useCallback(async (symbol) => {
     try {
-      setIsLoading(true);
-      const req = { symbol, projection: 'fundamental' };
-      const res = await getInstruments(req);
-      console.log(res.data);
-      setResult(res.data);
       setSelectedSymbol(symbol);
     } catch (error) {
       console.log(error);
-      setResult(null);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -52,8 +67,14 @@ const Stocks = () => {
     <Grid container className={classes.root}>
       <Grid container spacing={2} direction="row" justify="flex-start">
         <Grid item xs={4}>
-          <Search onSelect={getStockFundamentals} />
+          <Search onSelect={handleSelect} />
         </Grid>
+        {data &&
+          <Grid item xs={4}>
+            <Typography variant="h2">{selectedSymbol}    [{data.exchange}]</Typography>
+            <Typography variant="body1">{data.description}</Typography>
+          </Grid>
+        }
       </Grid>
       {isLoading
         ?
@@ -64,10 +85,6 @@ const Stocks = () => {
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
               <Grid item xs={6}>
                 <Chart symbol={selectedSymbol} />
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant="h1">{selectedSymbol}    [{data.exchange}]</Typography>
-                <Typography variant="body1">{data.description}</Typography>
               </Grid>
             </Grid>
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
@@ -136,6 +153,11 @@ const Stocks = () => {
             </Grid>
           </Fragment>
       }
+      <Grid container spacing={4} direction="row" justify="flex-start">
+        <Grid item xs={4}>
+          <Movers />
+        </Grid>
+      </Grid>
     </Grid>
   );
 }

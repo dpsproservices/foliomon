@@ -81,6 +81,7 @@ function App() {
                     <Redirect exact from="/" to="/overview" />
                     <RouteWithLayout exact path="/overview" layout={Main} component={Overview} />
                     <RouteWithLayout exact path="/positions" layout={Main} component={Positions} />
+                    <RouteWithLayout exact path="/stocks/:symbol" layout={Main} component={Stocks} /> 
                     <RouteWithLayout exact path="/stocks" layout={Main} component={Stocks} /> 
                     <RouteWithLayout exact path="/orders" layout={Main} component={Orders} />
                     <RouteWithLayout exact path="/not-found" layout={Main} component={NotFound} />
