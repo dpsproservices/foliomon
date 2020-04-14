@@ -1,6 +1,7 @@
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const WatchlistService = require('../services/WatchlistService');
 
+
 /*=============================================================================
 Foliomon Watchlist endpoints controller
 =============================================================================*/
@@ -97,10 +98,32 @@ exports.getWatchlist = async (req, res) => {
 exports.createWatchlist = async (req, res) => {
     let accountId = req.params.accountId;
     let watchlist = req.body;    
+    let watchlistName = watchlist.name; // unique watchlist name on account
     try {
-        const data = await WatchlistService.api.createWatchlist(accountId, watchlist);
-        res.status(201).send(data);
-        const dbResult = await WatchlistService.db.createWatchlist(watchlist);
+        // Request TD API to create the new watchlist on the account
+        // The service will throw an error on any other status code besides 201 Created
+        const response = await WatchlistService.api.createWatchlist(accountId, watchlist);
+        
+        // After the watchlist was successfully created at TD        
+        // Request TD API to get the watchlists on the account
+        const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
+        // Match the name of the newly created watchlist
+        let foundMatch = false;
+        for (let i = 0; i < watchlists.length; i++) {
+            let watchlistFromAPI = watchlists[i];
+            if (watchlistName === watchlistFromAPI.name) {
+                foundMatch = true;
+                watchlist = watchlistFromAPI;                    
+                break;
+            }
+        }
+        if (foundMatch) {
+            // Create the matched watchlist from TD API into the database
+            const dbResult = await WatchlistService.db.createWatchlist(watchlist);
+            res.status(201).send(watchlist);
+        } else {
+            throw new InternalServerError(`No watchlist created on account at TD with matching name ${watchlistName}`); 
+        }                               
     } catch (err) {
         var status = 500; // default
         var error = err.message;
@@ -130,11 +153,34 @@ exports.createWatchlist = async (req, res) => {
 exports.replaceWatchlist = async (req, res) => {
     let accountId = req.params.accountId;
     let watchlistId = req.params.watchlistId;
-    let watchlist = req.body;    
+    let watchlist = req.body;
+    let watchlistName = watchlist.name; // unique watchlist name on account   
     try {
-        const data = await WatchlistService.api.replaceWatchlist(accountId, watchlistId, watchlist);
-        res.status(204).send(data);
-        const dbResult = await WatchlistService.db.replaceWatchlist(accountId, watchlistId, watchlist);
+        // Request TD API to replace the watchlist on the account
+        // Note that sending accountId and sequenceId(s) in the watchlist object will receive and throw a Bad Request
+        // The service will throw an error on any other status code besides 204 No Content
+        const response = await WatchlistService.api.replaceWatchlist(accountId, watchlistId, watchlist);
+
+        // After the watchlist was successfully replaced at TD
+        // Request TD API to get the watchlists on the account
+        const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
+        // Match the name of the newly created watchlist
+        let foundMatch = false;
+        for (let i = 0; i < watchlists.length; i++) {
+            let watchlistFromAPI = watchlists[i];
+            if (watchlistName === watchlistFromAPI.name) {
+                foundMatch = true;
+                watchlist = watchlistFromAPI;
+                break;
+            }
+        }
+        if (foundMatch) {
+            // Replace the matched watchlist from TD API into the database
+            const dbResult = await WatchlistService.db.replaceWatchlist(accountId, watchlistId, watchlist);
+            res.status(204).send(watchlist);
+        } else {
+            throw new InternalServerError(`No watchlist replaced on account at TD with matching name ${watchlistName}`);
+        } 
     } catch (err) {
         var status = 500; // default
         var error = err.message;
@@ -167,11 +213,36 @@ exports.replaceWatchlist = async (req, res) => {
 exports.updateWatchlist = async (req, res) => {
     let accountId = req.params.accountId;
     let watchlistId = req.params.watchlistId;
-    let watchlist = req.body;        
+    let watchlist = req.body;      
+    let watchlistName = watchlist.name; // unique watchlist name on account         
     try {
+        // Request TD API to update the watchlist on the account
+        // Note that sending accountId in the watchlist object will receive and throw a Bad Request
+        // however omitting sequenceId(s) in the watchlistItems array are required
+        // and will receive and throw a Bad Request
+        // The service will throw an error on any other status code besides 204 No Content
         const data = await WatchlistService.api.updateWatchlist(accountId, watchlistId, watchlist);
-        res.status(204).send(data);
-        const dbResult = await WatchlistService.db.updateWatchlist(accountId, watchlistId, watchlist);
+
+        // After the watchlist was successfully replaced at TD
+        // Request TD API to get the watchlists on the account
+        const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
+        // Match the name of the newly created watchlist
+        let foundMatch = false;
+        for (let i = 0; i < watchlists.length; i++) {
+            let watchlistFromAPI = watchlists[i];
+            if (watchlistName === watchlistFromAPI.name) {
+                foundMatch = true;
+                watchlist = watchlistFromAPI;
+                break;
+            }
+        }
+        if (foundMatch) {
+            // Update the matched watchlist from TD API in the database
+            const dbResult = await WatchlistService.db.updateWatchlist(accountId, watchlistId, watchlist);
+            res.status(204).send(watchlist);
+        } else {
+            throw new InternalServerError(`No watchlist updated on account at TD with matching name ${watchlistName}`);
+        }       
     } catch (err) {
         var status = 500; // default
         var error = err.message;
@@ -204,10 +275,12 @@ exports.updateWatchlist = async (req, res) => {
 exports.deleteWatchlist = async (req, res) => {
     let accountId = req.params.accountId;
     let watchlistId = req.params.watchlistId;   
+    let watchlist = null;
     try {
-        const data = await WatchlistService.api.deleteWatchlist(accountId, watchlistId);
-        res.status(204).send(data);
+        watchlist = await WatchlistService.api.getWatchlist(accountId,watchlistId);
+        const response = await WatchlistService.api.deleteWatchlist(accountId, watchlistId);
         const dbResult = await WatchlistService.db.deleteWatchlist(accountId, watchlistId);
+        res.status(204).send(watchlist); // send back deleted watchlist       
     } catch (err) {
         var status = 500; // default
         var error = err.message;
@@ -240,8 +313,8 @@ exports.deleteWatchlist = async (req, res) => {
 exports.refreshWatchlists = async (req, res) => {
     try {
         const watchlists = await WatchlistService.api.getWatchlists();
-        res.status(200).send(watchlists);
         const dbResult = await WatchlistService.db.refreshWatchlists(watchlists);
+        res.status(200).send(watchlists);        
     } catch (err) {
         var status = 500; // default
         var error = err.message;

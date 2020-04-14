@@ -128,16 +128,16 @@ const api = {
                 headers: { 'Authorization': `Bearer ${token.accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
-                    return status === 200 || status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
+                    return status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
             };
 
             const response = await axios(options);
+            console.log({response});
             const status = response.status;
-            const data = response.data;
             const message = response.data.error;
-            if (status === 200 || status === 201) {
-                return data;
+            if (status === 201) {
+                return response;
             } else if (status === 400) {
                 throw new BadRequestError(message);
             } else if (status === 401) {
@@ -165,16 +165,15 @@ const api = {
                 headers: { 'Authorization': `Bearer ${token.accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
-                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                    return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
 
             const response = await axios(options);
             const status = response.status;
-            const data = response.data;
             const message = response.data.error;
-            if (status === 200 || status === 204) {
-                return data;
+            if (status === 204) {
+                return response;
             } else if (status === 400) {
                 throw new BadRequestError(message);
             } else if (status === 401) {
@@ -205,16 +204,15 @@ const api = {
                 headers: { 'Authorization': `Bearer ${token.accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
-                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                    return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
 
             const response = await axios(options);
             const status = response.status;
-            const data = response.data;
             const message = response.data.error;
-            if (status === 200 || status === 204) {
-                return data;
+            if (status === 204) {
+                return response;
             } else if (status === 400) {
                 throw new BadRequestError(message);
             } else if (status === 401) {
@@ -243,16 +241,15 @@ const api = {
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
                 headers: { 'Authorization': `Bearer ${token.accessToken}` },
                 validateStatus: function (status) {
-                    return status === 200 || status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
+                    return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
 
             const response = await axios(options);
             const status = response.status;
-            const data = response.data;
             const message = response.data.error;
-            if (status === 200 || status === 204) {
-                return data;
+            if (status === 204) {
+                return response;
             } else if (status === 400) {
                 throw new BadRequestError(message);
             } else if (status === 401) {
@@ -310,7 +307,7 @@ const db = {
                     return []; // no watchlists on account
                 }         
             } else {
-                throw new BadRequestError(`Bad Request fetching watchlists from database for accountId ${accountId}`);
+                throw new BadRequestError(`Error fetching watchlists from database for accountId ${accountId}`);
             }         
         } catch(err) {
             throw err;
@@ -333,7 +330,7 @@ const db = {
                     throw new NotFoundError(`Error watchlist Not Found in database for accountId ${accountId} watchlistId ${watchlistId}.`);
                 }
             } else {
-                throw new BadRequestError(`Bad Request getting watchlist for accountId: ${accountId} watchlistId: ${watchlistId}`);
+                throw new BadRequestError(`Error getting watchlist from database for accountId: ${accountId} watchlistId: ${watchlistId}`);
             }         
         } catch(err) {
             throw err;
@@ -349,13 +346,13 @@ const db = {
                     return createdWatchlist = await Watchlist.create(watchlist);
                 } catch(err) {
                     if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Bad Request creating watchlist: ${err.message}`);
+                        throw new BadRequestError(`Error creating watchlist in database: ${err.message}`);
                     } else {
                         throw new InternalServerError(`Error creating watchlist in database: ${err.message}`);
                     }
                 }
             } else {
-                throw new BadRequestError(`Bad Request creating watchlist: ${watchlist}`);
+                throw new BadRequestError(`Error creating watchlist in database: ${watchlist}`);
             }       
         } catch (err) {
             throw err;
@@ -371,16 +368,16 @@ const db = {
                 let filter = { accountId: accountId, watchlistId: watchlistId };
 
                 let replacement = watchlist;
-                replacement.updateDate = new Date(); // date time now
 
                 let options = {
+                    new: true,
                     omitUndefined: true
                 };
                 try {
                     replacedWatchlist = await Watchlist.findOneAndReplace(filter, replacement, options);
                 } catch (err) {
                     if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Bad Request replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
+                        throw new BadRequestError(`Error replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
                     } else {                    
                         throw new InternalServerError(`Error replacing watchlist in database: ${err.message}`);
                     }
@@ -391,7 +388,7 @@ const db = {
                     throw new NotFoundError(`Error watchlist Not Found in database for accountId ${accountId} watchlistId ${watchlistId}.`); 
                 }                    
             } else {
-                throw new BadRequestError(`Bad Request replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
+                throw new BadRequestError(`Error replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
             }
         } catch (err) {
             throw err;
@@ -408,17 +405,16 @@ const db = {
                 let conditions = { accountId: accountId, watchlistId: watchlistId };
 
                 let update = watchlist;
-                update.updateDate = new Date(); // date time now
 
                 let options = {
                     new: true,
-                    upsert: true
+                    omitUndefined: true
                 };
                 try {
                     updatedWatchlist = await Watchlist.findOneAndUpdate(conditions, update, options);
                 } catch(err){
                     if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Bad Request updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
+                        throw new BadRequestError(`Error updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
                     } else {
                         throw new InternalServerError(`Error updating watchlist in database: ${err.message}`);
                     }                    
@@ -429,7 +425,7 @@ const db = {
                     throw new InternalServerError(`Error updating watchlist in database: ${err.message}`);
                 }
             } else {
-                throw new BadRequestError(`Bad Request updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
+                throw new BadRequestError(`Error updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
             }
         } catch (err) {
             throw err;
@@ -470,7 +466,7 @@ const db = {
                     return []; // 200 OK when account doesnt have any watchlist
                 }                    
             } else {
-                throw new BadRequestError(`Bad Request deleting account watchlists from database for accountId ${accountId}`);
+                throw new BadRequestError(`Error deleting account watchlists from database for accountId ${accountId}`);
             }  
         } catch (err) {
             throw err;
@@ -493,39 +489,8 @@ const db = {
                     throw new NotFoundError(`Error deleting watchlist Not Found in database for accountId ${accountId} watchlistId ${watchlistId}.`);
                 }
             } else {
-                throw new BadRequestError(`Bad Request deleting watchlist from database for accountId: ${accountId} watchlistId ${watchlistId}.`);
+                throw new BadRequestError(`Error deleting watchlist from database for accountId: ${accountId} watchlistId ${watchlistId}.`);
             }
-        } catch (err) {
-            throw err;
-        }
-    },
-
-
-    saveWatchlists: async (watchlists) => {
-        try {
-            let options = {
-                new: true,
-                upsert: true
-            };
-
-            let savedWatchlists = []; 
-
-            for (let index in watchlists) {
-                //f (watchlists.hasOwnProperty(index)) {
-
-                    let watchlist = watchlists[index];
-                    let conditions = { accountId: watchlist.accountId, watchlistId: watchlist.watchlistId };
-
-                    let update = watchlist;
-                    update.updateDate = new Date();
-
-                    let savedWatchlist = Watchlist.findOneAndUpdate(conditions, update, options);
-
-                    savedWatchlists.push(savedWatchlist);
-                //}
-            }
-
-            return savedWatchlists;
         } catch (err) {
             throw err;
         }
