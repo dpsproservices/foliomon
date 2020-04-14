@@ -9,4 +9,5 @@ export { default as Positions } from './Positions';
 export { default as Stocks } from './Stocks';
 export { default as Search } from './Search';
 export { default as Chart } from './Chart';
+export { default as Movers } from './Movers';
 export { default as RouteWithLayout } from './RouteWithLayout';

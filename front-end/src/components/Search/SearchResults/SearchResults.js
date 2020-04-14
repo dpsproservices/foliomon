@@ -4,12 +4,10 @@ import { getInstruments } from '../../../utils/api';
 import {
   Grid,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
   CircularProgress
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { FixedSizeList } from 'react-window';
 
 const useStyles = makeStyles(theme => ({
   results: {
@@ -25,6 +23,13 @@ const useStyles = makeStyles(theme => ({
   spinner: {
     padding: '50px',
     margin: 'auto atuo'
+  },
+  listItem: {
+    cursor: 'pointer',
+    fontWeight: 400,
+    '&:hover': {
+      backgroundColor: 'rgb(7, 177, 77, 0.42)'
+    }
   }
 }));
 
@@ -62,6 +67,20 @@ const SearchResults = ({ onSelect, searchString, clearSearch }) => {
     }
   }, [searchString]);
 
+  const rows = results && Object.keys(results).map(r => (
+    {
+      symbol: results[r].symbol,
+      description: results[r].description
+    }
+  ));
+
+  const Row = ({ index, style }) => (
+    <div style={style} className={classes.listItem} onClick={handleClick(rows[index].symbol)}>
+        <span style={{ fontSize: '1.3em' }}>{rows[index].symbol}</span>
+        <span style={{ fontSize: '0.75em' }}>    {rows[index].description}</span>
+    </div>
+  );
+
   return (
     <Grid container className={classes.results}>
         {(results || isLoading) &&
@@ -71,14 +90,15 @@ const SearchResults = ({ onSelect, searchString, clearSearch }) => {
                 {isLoading
                   ?
                     <CircularProgress size={38} className={classes.spinner} />
-                  :
-                    <List aria-label="search-results" dense>
-                      {results && Object.keys(results).map(r => (
-                        <ListItem button key={r} onClick={handleClick(results[r].symbol)}>
-                          <ListItemText primary={results[r].symbol} secondary={results[r].description} />
-                        </ListItem>
-                      ))}
-                    </List>
+                  :  
+                    <FixedSizeList
+                      height={300}
+                      itemCount={Object.keys(results).length}
+                      itemSize={50}
+                      width={300}
+                    >
+                      {Row}
+                    </FixedSizeList>
                 }
               </Paper>
             </Grid>
