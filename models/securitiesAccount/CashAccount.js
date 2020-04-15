@@ -709,5 +709,5 @@ const cashAccountSchema = new mongoose.Schema({
             }
         }
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('CashAccount', cashAccountSchema);

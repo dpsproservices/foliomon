@@ -748,10 +748,6 @@ const accountSchema = new Schema({
         optionBuyingPower: {
             type: Number
         }
-    },
-    updateDate: {
-        type: String
     }
-});
-
+}, { timestamps: true });
 module.exports = mongoose.model('Account', accountSchema);

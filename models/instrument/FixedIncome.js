@@ -38,5 +38,5 @@ const fixedIncomeSchema = new mongoose.Schema({
     factor: {
         type: Number
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('FixedIncome', fixedIncomeSchema);

@@ -29,5 +29,5 @@ const equitySchema = new mongoose.Schema({
     description: {
         type: String
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Equity', equitySchema);

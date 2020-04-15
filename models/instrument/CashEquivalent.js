@@ -36,5 +36,5 @@ const cashEquivalentSchema = new mongoose.Schema({
             'MONEY_MARKET_FUND'
         ]
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('CashEquivalent', cashEquivalentSchema);

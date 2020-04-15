@@ -56,5 +56,5 @@ const positionSchema = new mongoose.Schema({
     marketValue: {
         type: Number
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Position', positionSchema);

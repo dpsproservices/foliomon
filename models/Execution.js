@@ -48,5 +48,5 @@ const executionSchema = new mongoose.Schema({
             }
         }]
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Execution', executionSchema);

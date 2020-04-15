@@ -6,5 +6,5 @@ const refreshTokenSchema = new mongoose.Schema({
     refreshTokenExpiresInSeconds: { type: Number, required: true }, // seconds to expire
     refreshTokenGrantedDate: { type: Date, required: true }, // date time refresh token was granted
     refreshTokenExpirationDate: { type: Date, required: true } // date time refresh token will expire (granted date + expires in)
-});
+}, { timestamps: true });
 module.exports = mongoose.model('RefreshToken', refreshTokenSchema);

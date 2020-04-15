@@ -437,5 +437,5 @@ const orderSchema = new mongoose.Schema({
     statusDescription: {
         type: String
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Order', orderSchema);
