@@ -295,20 +295,19 @@ const db = {
     getAccountWatchlists: async (accountId) => {       
         let foundWatchlists = null;
         try {      
-            if (accountId) {
-                try {   
-                    foundWatchlists = await Watchlist.find({ accountId: accountId });
-                } catch (err) {
-                    throw new InternalServerError(`Error fetching watchlists from database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
-                }
+            if (!accountId) {
+                throw new BadRequestError(`Error fetching watchlists from database for accountId ${accountId}`);
+            }
+            try {   
+                foundWatchlists = await Watchlist.find({ accountId: accountId });
                 if (foundWatchlists && (foundWatchlists.length > 0)) {
                     return foundWatchlists;
                 } else {
                     return []; // no watchlists on account
-                }         
-            } else {
-                throw new BadRequestError(`Error fetching watchlists from database for accountId ${accountId}`);
-            }         
+                } 
+            } catch (err) {
+                throw new InternalServerError(`Error fetching watchlists from database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
+            }                               
         } catch(err) {
             throw err;
         }
@@ -338,55 +337,53 @@ const db = {
     },    
 
     // Create one watchlist on one account in the database
-    createWatchlist: async (watchlist) => {
-        let createdWatchlist = null;
-        try {
-            if (watchlist) {          
-                try {
-                    return createdWatchlist = await Watchlist.create(watchlist);
-                } catch(err) {
-                    if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Error creating watchlist in database: ${err.message}`);
-                    } else {
-                        throw new InternalServerError(`Error creating watchlist in database: ${err.message}`);
-                    }
-                }
-            } else {
-                throw new BadRequestError(`Error creating watchlist in database: ${watchlist}`);
-            }       
+    createWatchlist: async (watchlist) => {        
+        try {      
+            let result = null;
+            return result = await Watchlist.create(watchlist);
         } catch (err) {
-            throw err;
+            if (err.name === 'ValidationError') {
+                throw new BadRequestError(`Error creating watchlist in database: ${err.message}`);
+            } else {
+                throw new InternalServerError(`Error creating watchlist in database: ${err.message}`);
+            }
         }  
     },
 
     // Replace Specific watchlist for a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
-    replaceWatchlist: async (accountId, watchlistId, watchlist) => {
-        let replacedWatchlist = null;
+    replaceWatchlist: async (accountId, watchlistId, watchlist) => {        
         try {
             if (accountId && watchlistId && watchlist && (accountId === watchlist.accountId) && (watchlistId === watchlist.watchlistId)) { 
                 let filter = { accountId: accountId, watchlistId: watchlistId };
-
                 let replacement = watchlist;
-
                 let options = {
                     new: true,
-                    omitUndefined: true
+                    //upsert: false,
+                    omitUndefined: true,
+                    lean: true
                 };
+
+                console.log({ replacement });
+
+                let result = null;
+
                 try {
-                    replacedWatchlist = await Watchlist.findOneAndReplace(filter, replacement, options);
+                    result = await Watchlist.replaceOne(filter, replacement, options);
+                    console.log({ result });
+                    // matched and replaced only 1 document
+                    if (result.n === result.nModified === 1) {
+                        return result;
+                    } else {
+                        throw new NotFoundError('No watchlist found in database.');
+                    }                    
                 } catch (err) {
                     if (err.name === 'ValidationError') {
                         throw new BadRequestError(`Error replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
-                    } else {                    
+                    } else {
                         throw new InternalServerError(`Error replacing watchlist in database: ${err.message}`);
                     }
-                } 
-                if (replacedWatchlist) {
-                    return replacedWatchlist;
-                } else {
-                    throw new NotFoundError(`Error watchlist Not Found in database for accountId ${accountId} watchlistId ${watchlistId}.`); 
-                }                    
+                }                                                    
             } else {
                 throw new BadRequestError(`Error replacing watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
             }
@@ -411,18 +408,13 @@ const db = {
                     omitUndefined: true
                 };
                 try {
-                    updatedWatchlist = await Watchlist.findOneAndUpdate(conditions, update, options);
+                    return updatedWatchlist = await Watchlist.findOneAndUpdate(conditions, update, options);
                 } catch(err){
                     if (err.name === 'ValidationError') {
                         throw new BadRequestError(`Error updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId}: ${err.message}`);
                     } else {
                         throw new InternalServerError(`Error updating watchlist in database: ${err.message}`);
                     }                    
-                }
-                if(updatedWatchlist) {
-                    return updatedWatchlist;
-                } else {
-                    throw new InternalServerError(`Error updating watchlist in database: ${err.message}`);
                 }
             } else {
                 throw new BadRequestError(`Error updating watchlist in database for accountId ${accountId} watchlistId ${watchlistId} watchlist: ${watchlist}`);
@@ -436,7 +428,7 @@ const db = {
     deleteWatchlists: async () => {
         let deletedWatchlists = null;
         try {
-            deletedWatchlists = await Watchlist.deleteMany();
+            return deletedWatchlists = await Watchlist.deleteMany();
 
             if (deletedWatchlists) {
                 return deletedWatchlists;

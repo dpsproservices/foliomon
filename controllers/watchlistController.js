@@ -170,13 +170,15 @@ exports.replaceWatchlist = async (req, res) => {
             let watchlistFromAPI = watchlists[i];
             if (watchlistName === watchlistFromAPI.name) {
                 foundMatch = true;
-                watchlist = watchlistFromAPI;
+                watchlist = watchlistFromAPI;                
                 break;
             }
         }
         if (foundMatch) {
             // Replace the matched watchlist from TD API into the database
+            //console.log({watchlist});
             const dbResult = await WatchlistService.db.replaceWatchlist(accountId, watchlistId, watchlist);
+            //console.log({ dbResult });
             res.status(204).send(watchlist);
         } else {
             throw new InternalServerError(`No watchlist replaced on account at TD with matching name ${watchlistName}`);
