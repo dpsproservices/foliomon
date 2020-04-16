@@ -16,7 +16,6 @@ const api = {
     getWatchlists: async () => {
         try {
             const token = await TokenService.getAccessToken();
-
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/watchlists`,
@@ -24,8 +23,7 @@ const api = {
                 validateStatus: function (status) {
                     return status === 200 || status === 401 || status === 503;
                 }
-            };
-        
+            };        
             const response = await axios(options);
             const status = response.status;
             const data = response.data;
@@ -48,7 +46,6 @@ const api = {
     getAccountWatchlists: async (accountId) => {
         try {
             const token = await TokenService.getAccessToken();
-
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
@@ -57,7 +54,6 @@ const api = {
                     return status === 200 || status === 401 || status === 403 || status === 503;
                 }
             };
-
             const response = await axios(options);
             const status = response.status;
             const data = response.data;
@@ -82,7 +78,6 @@ const api = {
     getWatchlist: async (accountId,watchlistId) => {
         try {
             const token = await TokenService.getAccessToken();
-
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
@@ -91,7 +86,6 @@ const api = {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
-
             const response = await axios(options);
             const status = response.status;
             const data = response.data;
@@ -121,7 +115,6 @@ const api = {
     createWatchlist: async (accountId, watchlist) => {
         try {
             const token = await TokenService.getAccessToken();
-
             const options = {
                 method: 'POST',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
@@ -131,9 +124,7 @@ const api = {
                     return status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
             };
-
             const response = await axios(options);
-            console.log({response});
             const status = response.status;
             const message = response.data.error;
             if (status === 201) {
@@ -168,7 +159,6 @@ const api = {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
-
             const response = await axios(options);
             const status = response.status;
             const message = response.data.error;
@@ -207,7 +197,6 @@ const api = {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
-
             const response = await axios(options);
             const status = response.status;
             const message = response.data.error;
@@ -235,7 +224,6 @@ const api = {
     deleteWatchlist: async (accountId, watchlistId) => {
         try {
             const token = await TokenService.getAccessToken();
-
             const options = {
                 method: 'DELETE',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
@@ -244,7 +232,6 @@ const api = {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
-
             const response = await axios(options);
             const status = response.status;
             const message = response.data.error;
@@ -362,7 +349,7 @@ const db = {
         }  
     },
 
-    // Replace Specific watchlist for a specific account with the TD API
+    // Replace Specific watchlist for a specific account in the database
     // does not verify that the symbol or asset type are valid.
     replaceWatchlist: async (accountId, watchlistId, watchlist) => {        
         try {
@@ -400,7 +387,7 @@ const db = {
         }                   
     },
 
-    // Partially update watchlist for a specific account: change watchlist name,
+    // Partially update watchlist for a specific account in the database, change watchlist name,
     // add to the beginning/end of a watchlist, update or delete items in a watchlist.
     // This method does not verify that the symbol or asset type are valid.
     updateWatchlist: async (accountId, watchlistId, watchlist) => {

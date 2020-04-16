@@ -1,110 +1,256 @@
+const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const OrderService = require('../services/OrderService');
 
-// GET /foliomon/orders/
-// Get all accounts orders which this user can access from TD with access token
-// Then save all the orders into the database, update them if they exist 
-exports.initialize = async (req, res) => {
+/*=============================================================================
+Foliomon Orders endpoints controller
+=============================================================================*/
+
+// Get all orders of all of the user's linked accounts from TD API
+// Delete all orders in the database
+// Save orders from TD into the database and send them back on the response to the client
+exports.resetOrders = async (req, res) => {
     try {
-        console.log('orderController.initialize begin');
-
-        var isOrdersDataAvailable = false;
-        var orders = null;
-
-        // Verify the orders are stored otherwise get them and store them
-        try {
-            orders = await OrderService.getDbOrders();
-            isOrdersDataAvailable = true;
-            res.status(200).send(orders);
-        } catch (err) {
-            console.log(`Error in orderController.initialize ${err}`);
-            isOrdersDataAvailable = false;
+        const orders = await OrderService.api.getOrders();
+        const dbResult = await OrderService.db.resetOrders(orders);
+        res.status(200).send(orders);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
+        res.status(status).send({ error: error });
+    }
+}
 
-        if (!isOrdersDataAvailable) {
-            console.log('orderController.initialize No orders data available. Getting from TD...');
+// Get Orders for Multiple Accounts
+// Get all orders for all of the user's linked accounts from the TD API
+exports.getOrders = async (req, res) => {
+    try {
+        const orders = await OrderService.api.getOrders();
+        res.status(200).send(orders);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+        res.status(status).send({ error: error });
+    }
+}
 
-            try {
-                orders = await OrderService.getApiOrders();
-                if (orders && orders.length > 0)
-                    await OrderService.saveDbOrders(orders);
+// Get Orders for Single Account
+exports.getAccountOrders = async (req, res) => {
+    let accountId = req.params.accountId;
+    try {
+        const orders = await OrderService.api.getAccountOrders(accountId);
+        res.status(200).send(orders);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+        res.status(status).send({ error: error });
+    }
+}
 
-                res.status(200).send(orders);
-            } catch (err) {
-                console.log(`Error in orderController.initialize ${err}`);
-                res.status(500).send({ error: `Error in orderController.initialize ${err}` })
+// Get specific order for a specific account
+exports.getOrder = async (req, res) => {
+    let accountId = req.params.accountId;
+    let orderId = req.params.orderId;
+    try {
+        const order = await OrderService.api.getOrder(accountId, orderId);
+        res.status(200).send(order);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof BadRequestError) {
+            status = 400;
+            error = `Bad Request ${err.message}`;
+        } else if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account.`;
+        } else if (err instanceof NotFoundError) {
+            status = 404;
+            error = `Order id ${orderId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+        res.status(status).send({ error: error });
+    }
+}
+
+// Place a new order in a specific account
+exports.placeOrder = async (req, res) => {
+    let accountId = req.params.accountId;
+    let order = req.body;
+    let orderId = order.orderId; // unique order id on account
+    try {
+        // Request TD API to place the new order on the account
+        // The service will throw an error on any other status code besides 201 Created
+        const response = await OrderService.api.placeOrder(accountId, order);
+        // After the order was successfully created at TD        
+        // Request TD API to get the orders on the account
+        const orders = await OrderService.api.getAccountOrders(accountId);
+        // Match the id of the newly created order
+        let foundMatch = false;
+        for (let i = 0; i < orders.length; i++) {
+            let orderFromAPI = orders[i];
+            if (orderId === orderFromAPI.orderId) {
+                foundMatch = true;
+                order = orderFromAPI;
+                break;
             }
-
         }
-
-        console.log('orderController.initialize end');
+        if (foundMatch) {
+            // Create the matched order from TD API into the database
+            const dbResult = await OrderService.db.createOrder(order);
+            res.status(200).send(order);
+        } else {
+            throw new InternalServerError(`No order created on account at TD with matching orderId.`);
+        }
     } catch (err) {
-        console.log(`Error in orderController.initialize: ${err}`);
-        res.status(500).send('Internal Server Error during Orders Init request.');
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof BadRequestError) {
+            status = 400;
+            error = `Bad Request ${err.message}`;
+        } else if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+        res.status(status).send({ error: error });
     }
 }
 
-exports.getAllOrders = async (req, res) => {
+// Replace an existing order in a specific account
+exports.replaceOrder = async (req, res) => {
+    let accountId = req.params.accountId;
+    let orderId = req.params.orderId;
+    let order = req.body;
+    let orderId = order.orderId; // unique order id on account   
     try {
-        console.log('orderController.getAllOrders begin');
-
-        var orders = null;
-
-        try {
-            orders = await OrderService.getApiOrders();
-            res.status(200).send(orders);
-        } catch (err) {
-            console.log(`Error in getAllOrders ${err}`);
-            res.status(500).send({ error: `Error in getAllOrders ${err}` })
+        // Request TD API to replace the order on the account
+        // Note that sending accountId and sequenceId(s) in the order object will receive and throw a Bad Request
+        // The service will throw an error on any other status code besides 204 No Content
+        const response = await OrderService.api.replaceOrder(accountId, orderId, order);
+        // After the order was successfully replaced at TD
+        // Request TD API to get the orders on the account
+        const orders = await OrderService.api.getAccountOrders(accountId);
+        // Match the id of the newly created order
+        let foundMatch = false;
+        for (let i = 0; i < orders.length; i++) {
+            let orderFromAPI = orders[i];
+            if (orderId === orderFromAPI.orderId) {
+                foundMatch = true;
+                order = orderFromAPI;
+                break;
+            }
         }
-
-        console.log('orderController.getAllOrders end');
+        if (foundMatch) {
+            // Replace the matched order from TD API into the database
+            const dbResult = await OrderService.db.replaceOrder(accountId, orderId, order);
+            res.status(200).send(order);
+        } else {
+            throw new InternalServerError(`No order replaced on account at TD with matching orderId.`);
+        }
     } catch (err) {
-        console.log(`Error in orderController.getAllOrders: ${err}`);
-        res.status(500).send('Internal Server Error during Get All Orders request.');
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof BadRequestError) {
+            status = 400;
+            error = `Bad Request ${err.message}`;
+        } else if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account.`;
+        } else if (err instanceof NotFoundError) {
+            status = 404;
+            error = `Order id ${orderId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+        res.status(status).send({ error: error });
     }
 }
 
-exports.getOrdersByAccountId = async (req, res) => {
+// Delete specific order of a specific account
+exports.deleteOrder = async (req, res) => {
+    let accountId = req.params.accountId;
+    let orderId = req.params.orderId;
     try {
-        console.log('orderController.getOrdersByAccountId begin');
-
-        var orders = null;
-        const accountId = req.params.accountId;
-
-        try {
-            orders = await OrderService.getApiOrdersByAccountId(accountId);
-            res.status(200).send(orders);
-        } catch (err) {
-            console.log(`Error in getOrdersByAccountId ${err}`);
-            res.status(500).send({ error: `Error in getOrdersByAccountId ${err}` })
-        }
-
-        console.log('orderController.getOrdersByAccountId end');
+        const response = await OrderService.api.deleteOrder(accountId, orderId);
+        const dbResult = await OrderService.db.deleteOrder(accountId, orderId);
+        res.status(204).send();
     } catch (err) {
-        console.log(`Error in orderController.getOrdersByAccountId: ${err}`);
-        res.status(500).send('Internal Server Error during Get Orders By Account Id request.');
-    }
-}
-
-exports.getOrderByAccountIdOrderId = async (req, res) => {
-    try {
-        console.log('orderController.getOrderByAccountIdOrderId begin');
-
-        var orders = null;
-        const accountId = req.params.accountId;
-        const orderId = req.params.orderId;
-
-        try {
-            orders = await OrderService.getApiOrderByAccountIdOrderId(accountId, orderId);
-            res.status(200).send(orders);
-        } catch (err) {
-            console.log(`Error in getOrderByAccountIdOrderId ${err}`);
-            res.status(500).send({ error: `Error in getOrderByAccountIdOrderId ${err}` })
+        var status = 500; // default
+        var error = err.message;
+        if (err instanceof BadRequestError) {
+            status = 400;
+            error = `Bad Request ${err.message}`;
+        } else if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof ForbiddenError) {
+            status = 403;
+            error = `User does not have permission to access the specified account.`;
+        } else if (err instanceof NotFoundError) {
+            status = 404;
+            error = `Order id ${orderId} not found.`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
         }
-
-        console.log('orderController.getOrderByAccountIdOrderId end');
-    } catch (err) {
-        console.log(`Error in orderController.getOrderByAccountIdOrderId: ${err}`);
-        res.status(500).send('Internal Server Error during Get Order By Account Id Order Id request.');
+        res.status(status).send({ error: error });
     }
 }

@@ -220,20 +220,18 @@ async function initializeOrdersData() {
 
     // Verify the orders are stored otherwise get them and store them
     try {
-        orders = await OrderService.getDbOrders();
-        isAccountsDataAvailable = true;
+        orders = await OrderService.db.getOrders();
+        isOrdersDataAvailable = true;
     } catch (err) {
-        console.log(`Error in initializeOrdersData ${err}`);
-        isAccountsDataAvailable = false;
+        isOrdersDataAvailable = false;
     }
 
-    if (!isAccountsDataAvailable) {
+    if (!isOrdersDataAvailable) {
         console.log('initializeOrdersData No orders data available. Getting from TD...');
 
         try {
-            orders = await OrderService.getApiOrders();
-            if (orders && orders.length > 0)
-                await OrderService.saveDbOrders(orders);
+            const orders = await OrderService.api.getOrders();
+            const dbResult = await OrderService.db.resetOrders(orders);
         } catch (err) {
             console.log(`Error in initializeOrdersData ${err}`);
         }
@@ -244,7 +242,7 @@ async function initializeOrdersData() {
 function initializeApp() {
 
     initializeAccountsData();
-    initializeOrdersData();
+    //initializeOrdersData();
 }
 
 function runMarketOpenEvents() {

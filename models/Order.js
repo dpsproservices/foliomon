@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
     session: { 
         type: String,
+        required: true,
         enum: [ 
             'NORMAL', 
             'AM', 
@@ -12,6 +13,7 @@ const orderSchema = new mongoose.Schema({
     },
     duration: { 
         type: String,
+        required: true,
         enum: [ 
             'DAY', 
             'GOOD_TILL_CANCEL', 
@@ -20,6 +22,7 @@ const orderSchema = new mongoose.Schema({
     },
     orderType: { 
         type: String,
+        required: true,
         enum: [ 
             'MARKET', 
             'LIMIT', 
@@ -69,7 +72,8 @@ const orderSchema = new mongoose.Schema({
         ] 
     },
     quantity: {
-        type: Number
+        type: Number,
+        required: true
     },
     filledQuantity: {
         type: Number
@@ -343,7 +347,8 @@ const orderSchema = new mongoose.Schema({
         ]
     },
     orderId: {
-        type: String
+        type: String,
+        required: true
     },
     cancelable: {
         type: Boolean,
@@ -355,6 +360,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
+        required: true,
         enum: [         
             'AWAITING_PARENT_ORDER', 
             'AWAITING_CONDITION', 
@@ -383,7 +389,8 @@ const orderSchema = new mongoose.Schema({
         type: String
     },
     accountId: {
-        type: String
+        type: String,
+        required: true
     },
     orderActivityCollection: [
         {
