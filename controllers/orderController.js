@@ -169,7 +169,6 @@ exports.replaceOrder = async (req, res) => {
     let accountId = req.params.accountId;
     let orderId = req.params.orderId;
     let order = req.body;
-    let orderId = order.orderId; // unique order id on account   
     try {
         // Request TD API to replace the order on the account
         // Note that sending accountId and sequenceId(s) in the order object will receive and throw a Bad Request

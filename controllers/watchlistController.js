@@ -1,7 +1,6 @@
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const WatchlistService = require('../services/WatchlistService');
 
-
 /*=============================================================================
 Foliomon Watchlist endpoints controller
 =============================================================================*/
@@ -17,7 +16,6 @@ exports.resetWatchlists = async (req, res) => {
     } catch (err) {
         var status = 500; // default
         var error = err.message;
-
         if (err instanceof UnauthorizedError) {
             status = 401;
             error = `Invalid Access Token: ${err.message}`;
@@ -28,7 +26,6 @@ exports.resetWatchlists = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });
     }
 }
@@ -42,7 +39,6 @@ exports.getWatchlists = async (req, res) => {
     } catch (err) {
         var status = 500; // default
         var error = err.message;
-
         if (err instanceof UnauthorizedError) {
             status = 401;
             error = `Invalid Access Token: ${err.message}`;            
@@ -53,7 +49,6 @@ exports.getWatchlists = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         } 
-
         res.status(status).send({ error: error });
     }
 }
@@ -81,7 +76,6 @@ exports.getAccountWatchlists = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });        
     }
 }
@@ -116,7 +110,6 @@ exports.getWatchlist = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });                
     }
 }
@@ -130,7 +123,6 @@ exports.createWatchlist = async (req, res) => {
         // Request TD API to create the new watchlist on the account
         // The service will throw an error on any other status code besides 201 Created
         const response = await WatchlistService.api.createWatchlist(accountId, watchlist);
-        
         // After the watchlist was successfully created at TD        
         // Request TD API to get the watchlists on the account
         const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
@@ -154,7 +146,6 @@ exports.createWatchlist = async (req, res) => {
     } catch (err) {
         var status = 500; // default
         var error = err.message;
-
         if (err instanceof BadRequestError) {
             status = 400;
             error = `Bad Request ${err.message}`;
@@ -171,7 +162,6 @@ exports.createWatchlist = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });  
     }
 }
@@ -187,7 +177,6 @@ exports.replaceWatchlist = async (req, res) => {
         // Note that sending accountId and sequenceId(s) in the watchlist object will receive and throw a Bad Request
         // The service will throw an error on any other status code besides 204 No Content
         const response = await WatchlistService.api.replaceWatchlist(accountId, watchlistId, watchlist);
-
         // After the watchlist was successfully replaced at TD
         // Request TD API to get the watchlists on the account
         const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
@@ -211,7 +200,6 @@ exports.replaceWatchlist = async (req, res) => {
     } catch (err) {
         var status = 500; // default
         var error = err.message;
-
         if (err instanceof BadRequestError) {
             status = 400;
             error = `Bad Request ${err.message}`;
@@ -231,7 +219,6 @@ exports.replaceWatchlist = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });  
     }
 }
@@ -249,7 +236,6 @@ exports.updateWatchlist = async (req, res) => {
         // and will receive and throw a Bad Request
         // The service will throw an error on any other status code besides 204 No Content
         const data = await WatchlistService.api.updateWatchlist(accountId, watchlistId, watchlist);
-
         // After the watchlist was successfully replaced at TD
         // Request TD API to get the watchlists on the account
         const watchlists = await WatchlistService.api.getAccountWatchlists(accountId);
@@ -293,7 +279,6 @@ exports.updateWatchlist = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });  
     }
 }
@@ -309,7 +294,6 @@ exports.deleteWatchlist = async (req, res) => {
     } catch (err) {
         var status = 500; // default
         var error = err.message;
-
         if (err instanceof BadRequestError) {
             status = 400;
             error = `Bad Request ${err.message}`;
@@ -329,7 +313,6 @@ exports.deleteWatchlist = async (req, res) => {
             status = 503;
             error = `Service Unavailable: ${err.message}`;
         }
-
         res.status(status).send({ error: error });  
     }
 }

@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
-const orderController = require('../controllers/orderController');
+const watchlistController = require('../controllers/watchlistController');
 const userController = require('../controllers/userController');
 const instrumentController = require('../controllers/instrumentController');
 
