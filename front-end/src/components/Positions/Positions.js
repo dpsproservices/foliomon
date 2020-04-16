@@ -14,6 +14,8 @@ import {
   MenuItem,
   InputLabel,
   Paper  } from '@material-ui/core';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -243,7 +245,13 @@ const Positions = () => {
       try {
         const res = await getAccounts();
         console.log(res.data.accounts);
-        setAccounts(res.data.accounts);
+
+        const accountData = res.data.accounts;
+        setAccounts(accountData);
+
+        if (accountData && accountData.length > 0) {
+          setActiveAccount(accountData[0].accountId);
+        }
 
         const userRes = await getUser();
         console.log(userRes.data);
@@ -288,10 +296,53 @@ const Positions = () => {
     return '';
   };
 
+  const totalMarketValue = positions && positions.reduce((acc, curr) => acc + curr.marketValue, 0);
+  const seriesData = positions && positions.map(p => ({ name: p.instrument.symbol, y: ((p.marketValue/totalMarketValue) * 100) }));
+
+  const chartOptions = {
+    chart: {
+      spacing: [0, 0, 0, 0],
+      margin: [50, 80, 50, 80],
+      height: 400,
+      width: 460,
+      plotBackgroundColor: null,
+      plotBorderWidth: null,
+      plotShadow: false,
+      type: 'pie'
+    },
+    title: {
+      text: ''
+    },
+    tooltip: {
+      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    accessibility: {
+      point: {
+        valueSuffix: '%'
+      }
+    },
+    plotOptions: {
+      pie: {
+        size: '78%',
+        allowPointSelect: true,
+        cursor: 'pointer',
+        dataLabels: {
+          enabled: true,
+          format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+          connectorColor: 'silver'
+        }
+      }
+    },
+    series: [{
+      name: 'Percentage',
+      data: seriesData
+    }]
+  };
+
   return (
     <Grid container className={classes.root}>
       <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center" className={classes.selectRow}>
-        <Grid item xs={11}>
+        <Grid item xs={3}>
           <InputLabel id="account-select-label">Account</InputLabel>
           <Select
             className={classes.select}
@@ -305,6 +356,11 @@ const Positions = () => {
           </Select>
         </Grid>
       </Grid>
+      <Grid container spacing={0} direction="row" alignItems="flex-start" justify="center">
+        <Grid item xs={5}>
+          <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+        </Grid>
+        </Grid>
       <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center">
         <Grid item xs={11}>
           <TableContainer component={Paper} elevation={4}>
