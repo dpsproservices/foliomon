@@ -75,6 +75,11 @@ router.get('/foliomon/user', userController.getUserPrincipals);
 
 // Watchlist Routes
 
+// Get all watchlists of all of the user's linked accounts from TD API
+// Delete all watchlists in the database
+// Save watchlists from TD into the database and send them back on the response to the client
+router.post('/foliomon/watchlists/reset', watchlistController.resetWatchlists); 
+
 // Get all watchlists of all of the user's linked accounts
 router.get('/foliomon/watchlists', watchlistController.getWatchlists); 
 
@@ -95,9 +100,6 @@ router.patch('/foliomon/watchlists/:accountId/:watchlistId', watchlistController
 
 // Delete specific watchlist of a specific account
 router.delete('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
-
-// Refresh all watchlists of all of the user's linked accounts into the database and send them on the response
-router.post('/foliomon/watchlists', watchlistController.refreshWatchlists); 
 
 // Instrument Controller Routes
 router.post('/foliomon/instruments', instrumentController.getInstruments);

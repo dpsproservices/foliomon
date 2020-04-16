@@ -6,6 +6,33 @@ const WatchlistService = require('../services/WatchlistService');
 Foliomon Watchlist endpoints controller
 =============================================================================*/
 
+// Get all watchlists of all of the user's linked accounts from TD API
+// Delete all watchlists in the database
+// Save watchlists from TD into the database and send them back on the response to the client
+exports.resetWatchlists = async (req, res) => {
+    try {
+        const watchlists = await WatchlistService.api.getWatchlists();
+        const dbResult = await WatchlistService.db.resetWatchlists(watchlists);
+        res.status(200).send(watchlists);
+    } catch (err) {
+        var status = 500; // default
+        var error = err.message;
+
+        if (err instanceof UnauthorizedError) {
+            status = 401;
+            error = `Invalid Access Token: ${err.message}`;
+        } else if (err instanceof InternalServerError) {
+            status = 500;
+            error = `Internal Server Error: ${err.message}`;
+        } else if (err instanceof ServiceUnavailableError) {
+            status = 503;
+            error = `Service Unavailable: ${err.message}`;
+        }
+
+        res.status(status).send({ error: error });
+    }
+}
+
 // Get Watchlists for Multiple Accounts
 // Get all watchlists for all of the user's linked accounts from the TD API
 exports.getWatchlists = async (req, res) => {
@@ -120,7 +147,7 @@ exports.createWatchlist = async (req, res) => {
         if (foundMatch) {
             // Create the matched watchlist from TD API into the database
             const dbResult = await WatchlistService.db.createWatchlist(watchlist);
-            res.status(201).send(watchlist);
+            res.status(200).send(watchlist);
         } else {
             throw new InternalServerError(`No watchlist created on account at TD with matching name ${watchlistName}`); 
         }                               
@@ -176,10 +203,8 @@ exports.replaceWatchlist = async (req, res) => {
         }
         if (foundMatch) {
             // Replace the matched watchlist from TD API into the database
-            //console.log({watchlist});
             const dbResult = await WatchlistService.db.replaceWatchlist(accountId, watchlistId, watchlist);
-            //console.log({ dbResult });
-            res.status(204).send(watchlist);
+            res.status(200).send(watchlist);
         } else {
             throw new InternalServerError(`No watchlist replaced on account at TD with matching name ${watchlistName}`);
         } 
@@ -241,7 +266,7 @@ exports.updateWatchlist = async (req, res) => {
         if (foundMatch) {
             // Update the matched watchlist from TD API in the database
             const dbResult = await WatchlistService.db.updateWatchlist(accountId, watchlistId, watchlist);
-            res.status(204).send(watchlist);
+            res.status(200).send(watchlist);
         } else {
             throw new InternalServerError(`No watchlist updated on account at TD with matching name ${watchlistName}`);
         }       
@@ -276,13 +301,11 @@ exports.updateWatchlist = async (req, res) => {
 // Delete specific watchlist of a specific account
 exports.deleteWatchlist = async (req, res) => {
     let accountId = req.params.accountId;
-    let watchlistId = req.params.watchlistId;   
-    let watchlist = null;
+    let watchlistId = req.params.watchlistId;
     try {
-        watchlist = await WatchlistService.api.getWatchlist(accountId,watchlistId);
         const response = await WatchlistService.api.deleteWatchlist(accountId, watchlistId);
         const dbResult = await WatchlistService.db.deleteWatchlist(accountId, watchlistId);
-        res.status(204).send(watchlist); // send back deleted watchlist       
+        res.status(204).send();
     } catch (err) {
         var status = 500; // default
         var error = err.message;
@@ -309,29 +332,4 @@ exports.deleteWatchlist = async (req, res) => {
 
         res.status(status).send({ error: error });  
     }
-}
-
-// Refresh all watchlists of all of the user's linked accounts into the database and send them on the response
-exports.refreshWatchlists = async (req, res) => {
-    try {
-        const watchlists = await WatchlistService.api.getWatchlists();
-        const dbResult = await WatchlistService.db.refreshWatchlists(watchlists);
-        res.status(200).send(watchlists);        
-    } catch (err) {
-        var status = 500; // default
-        var error = err.message;
-
-        if (err instanceof UnauthorizedError) {
-            status = 401;
-            error = `Invalid Access Token: ${err.message}`;
-        } else if (err instanceof InternalServerError) {
-            status = 500;
-            error = `Internal Server Error: ${err.message}`;
-        } else if (err instanceof ServiceUnavailableError) {
-            status = 503;
-            error = `Service Unavailable: ${err.message}`;
-        }
-
-        res.status(status).send({ error: error });
-    }    
 }
