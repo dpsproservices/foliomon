@@ -301,10 +301,10 @@ const Positions = () => {
 
   const chartOptions = {
     chart: {
-      spacing: [0, 0, 0, 0],
-      margin: [50, 80, 50, 80],
-      height: 400,
-      width: 460,
+      //spacing: [0, 0, 0, 0],
+      //margin: [50, 80, 50, 80],
+      //height: 400,
+      //width: 460,
       plotBackgroundColor: null,
       plotBorderWidth: null,
       plotShadow: false,
@@ -323,7 +323,7 @@ const Positions = () => {
     },
     plotOptions: {
       pie: {
-        size: '78%',
+        //size: '78%',
         allowPointSelect: true,
         cursor: 'pointer',
         dataLabels: {
