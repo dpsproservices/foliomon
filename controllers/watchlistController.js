@@ -68,7 +68,7 @@ exports.getAccountWatchlists = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof InternalServerError) {
             status = 500;
             error = `Internal Server Error: ${err.message}`;
@@ -99,10 +99,10 @@ exports.getWatchlist = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof NotFoundError) {
             status = 404;
-            error = `Watchlist id ${watchlistId} not found.`;
+            error = `Watchlist not found.`;
         } else if (err instanceof InternalServerError) {
             status = 500;
             error = `Internal Server Error: ${err.message}`;
@@ -141,7 +141,7 @@ exports.createWatchlist = async (req, res) => {
             const dbResult = await WatchlistService.db.createWatchlist(watchlist);
             res.status(200).send(watchlist);
         } else {
-            throw new InternalServerError(`No watchlist created on account at TD with matching name ${watchlistName}`); 
+            throw new InternalServerError(`No watchlist created on account at TD with matching name.`); 
         }                               
     } catch (err) {
         var status = 500; // default
@@ -154,7 +154,7 @@ exports.createWatchlist = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof InternalServerError) {
             status = 500;
             error = `Internal Server Error: ${err.message}`;
@@ -195,7 +195,7 @@ exports.replaceWatchlist = async (req, res) => {
             const dbResult = await WatchlistService.db.replaceWatchlist(accountId, watchlistId, watchlist);
             res.status(200).send(watchlist);
         } else {
-            throw new InternalServerError(`No watchlist replaced on account at TD with matching name ${watchlistName}`);
+            throw new InternalServerError(`No watchlist replaced on account at TD with matching name.`);
         } 
     } catch (err) {
         var status = 500; // default
@@ -208,7 +208,7 @@ exports.replaceWatchlist = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof NotFoundError) {
             status = 404;
             error = `Watchlist id ${watchlistId} not found.`;
@@ -254,7 +254,7 @@ exports.updateWatchlist = async (req, res) => {
             const dbResult = await WatchlistService.db.updateWatchlist(accountId, watchlistId, watchlist);
             res.status(200).send(watchlist);
         } else {
-            throw new InternalServerError(`No watchlist updated on account at TD with matching name ${watchlistName}`);
+            throw new InternalServerError(`No watchlist updated on account at TD with matching name.`);
         }       
     } catch (err) {
         var status = 500; // default
@@ -268,7 +268,7 @@ exports.updateWatchlist = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof NotFoundError) {
             status = 404;
             error = `Watchlist id ${watchlistId} not found.`;
@@ -302,7 +302,7 @@ exports.deleteWatchlist = async (req, res) => {
             error = `Invalid Access Token: ${err.message}`;
         } else if (err instanceof ForbiddenError) {
             status = 403;
-            error = `User does not have permission to access the specified account: ${accountId}`;
+            error = `User does not have permission to access the specified account.`;
         } else if (err instanceof NotFoundError) {
             status = 404;
             error = `Watchlist id ${watchlistId} not found.`;
