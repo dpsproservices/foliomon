@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const userPrincipalSchema = new mongoose.Schema({
+const userPrincipalsSchema = new mongoose.Schema({
     authToken: { type: String },
     userId: { type: String, required: true },
     userCdDomainId: { type: String },
@@ -183,4 +183,4 @@ const userPrincipalSchema = new mongoose.Schema({
     }
   ]
 }, { timestamps: true });
-module.exports = mongoose.model('UserPrincipal', userPrincipalSchema);
+module.exports = mongoose.model('UserPrincipals', userPrincipalsSchema);

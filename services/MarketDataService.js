@@ -2,7 +2,7 @@ const config = require('../config/config.js');
 const axios = require('axios');
 const moment = require('moment');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, NotAcceptableError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
-const TokenService = require('./TokenService');
+const AuthService = require('./AuthService');
 const MarketHours = require('../models/MarketHours');
 
 const api = {
@@ -22,7 +22,7 @@ https://developer.tdameritrade.com/market-hours/apis
             if (!markets) {
                 markets = config.app.defaults.markets;
             }
-            //const token = await TokenService.getAccessToken();
+            //const token = await AuthService.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             const params = {
@@ -65,7 +65,7 @@ https://developer.tdameritrade.com/market-hours/apis
     // Retrieve market hours for specified single market
     getMarketHours: async(market) => {
         try {
-            //const token = await TokenService.getAccessToken();
+            //const token = await AuthService.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             // The market for which you're requesting market hours EQUITY, OPTION, FUTURE, BOND, or FOREX.
@@ -143,7 +143,7 @@ https://developer.tdameritrade.com/instruments/apis
             if (!validProjectionTypes.includes(projection)) {
                 throw new BadRequestError(`Invalid projection type: ${projection}`);
             }
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 symbol: symbol,
                 projection: projection
@@ -187,7 +187,7 @@ https://developer.tdameritrade.com/instruments/apis
     // https://developer.tdameritrade.com/instruments/apis/get/instruments/%7Bcusip%7D
     getInstrument: async (cusip) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/instruments/${cusip}`,
@@ -262,7 +262,7 @@ https://developer.tdameritrade.com/price-history/apis
     */
     getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 period: period,
                 periodType: periodType, // day, month, year, ytd
@@ -323,7 +323,7 @@ https://developer.tdameritrade.com/movers/apis
             if (!validChange.includes(change)) {
                 throw new BadRequestError(`Invalid change: ${change}`);
             }
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 //apiKey: config.auth.clientId, // (Optional) Pass your Client ID if making an unauthenticated request
                 direction: direction, // 'up' or  'down'
@@ -373,7 +373,7 @@ https://developer.tdameritrade.com/quotes/apis
     // https://developer.tdameritrade.com/quotes/apis/get/marketdata/quotes
     getQuotes: async (symbols) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 symbols: symbols
             };
@@ -416,7 +416,7 @@ https://developer.tdameritrade.com/quotes/apis
     // https://developer.tdameritrade.com/quotes/apis/get/marketdata/%7Bsymbol%7D/quotes
     getQuote: async (symbol) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 symbol: symbol
             };

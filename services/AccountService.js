@@ -1,7 +1,7 @@
 const config = require('../config/config.js');
 const axios = require('axios');
 const Account = require('../models/securitiesAccount/Account');
-const TokenService = require('./TokenService');
+const AuthService = require('./AuthService');
 
 const getDbAccounts = function() {
     return Account.find().exec()
@@ -35,7 +35,7 @@ const saveDbAccounts = function(accounts) {
 
 const getApiAccounts = async () => {
 
-    const token = await TokenService.getAccessToken();
+    const token = await AuthService.getAccessToken();
 
     const options = {
         method: 'GET',
@@ -55,7 +55,7 @@ const getApiAccounts = async () => {
 
 const getApiAccountPositions = async (accountId) => {
 
-    const token = await TokenService.getAccessToken();
+    const token = await AuthService.getAccessToken();
 
     const options = {
         method: 'GET',
@@ -76,7 +76,7 @@ const getApiAccountPositions = async (accountId) => {
 
 const getApiAccountOrders = async (accountId) => {
 
-    const token = await TokenService.getAccessToken();
+    const token = await AuthService.getAccessToken();
 
     const options = {
         method: 'GET',
