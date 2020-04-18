@@ -346,7 +346,7 @@ const db = {
         }
     },
 
-    // Replace Specific order for a specific account with the TD API
+    // Replace Specific order for a specific account in the database
     // does not verify that the symbol or asset type are valid.
     replaceOrder: async (accountId, orderId, order) => {
         try {
