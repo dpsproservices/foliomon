@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 // Market Hours:
 const marketHoursSchema = new mongoose.Schema({
     market: {
@@ -29,7 +30,7 @@ const marketHoursSchema = new mongoose.Schema({
             type: String
         },
         isOpen: {
-            type: boolean,
+            type: Boolean,
             required: true,
             default: false
         },
