@@ -63,7 +63,7 @@ async function startServer() {
             await initializeApp();
 
             // run the app scheduled jobs
-            //runMainEventLoop();
+            runMainEventLoop();
         } else {
             // send email to notify to login and refresh the tokens to continue
         }
@@ -116,6 +116,8 @@ you can pass the access token as a bearer token by setting the Authorization hea
 */
 
 async function authorizeApp() {
+    var timeNow = new Date();
+    console.log(`authorizeApp START ${timeNow}`);    
 
     var dateNow = new Date();
     var isAccessTokenExpired = false;
@@ -129,7 +131,8 @@ async function authorizeApp() {
         accessToken = await TokenService.getAccessToken();
         accessTokenExpirationDate = new Date(accessToken.accessTokenExpirationDate);
 
-        if (accessTokenExpirationDate <= dateNow) {
+        if (accessTokenExpirationDate <= new Date()) {
+            console.log(`Access token has expired.`);
             isAccessTokenExpired = true;
         }
     } catch(err) {
@@ -142,7 +145,7 @@ async function authorizeApp() {
         refreshToken = await TokenService.getRefreshToken();
         refreshTokenExpirationDate = new Date(refreshToken.refreshTokenExpirationDate);
 
-        if (refreshTokenExpirationDate <= dateNow) {
+        if (refreshTokenExpirationDate <= new Date()) {
             console.log(`Refresh token has expired.`);
             isRefreshTokenExpired = true;
         }
@@ -220,20 +223,18 @@ async function initializeOrdersData() {
 
     // Verify the orders are stored otherwise get them and store them
     try {
-        orders = await OrderService.getDbOrders();
-        isAccountsDataAvailable = true;
+        orders = await OrderService.db.getOrders();
+        isOrdersDataAvailable = true;
     } catch (err) {
-        console.log(`Error in initializeOrdersData ${err}`);
-        isAccountsDataAvailable = false;
+        isOrdersDataAvailable = false;
     }
 
-    if (!isAccountsDataAvailable) {
+    if (!isOrdersDataAvailable) {
         console.log('initializeOrdersData No orders data available. Getting from TD...');
 
         try {
-            orders = await OrderService.getApiOrders();
-            if (orders && orders.length > 0)
-                await OrderService.saveDbOrders(orders);
+            const orders = await OrderService.api.getOrders();
+            const dbResult = await OrderService.db.resetOrders(orders);
         } catch (err) {
             console.log(`Error in initializeOrdersData ${err}`);
         }
@@ -244,15 +245,17 @@ async function initializeOrdersData() {
 function initializeApp() {
 
     initializeAccountsData();
-    initializeOrdersData();
+    //initializeOrdersData();
 }
 
 function runMarketOpenEvents() {
-
+    var timeNow = new Date();
+    console.log(`runMarketOpenEvents START ${timeNow}`);
 };
 
 function runMarketCloseEvents() {
-
+    var timeNow = new Date();
+    console.log(`runMarketCloseEvents START ${timeNow}`);
 };
 
 // Precondition: Run after web server starts and db is running and connected.
@@ -270,7 +273,10 @@ function runMainEventLoop() {
         */
 
         // Run authorize job every weekday M T W TH F every 20 minutes between 8:00 AM and 5:00 PM EST
-        var authorizeRecurrenceRule = { rule: '*/20 8-17 * * 1-5' };
+        // var authorizeRecurrenceRule = { rule: '*/20 8-17 * * 1-5' };
+
+        var authorizeRecurrenceRule = { rule: '*/1 * * * *' };
+
         var authorizeScheduleJob = schedule.scheduleJob(authorizeRecurrenceRule, function(jobRunAtDate) {
             console.log('authorizeRecurrenceRule is scheduled to run at ' + jobRunAtDate + ', date time now: ' + new Date());
             authorizeApp();

@@ -6,5 +6,5 @@ const accessTokenSchema = new mongoose.Schema({
     accessTokenExpiresInSeconds: { type: Number, required: true }, // seconds to expire
     accessTokenGrantedDate: { type: Date, required: true }, // date time access token was granted
     accessTokenExpirationDate: { type: Date, required: true } // date time access token will expire (granted date + expires in)
-});
+}, { timestamps: true });
 module.exports = mongoose.model('AccessToken', accessTokenSchema);

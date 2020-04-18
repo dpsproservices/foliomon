@@ -2,13 +2,16 @@ const mongoose = require('mongoose');
 // Watchlist:
 const watchlistSchema = new mongoose.Schema({
     name: {
-        type: String
+        type: String,
+        required: true
     },
     watchlistId: {
-        type: String
+        type: String,
+        required: true
     },
     accountId: {
-        type: String
+        type: String,
+        required: true
     },
     status: {
         type: String,
@@ -20,9 +23,10 @@ const watchlistSchema = new mongoose.Schema({
         ]
     },
     watchlistItems: [
-        {
+        {            
             sequenceId: {
-                type: Number
+                type: Number,
+                required: true
             },
             quantity: {
                 type: Number
@@ -36,15 +40,17 @@ const watchlistSchema = new mongoose.Schema({
             purchasedDate: {
                 type: String
             },
-            instrument: {
+            instrument: {                        
                 symbol: {
-                    type: String
+                    type: String,
+                    required: true
                 },
                 description: {
                     type: String
                 },
                 assetType: {
                     type: String,
+                    required: true,
                     enum: [
                         'EQUITY',
                         'OPTION',
@@ -65,5 +71,5 @@ const watchlistSchema = new mongoose.Schema({
             }
         }
     ]
-});
+}, { timestamps: true });
 module.exports = mongoose.model('Watchlist', watchlistSchema);

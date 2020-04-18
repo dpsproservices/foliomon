@@ -39,5 +39,5 @@ const mutualFundSchema = new mongoose.Schema({
             'NO_LOAD_TAXABLE'
         ]
     }
-});
+}, { timestamps: true });
 module.exports = mongoose.model('MutualFund', mutualFundSchema);

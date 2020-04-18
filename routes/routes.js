@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
-const watchlistController = require('../controllers/watchlistController');
 const orderController = require('../controllers/orderController');
+const watchlistController = require('../controllers/watchlistController');
 const userController = require('../controllers/userController');
-const instrumentController = require('../controllers/instrumentController');
+const marketDataController = require('../controllers/marketDataController');
 
-// Authentication Controller Routes
+/*=============================================================================
+Authentication routes
+=============================================================================*/
 
 // get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
 router.get('/foliomon/authorize', authController.authorize);
@@ -27,7 +29,9 @@ router.get('/foliomon/refreshtoken', authController.getRefreshToken);
 // save the Refresh Token into the database
 router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
 
-// Account Controller Routes
+/*=============================================================================
+Account routes
+=============================================================================*/
 
 // get all accounts available from the database
 router.get('/foliomon/accounts', accountController.getAllAccounts);
@@ -56,50 +60,99 @@ router.get('/foliomon/accounts/:accountId/positions', accountController.getPosit
 // get account with orders from TD api
 router.get('/foliomon/accounts/:accountId/orders', accountController.getOrdersByAccountId);
 
-// Order Controller Routes
+/*=============================================================================
+Orders routes
+=============================================================================*/
 
-// get all accounts orders from TD api save them to the database
-router.get('/foliomon/orders/init', orderController.initialize);
+// Get all orders of all of the user's linked accounts from TD API
+// Delete all orders in the database
+// Save orders from TD into the database and send them back on the response to the client
+router.post('/foliomon/orders/reset', orderController.resetOrders);
 
-// get all orders from TD api
-router.get('/foliomon/orders', orderController.getAllOrders); 
+// Get all orders of all of the user's linked accounts from TD API
+router.get('/foliomon/orders', orderController.getOrders);
 
-// get account orders from TD api by account number
-router.get('/foliomon/orders/:accountId', orderController.getOrdersByAccountId);
+// Get all orders of one single account from TD API
+router.get('/foliomon/orders/:accountId', orderController.getAccountOrders);
 
-// get orders from TD api by its account number and order number
-router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrderByAccountIdOrderId);
+// Get Specific order of a specific account from TD API
+router.get('/foliomon/orders/:accountId/:orderId', orderController.getOrder);
 
-// User Controller Routes
-router.get('/foliomon/user', userController.getUserPrincipals);
+// Place a new order in a specific account with TD API
+router.post('/foliomon/orders/:accountId', orderController.placeOrder);
 
-// Watchlist Routes
+// Replace an existing order in a specific account with TD API
+router.put('/foliomon/orders/:accountId/:orderId', orderController.replaceOrder);
 
-// Get all watchlists of all of the user's linked accounts
-router.get('/foliomon/watchlists', watchlistController.getWatchlists); 
+// Delete specific order of a specific account with TD API
+router.delete('/foliomon/orders/:accountId/:orderId', orderController.deleteOrder);
 
-// Get all watchlists of one single account
+/*=============================================================================
+Watchlist routes
+=============================================================================*/
+
+// Get all watchlists of all of the user's linked accounts from TD API
+// Delete all watchlists in the database
+// Save watchlists from TD into the database and send them back on the response to the client
+router.post('/foliomon/watchlists/reset', watchlistController.resetWatchlists);
+
+// Get all watchlists of all of the user's linked accounts from TD API
+router.get('/foliomon/watchlists', watchlistController.getWatchlists);
+
+// Get all watchlists of one single account from TD API
 router.get('/foliomon/watchlists/:accountId', watchlistController.getAccountWatchlists);
 
-// Get Specific watchlist of a specific account
+// Get Specific watchlist of a specific account from TD API
 router.get('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.getWatchlist);
 
-// Create a new watchlist in a specific account
+// Create a new watchlist in a specific account with TD API
 router.post('/foliomon/watchlists/:accountId', watchlistController.createWatchlist);
 
-// Replace an existing watchlist in a specific account
-router.put('/foliomon/watchlists/:accountId', watchlistController.replaceWatchlist);
+// Replace an existing watchlist in a specific account with TD API
+router.put('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.replaceWatchlist);
 
-// Partially update watchlist of a specific account
-router.patch('/foliomon/watchlists/:accountId', watchlistController.updateWatchlist);
+// Partially update watchlist of a specific account with TD API
+router.patch('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.updateWatchlist);
 
-// Instrument Controller Routes
-router.post('/foliomon/instruments', instrumentController.getInstruments);
+// Delete specific watchlist of a specific account with TD API
+router.delete('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
+
+/*=============================================================================
+User Info and Preferences routes
+=============================================================================*/
+
+// Get User Principals
+router.get('/foliomon/user', userController.getUserPrincipals);
+
+// Get Streamer Subscription Keys
+router.get('/foliomon/user/sub', userController.getStreamerSubscriptionKeys);
+
+/*=============================================================================
+Market Data routes
+=============================================================================*/
+
+// Get Todays Market Hours or a specific market e.g. 'EQUITY'
+router.get('/foliomon/marketdata/hours/:market', marketDataController.getMarketHours);
+
+// Search or retrieve instrument data, including fundamental data
+router.get('/foliomon/marketdata/instruments', marketDataController.getInstruments);
 
 // Get chart data, price history
-router.post('/foliomon/instrument/pricehistory', instrumentController.getPriceHistory);
+router.get('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
 
 // Get top 10 (up or down) movers by value or percent for a particular market
-router.post('/foliomon/instrument/movers', instrumentController.getMovers);
+router.get('/foliomon/marketdata/movers', marketDataController.getMovers);
+
+// Get realtime quote for one or more symbols
+router.get('/foliomon/marketdata/quotes', marketDataController.getQuotes);
+
+// Get realtime quote for one symbol
+router.get('/foliomon/marketdata/:symbol/quotes/', marketDataController.getQuote);
+
+// Get delayed quote for one or more symbols
+router.get('/foliomon/marketdata/delayed', marketDataController.getDelayedQuotes);
+
+// Get delayed quote for one symbol
+router.get('/foliomon/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
 
 module.exports = router;

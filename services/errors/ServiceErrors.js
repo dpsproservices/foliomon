@@ -61,6 +61,18 @@ class NotFoundError extends Error {
     }
 }
 
+// HTTP 406 Not Acceptable
+class NotAcceptableError extends Error {
+    constructor(message) {
+
+        super(message);
+
+        Error.captureStackTrace(this, this.constructor);
+
+        this.name = 'NotAcceptableError';
+    }
+}
+
 // HTTP 500 Internal Server Error
 class InternalServerError extends Error {
     constructor(message) {
@@ -87,4 +99,4 @@ class ServiceUnavailableError extends Error {
     }
 }
 
-module.exports = { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError };
+module.exports = { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, NotAcceptableError, InternalServerError, ServiceUnavailableError };

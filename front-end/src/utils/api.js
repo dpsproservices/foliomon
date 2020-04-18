@@ -22,6 +22,12 @@ export const getUser = async () => {
   return await axios.get(url);
 };
 
+// Get Streamer Subscription Keys
+export const getUserSubscriptionKeys = async (body) => {
+  const url = `${API_URL}/user/sub`;
+  return await axios.get(url, body);
+};
+
 export const refreshAccounts = async () => {
   const url = `${API_URL}/accounts/refresh`;
   return await axios.get(url);
@@ -47,17 +53,22 @@ export const getAccountOrder = async (accountId,orderId) => {
   return await axios.get(url);
 };
 
-export const getInstruments = (body) => {
-  const url = `${API_URL}/instruments`;
-  return axios.post(url, body);
+export const getMarketHours = async (market) => {
+  const url = `${API_URL}/marketdata/hours/${market}`; // EQUITY, OPTION, FUTURE, BOND, or FOREX
+  return await axios.get(url);
+};
+
+export const getInstruments = async (body) => {
+  const url = `${API_URL}/marketdata/instruments`;
+  return await axios.get(url, body);
 };
 
 export const getPriceHistory = async (body) => {
-  const url = `${API_URL}/instrument/pricehistory`;
-  return await axios.post(url, body);
+  const url = `${API_URL}/marketdata/pricehistory`;
+  return await axios.get(url, body);
 };
 
 export const getMovers = async (body) => {
-  const url = `${API_URL}/instrument/movers`;
-  return await axios.post(url, body);
+  const url = `${API_URL}/marketdata/movers`;
+  return await axios.get(url, body);
 };
