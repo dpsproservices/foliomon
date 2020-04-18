@@ -5,7 +5,7 @@ const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
 const watchlistController = require('../controllers/watchlistController');
 const userController = require('../controllers/userController');
-const instrumentController = require('../controllers/instrumentController');
+const marketDataController = require('../controllers/marketDataController');
 
 /*=============================================================================
 Authentication routes
@@ -118,23 +118,41 @@ router.patch('/foliomon/watchlists/:accountId/:watchlistId', watchlistController
 router.delete('/foliomon/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
 
 /*=============================================================================
-User routes
+User Info and Preferences routes
 =============================================================================*/
 
 // Get User Principals
 router.get('/foliomon/user', userController.getUserPrincipals);
 
+// Get Streamer Subscription Keys
+router.get('/foliomon/user/sub', userController.getStreamerSubscriptionKeys);
+
 /*=============================================================================
-Instrument routes
+Market Data routes
 =============================================================================*/
 
-// Instrument Controller Routes
-router.post('/foliomon/instruments', instrumentController.getInstruments);
+// Get Todays Market Hours or a specific market e.g. 'EQUITY'
+router.get('/foliomon/marketdata/hours/:market', marketDataController.getMarketHours);
+
+// Search or retrieve instrument data, including fundamental data
+router.get('/foliomon/marketdata/instruments', marketDataController.getInstruments);
 
 // Get chart data, price history
-router.post('/foliomon/instrument/pricehistory', instrumentController.getPriceHistory);
+router.get('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
 
 // Get top 10 (up or down) movers by value or percent for a particular market
-router.post('/foliomon/instrument/movers', instrumentController.getMovers);
+router.get('/foliomon/marketdata/movers', marketDataController.getMovers);
+
+// Get realtime quote for one or more symbols
+router.get('/foliomon/marketdata/quotes', marketDataController.getQuotes);
+
+// Get realtime quote for one symbol
+router.get('/foliomon/marketdata/:symbol/quotes/', marketDataController.getQuote);
+
+// Get delayed quote for one or more symbols
+router.get('/foliomon/marketdata/delayed', marketDataController.getDelayedQuotes);
+
+// Get delayed quote for one symbol
+router.get('/foliomon/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
 
 module.exports = router;

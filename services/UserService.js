@@ -3,44 +3,113 @@ const axios = require('axios');
 const UserPrincipals = require('../models/user/UserPrincipals');
 const TokenService = require('./TokenService');
 
-const getDbUserPrincipals = function() {
-    return UserPrincipals.find().exec()
-        .then(function(foundUserPrincipals) {
-            if (foundUserPrincipals && (foundUserPrincipals.length > 0)) {
+/*=============================================================================
+TD API User Info and Preferences endpoint wrappers service methods
+
+https://developer.tdameritrade.com/user-principal/apis
+=============================================================================*/
+
+const api = {
+
+    // Get User Principals details from TD API
+    // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0
+    getUserPrincipals: async () => {
+        try {
+            const token = await TokenService.getAccessToken();
+            const params = {
+                fields: 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds'
+            };
+            const options = {
+                method: 'GET',
+                url: `${config.auth.apiUrl}/userprincipals`,
+                params: params,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 400 || status === 401 || status === 503;
+                }
+            };
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {
+                throw new InternalServerError(message);
+            }
+        } catch(err) {
+            throw err;
+        } 
+    },
+
+    // Get Streamer Subscription Keys
+    // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals/streamersubscriptionkeys-0
+    getStreamerSubscriptionKeys: async (accountIds) => {
+        try {
+            const token = await TokenService.getAccessToken();
+            const params = {
+                accountIds: accountIds // comma separated string of account IDs, to fetch subscription keys for each of them
+            };
+            const options = {
+                method: 'GET',
+                url: `${config.auth.apiUrl}/userprincipals/streamersubscriptionkeys`,
+                params: params,
+                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                validateStatus: function (status) {
+                    return status === 200 || status === 400 || status === 401 || status === 503;
+                }
+            };
+            const response = await axios(options);
+            const status = response.status;
+            const data = response.data;
+            const message = response.data.error;
+            if (status === 200) {
+                return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
+            } else if (status === 401) {
+                throw new UnauthorizedError(message);
+            } else if (status === 503) {
+                throw new ServiceUnavailableError(message);
+            } else {
+                throw new InternalServerError(message);
+            }
+        } catch (err) {
+            throw err;
+        }         
+    }
+
+};
+
+/*=============================================================================
+User Info and Preferences database service methods
+=============================================================================*/
+
+const db = {
+
+    // Get User Principals details from database
+    getUserPrincipals: async () => {
+        try {
+            const foundUserPrincipals = await UserPrincipals.find();
+            if (foundUserPrincipals) {
                 return foundUserPrincipals;
             } else {
-                console.log('Error in getDbUserPrincipals No user found in database.')
-                throw new Error('No user found in database.');
+                throw new NotFoundError(`Error user principals Not Found in database.`);
             }
-        })
-        .catch(function(err) {
-            throw new Error('Error fetching user from database.');
-        });
-};
-
-const getApiUserPrincipals = async () => {
-    const token = await TokenService.getAccessToken();
-
-    const params = {
-        fields: 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds'
-    };
-
-    const options = {
-        method: 'GET',
-        url: `${config.auth.apiUrl}/userprincipals`,
-        params: params,          
-        headers: { 'Authorization': `Bearer ${token.accessToken}` }      
-    };
-
-    try {
-        const response = await axios(options);
-        return response.data;
-    } catch (err) {
-        const message = response.message;
-        console.log(`Error in getApiUserPrincipals: ${message}`);
-        throw new Error(`Error in getApiUserPrincipals: ${message}`);
+        } catch (err) {
+            if(err.name === 'NotFoundError') {
+                throw err;
+            } else {
+                throw new InternalServerError(`Error fetching user principals from database: ${err.message}`);
+            }
+        }
     }
 };
-
-exports.getDbUserPrincipals = getDbUserPrincipals;
-exports.getApiUserPrincipals = getApiUserPrincipals;
+module.exports.api = api;
+module.exports.db = db;
