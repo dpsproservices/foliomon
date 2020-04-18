@@ -4,12 +4,12 @@ const axios = require('axios');
 //request.debug = true;
 const AccessToken = require('../models/auth/AccessToken');
 const RefreshToken = require('../models/auth/RefreshToken');
-const TokenService = require('../services/TokenService');
+const AuthService = require('../services/AuthService');
 
 // GET /foliomon/getAccessToken
 // get the Access Token from the db
 exports.getAccessToken = function(req, res) {
-    TokenService.getAccessToken()
+    AuthService.getAccessToken()
     .then(function(foundToken) {
         if (foundToken) {
             console.log(`Found access token: ${foundToken}`)
@@ -29,7 +29,7 @@ exports.getAccessToken = function(req, res) {
 // GET /foliomon/getRefreshToken
 // get the Refresh Token from the db
 exports.getRefreshToken = function(req, res) {
-    TokenService.getRefreshToken()
+    AuthService.getRefreshToken()
     .then(function(foundToken) {
         if (foundToken) {
             console.log(`Found refresh token: ${foundToken}`)
@@ -177,7 +177,7 @@ exports.authorize = async (req, res) => {
     try {
         console.log('authController.authorize begin');
 
-        const responseObject = await TokenService.authorize(req.query.code);
+        const responseObject = await AuthService.authorize(req.query.code);
 
         res.status(200).send(responseObject);
 
@@ -196,7 +196,7 @@ exports.reauthorize = async (req, res) => {
     try {
         console.log('authController.reauthorize begin');
 
-        const responseObject = await TokenService.reauthorize();
+        const responseObject = await AuthService.reauthorize();
 
         res.status(200).send(responseObject);
 

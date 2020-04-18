@@ -2,7 +2,7 @@ const config = require('../config/config.js');
 const axios = require('axios');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
 const Order = require('../models/Order');
-const TokenService = require('./TokenService');
+const AuthService = require('./AuthService');
 const moment = require('moment');
 
 /*=============================================================================
@@ -18,7 +18,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/orders-0
     getOrders: async () => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             var sixtyDaysAgo = currentDate.subtract(60, 'days').format('YYYY-MM-DD');
@@ -64,7 +64,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/accounts/%7BaccountId%7D/orders-0
     getAccountOrders: async (accountId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             var sixtyDaysAgo = currentDate.subtract(60, 'days').format('YYYY-MM-DD');
@@ -111,7 +111,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     getOrder: async (accountId,orderId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`, // Get Order
@@ -146,7 +146,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/post/accounts/%7BaccountId%7D/orders-0
     placeOrder: async (accountId, order) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'POST',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders`,
@@ -183,7 +183,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/put/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     replaceOrder: async (accountId, orderId, order) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'PUT',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`,
@@ -220,7 +220,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/delete/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     cancelOrder: async (accountId, orderId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'DELETE',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`,
@@ -346,7 +346,7 @@ const db = {
         }
     },
 
-    // Replace Specific order for a specific account with the TD API
+    // Replace Specific order for a specific account in the database
     // does not verify that the symbol or asset type are valid.
     replaceOrder: async (accountId, orderId, order) => {
         try {

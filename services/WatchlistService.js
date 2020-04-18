@@ -1,7 +1,7 @@
 const config = require('../config/config.js');
 const axios = require('axios');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
-const TokenService = require('./TokenService');
+const AuthService = require('./AuthService');
 const Watchlist = require('../models/Watchlist');
 
 /*=============================================================================
@@ -13,9 +13,10 @@ https://developer.tdameritrade.com/watchlist/apis
 const api = {
 
     // Get all watchlists for all of the user's linked accounts from the TD API
+    // https://developer.tdameritrade.com/watchlist/apis/get/accounts/watchlists-0
     getWatchlists: async () => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/watchlists`,
@@ -43,9 +44,10 @@ const api = {
     },
 
     // Get Watchlists of Single Account from the TD API
+    // https://developer.tdameritrade.com/watchlist/apis/get/accounts/%7BaccountId%7D/watchlists-0
     getAccountWatchlists: async (accountId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
@@ -75,9 +77,10 @@ const api = {
     },
 
     // Get specific watchlist of a specific account from the TD API
+    // https://developer.tdameritrade.com/watchlist/apis/get/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     getWatchlist: async (accountId,watchlistId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
@@ -112,9 +115,10 @@ const api = {
 
     // Create Specific watchlist of a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
+    // https://developer.tdameritrade.com/watchlist/apis/post/accounts/%7BaccountId%7D/watchlists-0
     createWatchlist: async (accountId, watchlist) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'POST',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
@@ -147,9 +151,10 @@ const api = {
 
     // Replace an existing watchlist in a specific account with the TD API
     // does not verify that the symbol or asset type are valid.
+    // https://developer.tdameritrade.com/watchlist/apis/put/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     replaceWatchlist: async (accountId, watchlistId, watchlist) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'PUT',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
@@ -185,9 +190,10 @@ const api = {
     // Partially update watchlist of a specific account: change watchlist name,
     // add to the beginning/end of a watchlist, update or delete items in a watchlist.
     // This method does not verify that the symbol or asset type are valid.
+    // https://developer.tdameritrade.com/watchlist/apis/patch/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     updateWatchlist: async (accountId, watchlistId, watchlist) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'PATCH',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
@@ -223,7 +229,7 @@ const api = {
     // Delete specific watchlist of a specific account from the TD API
     deleteWatchlist: async (accountId, watchlistId) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const options = {
                 method: 'DELETE',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,

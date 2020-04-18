@@ -8,7 +8,7 @@ const request = require('request-promise-native');
 const axios = require('axios');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-const TokenService = require('./services/TokenService');
+const AuthService = require('./services/AuthService');
 const AccountService = require('./services/AccountService');
 const OrderService = require('./services/OrderService');
 const bodyParser = require("body-parser");
@@ -128,7 +128,7 @@ async function authorizeApp() {
 
     // Fetch the access token from the db and check its expiration date time
     try {
-        accessToken = await TokenService.getAccessToken();
+        accessToken = await AuthService.getAccessToken();
         accessTokenExpirationDate = new Date(accessToken.accessTokenExpirationDate);
 
         if (accessTokenExpirationDate <= new Date()) {
@@ -142,7 +142,7 @@ async function authorizeApp() {
 
     // Fetch the refresh token from the db and check its expiration date time
     try {
-        refreshToken = await TokenService.getRefreshToken();
+        refreshToken = await AuthService.getRefreshToken();
         refreshTokenExpirationDate = new Date(refreshToken.refreshTokenExpirationDate);
 
         if (refreshTokenExpirationDate <= new Date()) {
@@ -162,7 +162,7 @@ async function authorizeApp() {
     } else if (isAccessTokenExpired && !isRefreshTokenExpired) {
 
         try {
-            const responseObject = await TokenService.reauthorize();
+            const responseObject = await AuthService.reauthorize();
             if (responseObject) {
                 console.log('authorizeApp got new tokens.');
                 authorized = true;

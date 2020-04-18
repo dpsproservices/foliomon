@@ -1,7 +1,8 @@
 const config = require('../config/config.js');
 const axios = require('axios');
-const UserPrincipals = require('../models/user/UserPrincipals');
-const TokenService = require('./TokenService');
+const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
+const UserPrincipal = require('../models/user/UserPrincipal');
+const AuthService = require('./AuthService');
 
 /*=============================================================================
 TD API User Info and Preferences endpoint wrappers service methods
@@ -15,7 +16,7 @@ const api = {
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0
     getUserPrincipals: async () => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 fields: 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds'
             };
@@ -52,7 +53,7 @@ const api = {
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals/streamersubscriptionkeys-0
     getStreamerSubscriptionKeys: async (accountIds) => {
         try {
-            const token = await TokenService.getAccessToken();
+            const token = await AuthService.getAccessToken();
             const params = {
                 accountIds: accountIds // comma separated string of account IDs, to fetch subscription keys for each of them
             };
@@ -96,7 +97,7 @@ const db = {
     // Get User Principals details from database
     getUserPrincipals: async () => {
         try {
-            const foundUserPrincipals = await UserPrincipals.find();
+            const foundUserPrincipals = await UserPrincipal.find();
             if (foundUserPrincipals) {
                 return foundUserPrincipals;
             } else {
@@ -109,7 +110,125 @@ const db = {
                 throw new InternalServerError(`Error fetching user principals from database: ${err.message}`);
             }
         }
-    }
+    },
+
+    // Create one userPrincipal on one account in the database
+    createUserPrincipal: async (userPrincipal) => {
+        try {
+            let result = null;
+            return result = await UserPrincipal.create(userPrincipal);
+        } catch (err) {
+            if (err.name === 'ValidationError') {
+                throw new BadRequestError(`Error creating userPrincipal in database validation: ${err.message}`);
+            } else {
+                throw new InternalServerError(`Error creating userPrincipal in database: ${err.message}`);
+            }
+        }
+    },
+
+    // Replace Specific userPrincipal for a specific userId in the database
+    replaceUserPrincipal: async (userId, userPrincipal) => {
+        try {
+            if (userId && userPrincipal && (userPrincipal.userId === userId) ) {
+                let filter = { userId: userId };
+                let replacement = userPrincipal;
+                let options = {
+                    new: true,
+                    upsert: false,
+                    omitUndefined: true
+                };
+                let result = null;
+                try {
+                    result = await UserPrincipal.replaceOne(filter, replacement, options);
+                    // matched and replaced only 1 document
+                    if (result.n === 1 && result.nModified === 1) {
+                        return result;
+                    } else {
+                        throw new NotFoundError('UserPrincipal with userId specified Not Found in database.');
+                    }
+                } catch (err) {
+                    if (err.name === 'ValidationError') {
+                        throw new BadRequestError(`Error replacing userPrincipal in database for userId: ${err.message}`);
+                    } else if (err.name === 'NotFoundError') {
+                        throw err;
+                    } else {
+                        throw new InternalServerError(`Error replacing userPrincipal in database: ${err.message}`);
+                    }
+                }
+            } else {
+                throw new BadRequestError(`Error replacing userPrincipal in database invalid userId or UserPrincipal object.`);
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
+
+    // Partially update userPrincipal for a specific account in the database
+    updateUserPrincipal: async (userId, userPrincipal) => {
+        try {
+            if (userId && userPrincipal && (userPrincipal.userId === userId) ) {
+                let filter = { userId: userId };
+                let update = userPrincipal;
+                let options = {
+                    new: true,
+                    upsert: false,
+                    omitUndefined: true
+                };
+                let result = null;
+                try {
+                    result = await UserPrincipal.updateOne(filter, update, options);
+                    // matched and updated only 1 document
+                    if (result.n === 1 && result.nModified === 1) {
+                        return result;
+                    } else {
+                        throw new NotFoundError('UserPrincipal with userId specified Not Found in database.');
+                    }
+                } catch (err) {
+                    if (err.name === 'ValidationError') {
+                        throw new BadRequestError(`Error updatng userPrincipal in database for userId: ${err.message}`);
+                    } else if (err.name === 'NotFoundError') {
+                        throw err;
+                    } else {
+                        throw new InternalServerError(`Error updatng userPrincipal in database: ${err.message}`);
+                    }
+                }
+            } else {
+                throw new BadRequestError(`Error updatng userPrincipal in database invalid userId or userPrincipal object.`);
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
+
+    // Delete all userPrincipals from the database
+    deleteUserPrincipals: async () => {
+        let result = null;
+        try {
+            result = await UserPrincipal.deleteMany();
+            return result;
+        } catch (err) {
+            throw new InternalServerError(`Error deleting all userPrincipals from database: ${err.message}`);
+        }
+    },
+
+    // Delete order for a specific userId from the database
+    deleteUserPrincipal: async (userId) => {
+        try {
+            if (userId) {
+                let result = await UserPrincipal.deleteOne({ userId: userId });
+                if (result.n === 1 && result.nModified === 1) {
+                    return result;
+                } else {
+                    throw new NotFoundError(`Error deleting UserPrincipal Not Found in database for userId.`);
+                }
+            } else {
+                throw new BadRequestError(`Error deleting UserPrincipal from database invalid userId.`);
+            }
+        } catch (err) {
+            throw err;
+        }
+    }    
+
 };
 module.exports.api = api;
 module.exports.db = db;
