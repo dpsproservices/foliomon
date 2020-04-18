@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { getAccountPositions, getAccounts, getUser } from '../../utils/api';
+import React, { useEffect, useState } from 'react';
+import { getAccountPositions, getAccounts } from '../../utils/api';
+import Websocket from '../Websocket';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   colors,
@@ -43,202 +44,67 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-var ws;
-var requestid = 0;
-
 const Positions = () => {
-  const isMounted = useRef(null);
   const [accounts, setAccounts] = useState();
   const [positions, setPositions] = useState();
   const [prices, setPrices] = useState({});
-  const [user, setUser] = useState();
   const [activeAccount, setActiveAccount] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const classes = useStyles();
 
-  const jsonToQueryString = (json) => {
-    return Object.keys(json).map(function(key) {
-            return encodeURIComponent(key) + '=' +
-                encodeURIComponent(json[key]);
-        }).join('&');
-  };
+  const subscriptions = [];
+  
+  if (positions) {
+    const symbols = positions && positions.map(p => p.instrument.symbol).toString();
+    subscriptions.push({
+      "service": "QUOTE",
+      "command": "SUBS",
+      "parameters": {
+          "keys": symbols,
+          "fields": "0,1,2,3"
+      }
+    });
+  }
+  
+  const messageHandlers = [];
 
-  const getCredentials = (user) => {
-    //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
-    const tokenTimeStampAsDateObj = new Date(user.streamerInfo.tokenTimestamp);
-    const tokenTimeStampAsMs = tokenTimeStampAsDateObj.getTime();
+  if (positions) {
+    messageHandlers.push((message) => {
+      if (message.data && message.data.length === 1
+        && message.data[0].service === 'QUOTE') {
+          const { content } = message.data[0];
+          content && content.forEach(row => {
+            let bidPrice = row['1'];
+            let askPrice = row['2'];
+            let lastPrice = row['3'];
+            const symbol = row.key;
 
-    const credentials = {
-      "userid": user.accounts[0].accountId,
-      "token": user.streamerInfo.token,
-      "company": user.accounts[0].company,
-      "segment": user.accounts[0].segment,
-      "cddomain": user.accounts[0].accountCdDomainId,
-      "usergroup": user.streamerInfo.userGroup,
-      "accesslevel": user.streamerInfo.accessLevel,
-      "authorized": "Y",
-      "timestamp": tokenTimeStampAsMs,
-      "appid": user.streamerInfo.appId,
-      "acl": user.streamerInfo.acl
-    };
-
-    return jsonToQueryString(credentials);
-  };
-
-  useEffect(() => {
-    // executed when component mounted
-    isMounted.current = true;
-    return () => {
-      // executed when unmounted
-      isMounted.current = false;
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (ws && user && isLoggedIn && !isMounted.current) {
-        const logout = {
-          "requests": [
-            {
-              "service": "ADMIN",
-              "command": "LOGOUT",
-              "requestid": requestid++,
-              "account": user.accounts[0].accountId,
-              "source": user.streamerInfo.appId,
-              "parameters": {
-                  "credential": getCredentials(user),
-                  "token": user.streamerInfo.token,
-                  "version": "1.0"
-              }
-            }
-          ]
-        };
-        console.log("Logging out...")
-        ws.send(JSON.stringify(logout));
-      };
-    }
-  }, [user, isLoggedIn]);
-
-  useEffect(() => {
-    if (user && isLoggedIn && positions) {
-      const symbols = positions.map(p => p.instrument.symbol).toString();
-      const request = {
-        "requests": [
-          {
-            "service": "QUOTE",
-            "command": "SUBS",
-            "requestid": requestid++,
-            "account": user.accounts[0].accountId,
-            "source": user.streamerInfo.appId,
-            "parameters": {
-                "keys": symbols,
-                "fields": "0,1,2,3"
-            }
-          }
-        ]
-      };
-
-      ws.send(JSON.stringify(request));
-    }
-  }, [isLoggedIn, positions]);
-
-  useEffect(() => {
-    if (isConnected && user) {
-
-      const request = {
-        "requests": [
-          {
-            "service": "ADMIN",
-            "command": "LOGIN",
-            "requestid": requestid++,
-            "account": user.accounts[0].accountId,
-            "source": user.streamerInfo.appId,
-            "parameters": {
-                "credential": getCredentials(user),
-                "token": user.streamerInfo.token,
-                "version": "1.0"
-            }
-          }
-        ]
-      };
-
-      ws.send(JSON.stringify(request));
-    }
-  }, [isConnected]);
-
-  useEffect(() => {
-
-    if (user) {
-      ws = new WebSocket("wss://" + user.streamerInfo.streamerSocketUrl + "/ws");
-
-      ws.onopen = () => {
-        // on connecting, do nothing but log it to the console
-        console.log('connected');
-        setIsConnected(true);
-      };
-
-      ws.onmessage = evt => {
-        // listen to data sent from the websocket server
-        const message = JSON.parse(evt.data);
-        console.log(message);
-
-        if (message.response && message.response.length === 1
-          && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGOUT'
-          && message.response[0].content.code === 0) {
-            if (isMounted.current) setIsLoggedIn(false);
-            ws.close();
-        }
-
-        if (!isMounted.current) return;
-
-        if (message.response && message.response.length === 1
-          && message.response[0].service === 'ADMIN' && message.response[0].command === 'LOGIN'
-          && message.response[0].content.code === 0) {
-            setIsLoggedIn(true);
-        }
-
-        if (message.data && message.data.length === 1
-          && message.data[0].service === 'QUOTE') {
-            const { content } = message.data[0];
-            content && content.forEach(row => {
-              let bidPrice = row['1'];
-              let askPrice = row['2'];
-              let lastPrice = row['3'];
-              const symbol = row.key;
-
-              setPrices(prevPrices => {
-                const prevPrice = prevPrices[symbol];
-                const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
-                const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
-                const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
-                bidPrice = bidPrice || prevBidPrice || 0;
-                askPrice = askPrice || prevAskPrice || 0;
-                lastPrice = lastPrice || prevLastPrice || 0;
-                const bidDirection = bidPrice > prevBidPrice ? 'up' : bidPrice == prevBidPrice ? 'none' : 'down';
-                const askDirection = askPrice > prevAskPrice ? 'up' : askPrice == prevAskPrice ? 'none' : 'down';;
-                const lastDirection = lastPrice > prevLastPrice ? 'up' : lastPrice == prevLastPrice ? 'none' : 'down';;
-                return ({
-                  ...prevPrices,
-                  [symbol]: {
-                    bidPrice,
-                    askPrice,
-                    lastPrice,
-                    bidDirection,
-                    askDirection,
-                    lastDirection
-                  }
-                });
+            setPrices(prevPrices => {
+              const prevPrice = prevPrices[symbol];
+              const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
+              const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
+              const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
+              bidPrice = bidPrice || prevBidPrice || 0;
+              askPrice = askPrice || prevAskPrice || 0;
+              lastPrice = lastPrice || prevLastPrice || 0;
+              const bidDirection = bidPrice === prevBidPrice || prevBidPrice === 0 ? 'none' : bidPrice > prevBidPrice ? 'up' : 'down';
+              const askDirection = askPrice === prevAskPrice || prevAskPrice === 0 ? 'none' : askPrice > prevAskPrice ? 'up' : 'down';
+              const lastDirection = lastPrice === prevLastPrice || prevLastPrice === 0 ? 'none' : lastPrice > prevLastPrice ? 'up' : 'down';
+              return ({
+                ...prevPrices,
+                [symbol]: {
+                  bidPrice,
+                  askPrice,
+                  lastPrice,
+                  bidDirection,
+                  askDirection,
+                  lastDirection
+                }
               });
             });
-          }
-      };
-
-      ws.onclose = () => {
-        console.log('disconnected');
-      };
-    }
-  }, [user]);
+          });
+        }
+    });
+  }
 
   useEffect(() => {
     const getData = async () => {
@@ -252,10 +118,6 @@ const Positions = () => {
         if (accountData && accountData.length > 0) {
           setActiveAccount(accountData[0].accountId);
         }
-
-        const userRes = await getUser();
-        console.log(userRes.data);
-        setUser(userRes.data);
       } catch (error) {
         console.log(error);
       }
@@ -341,6 +203,7 @@ const Positions = () => {
 
   return (
     <Grid container className={classes.root}>
+      <Websocket subscriptions={subscriptions} messageHandlers={messageHandlers} />
       <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center" className={classes.selectRow}>
         <Grid item xs={3}>
           <InputLabel id="account-select-label">Account</InputLabel>
