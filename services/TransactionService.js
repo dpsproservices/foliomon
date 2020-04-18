@@ -183,7 +183,6 @@ const db = {
     },
 
     // Replace Specific transaction for a specific account
-    // does not verify that the symbol or asset type are valid.
     replaceTransaction: async (accountId, transactionId, transaction) => {
         try {
             if (accountId && transactionId && transaction) {
