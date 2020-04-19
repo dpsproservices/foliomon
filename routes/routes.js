@@ -135,13 +135,13 @@ Market Data routes
 router.get('/foliomon/marketdata/hours/:market', marketDataController.getMarketHours);
 
 // Search or retrieve instrument data, including fundamental data
-router.get('/foliomon/marketdata/instruments', marketDataController.getInstruments);
+router.post('/foliomon/marketdata/instruments', marketDataController.getInstruments);
 
 // Get chart data, price history
 router.get('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
 
 // Get top 10 (up or down) movers by value or percent for a particular market
-router.get('/foliomon/marketdata/movers', marketDataController.getMovers);
+router.post('/foliomon/marketdata/movers', marketDataController.getMovers);
 
 // Get realtime quote for one or more symbols
 router.get('/foliomon/marketdata/quotes', marketDataController.getQuotes);

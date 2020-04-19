@@ -60,7 +60,7 @@ export const getMarketHours = async (market) => {
 
 export const getInstruments = async (body) => {
   const url = `${API_URL}/marketdata/instruments`;
-  return await axios.get(url, body);
+  return await axios.post(url, body);
 };
 
 export const getPriceHistory = async (body) => {
@@ -70,5 +70,10 @@ export const getPriceHistory = async (body) => {
 
 export const getMovers = async (body) => {
   const url = `${API_URL}/marketdata/movers`;
-  return await axios.get(url, body);
+  return await axios.post(url, body);
+};
+
+export const getAllWatchlists = async () => {
+  const url = `${API_URL}/watchlists`;
+  return await axios.get(url);
 };
