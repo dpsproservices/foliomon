@@ -3,7 +3,7 @@ import { Switch, Router, Redirect } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
 import { Grid, Button, CircularProgress } from '@material-ui/core';
-import { authorize, getAccessToken, refreshAccounts } from './utils/api';
+import { authorize, getAccessToken, getAccounts } from './utils/api';
 import { Main } from './pages';
 import { RouteWithLayout, NotFound, Orders, Overview, Positions, Stocks } from './components';
 import theme from './theme';
@@ -50,7 +50,7 @@ function App() {
       try {
         setIsFetching(true);
         await authorize(code);
-        await refreshAccounts();
+        await getAccounts();
         setIsDoneAuthorizing(true);
       } catch (error) {
         console.log(error);

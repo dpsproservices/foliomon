@@ -16,6 +16,7 @@ import Search from '../Search';
 import Chart from '../Chart';
 import Movers from '../Movers';
 import Websocket from '../Websocket';
+import Watchlists from '../Watchlists';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -207,7 +208,7 @@ const Stocks = ({ match } ) => {
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
               <Grid item xs={4}>
                 <List className={classes.list}>
-                <ListItem>
+                  <ListItem>
                     <ListItemText primary="Last"/>
                     <ListItemSecondaryAction>
                       <span className={getPriceClass(lastDirection)}><b>{lastPrice}</b></span>
@@ -309,6 +310,10 @@ const Stocks = ({ match } ) => {
       <Grid container spacing={4} direction="row" justify="flex-start">
         <Grid item xs={4}>
           <Movers />
+        </Grid>
+
+        <Grid item xs={4}>
+          <Watchlists />
         </Grid>
       </Grid>
     </Grid>

@@ -17,7 +17,8 @@ import {
   Select,
   FormControl,
   InputLabel,
-  Paper  } from '@material-ui/core';
+  Paper
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles(theme => ({

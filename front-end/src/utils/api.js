@@ -73,7 +73,7 @@ export const getMovers = async (body) => {
   return await axios.post(url, body);
 };
 
-export const getWatchlists = async () => {
+export const getAllWatchlists = async () => {
   const url = `${API_URL}/watchlists`;
   return await axios.get(url);
 };
