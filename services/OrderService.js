@@ -18,7 +18,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/orders-0
     getOrders: async () => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             var sixtyDaysAgo = currentDate.subtract(60, 'days').format('YYYY-MM-DD');
@@ -33,7 +33,7 @@ const api = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/orders`, // Get Orders By Query
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` }, 
+                headers: { 'Authorization': `Bearer ${accessToken}` }, 
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
@@ -64,7 +64,7 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/accounts/%7BaccountId%7D/orders-0
     getAccountOrders: async (accountId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             var sixtyDaysAgo = currentDate.subtract(60, 'days').format('YYYY-MM-DD');
@@ -80,7 +80,7 @@ const api = {
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders`, // Get Orders By Path
                 //url: `${config.auth.apiUrl}/orders`, // Get Orders By Query
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
@@ -111,11 +111,11 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/get/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     getOrder: async (accountId,orderId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`, // Get Order
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -146,11 +146,11 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/post/accounts/%7BaccountId%7D/orders-0
     placeOrder: async (accountId, order) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'POST',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 data: order,
                 validateStatus: function (status) {
                     return status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
@@ -183,11 +183,11 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/put/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     replaceOrder: async (accountId, orderId, order) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'PUT',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 data: order,
                 validateStatus: function (status) {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
@@ -220,11 +220,11 @@ const api = {
     // https://developer.tdameritrade.com/account-access/apis/delete/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
     cancelOrder: async (accountId, orderId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'DELETE',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/orders/${orderId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }

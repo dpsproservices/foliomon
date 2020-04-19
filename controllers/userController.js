@@ -34,7 +34,7 @@ controller = {
 
     // Get Streamer Subscription Keys
     getStreamerSubscriptionKeys: async (req, res) => {
-        let accountIds = req.params.accountIds;
+        let accountIds = req.body.accountIds; // will be a POST from client route
         try {
             var subscriptionKeys = await UserService.api.getStreamerSubscriptionKeys(accountIds);
             res.status(200).send(subscriptionKeys);

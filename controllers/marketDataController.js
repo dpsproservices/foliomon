@@ -10,7 +10,7 @@ const controller = {
     // Get Hours for Multiple Markets
     getMarketsHours: async(req, res) => {
         try {
-            const { markets } = req.params;
+            const { markets } = req.body; // will be a POST from client route
             const marketHours = await MarketDataService.api.getMarketsHours(markets);
             res.status(200).send(marketHours);
         } catch (err) {
@@ -74,7 +74,7 @@ const controller = {
     // Search or retrieve instrument data, including fundamental data
     getInstruments: async (req, res) => {
         try {
-            const { symbol, projection } = req.body;
+            const { symbol, projection } = req.body; // will be a POST from client route
             const instruments = await MarketDataService.api.getInstruments(symbol, projection);
             res.status(200).send(instruments);
         } catch (err) {
@@ -137,7 +137,7 @@ const controller = {
 
     // Get price history for a symbol
     getPriceHistory: async (req, res) => {
-        try {
+        try { // will be a POST request on the client route
             const { symbol, period, periodType, frequency, frequencyType } = req.body;
             const priceHistory = await MarketDataService.api.getPriceHistory(symbol, period, periodType, frequency, frequencyType);
             res.status(200).send(priceHistory);
@@ -202,7 +202,7 @@ const controller = {
     // Get realtime quote for one or more symbols
     getQuotes: async (req, res) => {
         try {
-            const symbols = req.body.symbols;
+            const symbols = req.body.symbols; // client route will be POST
             const quotes = await MarketDataService.api.getQuotes(symbols);
             res.status(200).send(quotes);
         } catch (err) {
@@ -272,7 +272,7 @@ const controller = {
     // Get delayed quotes for one or more symbols - with api key client id instead of access token
     getDelayedQuotes: async (req, res) => {
         try {
-            const symbols = req.body.symbols;
+            const symbols = req.body.symbols; // client route will be POST
             const delayedQuotes = await MarketDataService.api.getDelayedQuotes(symbols);
             res.status(200).send(delayedQuotes);
         } catch (err) {

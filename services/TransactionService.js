@@ -17,7 +17,7 @@ const api = {
     // https://developer.tdameritrade.com/transaction-history/apis/get/accounts/%7BaccountId%7D/transactions-0
     getAccountTransactions: async (accountId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             var oneYearAgo = currentDate.subtract(1, 'years').format('YYYY-MM-DD');
@@ -32,7 +32,7 @@ const api = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/transactions`, // Get Transactions for a specific account
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
@@ -63,11 +63,11 @@ const api = {
     // https://developer.tdameritrade.com/transaction-history/apis/get/accounts/%7BaccountId%7D/transactions/%7BtransactionId%7D-0
     getTransaction: async (accountId, transactionId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/transactions/${transactionId}`, // Get Transaction for a specific account
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
