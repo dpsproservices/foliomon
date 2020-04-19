@@ -63,7 +63,7 @@ const controller = {
     // Get the Access Token from the auth token in the database
     getAccessToken: async (req, res) => {
         try {
-            const authToken = await AuthService.db.getAccessToken();
+            const authToken = await AuthService.db.getToken();
             let accessTokenExpirationDate = new Date(authToken.accessTokenExpirationDate);
             if (accessTokenExpirationDate > new Date() ) {
                 const accessToken = authToken.accessToken;
@@ -92,7 +92,7 @@ const controller = {
     // Get the Refresh Token from the auth token in the database
     getRefreshToken: async (req, res) => {
         try {
-            const authToken = await AuthService.db.getAuthToken();
+            const authToken = await AuthService.db.getToken();
             let refreshTokenExpirationDate = new Date(authToken.refreshTokenExpirationDate);
             if (refreshTokenExpirationDate > new Date()) {
                 const refreshToken = authToken.refreshToken;
