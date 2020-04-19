@@ -3,14 +3,17 @@ const config = require('../config/config');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const AuthController = require('./AuthController');
 const AccountController = require('./AccountController');
-//const OrderController = require('./OrderController');
+const OrderController = require('./OrderController');
 
 const controller = {
 
     initializeApp: async () => {
-
-        await AccountController.initializeAccountsData();
-        // await OrderController.initializeOrdersData();
+        try {
+            await AccountController.initializeAccounts();
+            await OrderController.initializeOrders();
+        } catch (err) {
+            console.log(err.message);
+        }
     },
 
     runMarketOpenEvents: async () => {

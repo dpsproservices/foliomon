@@ -32,6 +32,24 @@ controller = {
         }
     },
 
+    // Same as resetOrders but for use during internal web server bootloading only.
+    initializeOrders: async () => {
+        try {
+            const orders = await OrderService.api.getOrders();
+            const dbResult = await OrderService.db.resetOrders(orders);
+        } catch (err) {
+            var error = err.message;
+            if (err instanceof UnauthorizedError) {
+                error = `Invalid Access Token: ${err.message}`;
+            } else if (err instanceof InternalServerError) {
+                error = `Internal Server Error: ${err.message}`;
+            } else if (err instanceof ServiceUnavailableError) {
+                error = `Service Unavailable: ${err.message}`;
+            }
+            console.log({ error });
+        }
+    },    
+
     // Get Orders for Multiple Accounts
     // Get all orders for all of the user's linked accounts from the TD API
     getOrders: async (req, res) => {
@@ -166,7 +184,8 @@ controller = {
         }
     },
 
-    // Replace an existing order in a specific account
+    // Replace an existing order in a specific account with the TD api
+    // then update it in the database
     replaceOrder: async (req, res) => {
         let accountId = req.params.accountId;
         let orderId = req.params.orderId;
@@ -177,25 +196,11 @@ controller = {
             // The service will throw an error on any other status code besides 204 No Content
             const response = await OrderService.api.replaceOrder(accountId, orderId, order);
             // After the order was successfully replaced at TD
-            // Request TD API to get the orders on the account
-            const orders = await OrderService.api.getAccountOrders(accountId);
-            // Match the id of the newly created order
-            let foundMatch = false;
-            for (let i = 0; i < orders.length; i++) {
-                let orderFromAPI = orders[i];
-                if (orderId === orderFromAPI.orderId) {
-                    foundMatch = true;
-                    order = orderFromAPI;
-                    break;
-                }
-            }
-            if (foundMatch) {
-                // Replace the matched order from TD API into the database
-                const dbResult = await OrderService.db.replaceOrder(accountId, orderId, order);
-                res.status(200).send(order);
-            } else {
-                throw new InternalServerError(`No order replaced on account at TD with matching orderId.`);
-            }
+            // Request TD API to get the order on the account
+            const replacedOrder = await OrderService.api.getOrder(accountId, orderId);
+            // Replace the matched order from TD API into the database
+            const dbResult = await OrderService.db.replaceOrder(accountId, orderId, replacedOrder);
+            res.status(200).send(order);
         } catch (err) {
             var status = 500; // default
             var error = err.message;
@@ -222,13 +227,15 @@ controller = {
         }
     },
 
-    // Delete specific order of a specific account
-    deleteOrder: async (req, res) => {
+    // Cancel an order of a specific account with the TD api 
+    // then update it in the database
+    cancelOrder: async (req, res) => {
         let accountId = req.params.accountId;
         let orderId = req.params.orderId;
         try {
-            const response = await OrderService.api.deleteOrder(accountId, orderId);
-            const dbResult = await OrderService.db.deleteOrder(accountId, orderId);
+            const response = await OrderService.api.cancelOrder(accountId, orderId);
+            const cancelledOrder = await OrderService.api.getOrder(accountId, orderId);
+            const dbResult = await OrderService.db.updateOrder(accountId, orderId, cancelledOrder);
             res.status(204).send();
         } catch (err) {
             var status = 500; // default
@@ -253,32 +260,6 @@ controller = {
                 error = `Service Unavailable: ${err.message}`;
             }
             res.status(status).send({ error: error });
-        }
-    },
-
-    initializeOrdersData: async () => {
-
-        var isOrdersDataAvailable = false;
-        var orders = null;
-
-        // Verify the orders are stored otherwise get them and store them
-        try {
-            orders = await OrderService.db.getOrders();
-            isOrdersDataAvailable = true;
-        } catch (err) {
-            isOrdersDataAvailable = false;
-        }
-
-        if (!isOrdersDataAvailable) {
-            console.log('initializeOrdersData No orders data available. Getting from TD...');
-
-            try {
-                const orders = await OrderService.api.getOrders();
-                const dbResult = await OrderService.db.resetOrders(orders);
-            } catch (err) {
-                console.log(`Error in initializeOrdersData ${err}`);
-            }
-
         }
     }
     

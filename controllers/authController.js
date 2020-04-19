@@ -64,12 +64,20 @@ const controller = {
     getAccessToken: async (req, res) => {
         try {
             const authToken = await AuthService.db.getAuthToken();
-            const accessToken = authToken.accessToken;
-            res.status(200).send(accessToken);
+            let accessTokenExpirationDate = new Date(authToken.accessTokenExpirationDate);
+            if (accessTokenExpirationDate > new Date() ) {
+                const accessToken = authToken.accessToken;
+                res.status(200).send(accessToken);
+            } else {
+                throw new UnauthorizedError('Access Token is Expired.');
+            }
         } catch (err) {
             var status = 500; // default
             var error = err.message;
-            if (err instanceof NotFoundError) {
+            if (err instanceof UnauthorizedError) {
+                status = 401;
+                error = 'Access Token is Expired.';
+            } else if (err instanceof NotFoundError) {
                 status = 404;
                 error = `Access Token Not Found.`;
             } else if (err instanceof InternalServerError) {
@@ -85,12 +93,20 @@ const controller = {
     getRefreshToken: async (req, res) => {
         try {
             const authToken = await AuthService.db.getAuthToken();
-            const refreshToken = authToken.refreshToken;
-            res.status(200).send(refreshToken);
+            let refreshTokenExpirationDate = new Date(authToken.refreshTokenExpirationDate);
+            if (refreshTokenExpirationDate > new Date()) {
+                const refreshToken = authToken.refreshToken;
+                res.status(200).send(refreshToken);
+            } else {
+                throw new UnauthorizedError('Refresh Token is Expired.');
+            }            
         } catch (err) {
             var status = 500; // default
             var error = err.message;
-            if (err instanceof NotFoundError) {
+            if (err instanceof UnauthorizedError) {
+                status = 401;
+                error = 'Refresh Token is Expired.';
+            } else if (err instanceof NotFoundError) {
                 status = 404;
                 error = `Refresh Token Not Found.`;
             } else if (err instanceof InternalServerError) {

@@ -99,7 +99,8 @@ const api = {
         }        
     },
 
-    // Build a POJO AuthToken from the response data from TD API
+    // Build an AuthToken JSON object with the response data 
+    // received from the TD API Post Access Token and Refresh Token
     getAuthTokenFromResponse: function (data) {
         try {
             // Validate the response data from TD API
@@ -148,7 +149,7 @@ const api = {
 
             return authToken;
         } catch (err) {
-            console.log(err.message);
+            console.log(`Error in authService.getAuthTokenFromResponse: ${err.message}`);
             throw err;
         }
     }    

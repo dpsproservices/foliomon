@@ -11,54 +11,38 @@ const marketDataController = require('../controllers/marketDataController');
 Authentication routes
 =============================================================================*/
 
-// get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
+// Get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
 router.get('/foliomon/authorize', authController.postAccessToken);
 
-// get a new Access Token and new Refresh Token from TD with a Refresh Token which hasnt expired
-//router.get('/foliomon/reauthorize', authController.reauthorize);
+// Get a new Access Token and new Refresh Token from TD using the valid Refresh Token from database
+router.get('/foliomon/reauthorize', authController.postAccessToken);
 
-// get the Access Token stored in the database
+// Get the Access Token stored in the database
 router.get('/foliomon/accesstoken', authController.getAccessToken);
 
-// save the Access Token into the database
-//router.put('/foliomon/accesstoken', authController.saveAccessToken);
-
-// get the Reresh Token stored in the database
+// Get the Refresh Token stored in the database for testing
 //router.get('/foliomon/refreshtoken', authController.getRefreshToken);
-
-// save the Refresh Token into the database
-//router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
 
 /*=============================================================================
 Account routes
 =============================================================================*/
 
-// get all accounts available from the database
-router.get('/foliomon/accounts', accountController.getAllAccounts);
+// Get all of the user's linked accounts from TD API
+// Delete all accounts in the database
+// Save accounts from TD into the database and send them back on the response to the client
+router.post('/foliomon/accounts/reset', accountController.resetAccounts);
 
-// save multiple accounts into the database update them if they exist (upsert)
-router.put('/foliomon/accounts', accountController.saveAccounts);
+// Get all accounts available from the TD api
+router.get('/foliomon/accounts', accountController.getAccounts);
 
-// delete all accounts from the database
-router.delete('/foliomon/accounts', accountController.deleteAllAccounts);
+// Get one account from the TD api
+router.get('/foliomon/accounts/:accountId', accountController.getAccount);
 
-// get all accounts from TD api save them to the database
-router.get('/foliomon/accounts/refresh', accountController.refreshAccounts);
+// Get one account with positions from TD api
+router.get('/foliomon/accounts/:accountId/positions', accountController.getAccountPositions);
 
-// get one account by its accountId from the database
-router.get('/foliomon/accounts/:accountId', accountController.getAccountById);
-
-// save one account by its accountId update it if it exists (upsert)
-router.put('/foliomon/accounts/:accountId', accountController.saveAccountById);
-
-// delete one account by its accountId from the database
-router.delete('/foliomon/accounts/:accountId', accountController.deleteAccountById);
-
-// get account with positions from TD api
-router.get('/foliomon/accounts/:accountId/positions', accountController.getPositionsByAccountId);
-
-// get account with orders from TD api
-router.get('/foliomon/accounts/:accountId/orders', accountController.getOrdersByAccountId);
+// Get one account with orders from TD api
+router.get('/foliomon/accounts/:accountId/orders', accountController.getAccountOrders);
 
 /*=============================================================================
 Orders routes
@@ -84,8 +68,8 @@ router.post('/foliomon/orders/:accountId', orderController.placeOrder);
 // Replace an existing order in a specific account with TD API
 router.put('/foliomon/orders/:accountId/:orderId', orderController.replaceOrder);
 
-// Delete specific order of a specific account with TD API
-router.delete('/foliomon/orders/:accountId/:orderId', orderController.deleteOrder);
+// Cancel an order of a specific account with TD API
+router.delete('/foliomon/orders/:accountId/:orderId', orderController.cancelOrder);
 
 /*=============================================================================
 Watchlist routes
@@ -154,5 +138,15 @@ router.post('/foliomon/marketdata/delayed', marketDataController.getDelayedQuote
 
 // Get delayed quote for one symbol
 router.get('/foliomon/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
+
+/*=============================================================================
+Transaction History routes
+=============================================================================*/
+
+// Get all transactions of one single account from TD API
+router.get('/foliomon/transactions/:accountId', transactionController.getAccountTransactions);
+
+// Get one transaction of an account from TD API
+router.get('/foliomon/transactions/:accountId/:transactionId', transactionController.getTransaction);
 
 module.exports = router;
