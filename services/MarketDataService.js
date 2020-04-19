@@ -22,7 +22,7 @@ https://developer.tdameritrade.com/market-hours/apis
             if (!markets) {
                 markets = config.app.defaults.markets;
             }
-            //const token = await AuthService.getAccessToken();
+            //const accessToken = await AuthService.db.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             const params = {
@@ -34,7 +34,7 @@ https://developer.tdameritrade.com/market-hours/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/hours`, // Get Hours for Multiple Markets
                 params: params,
-                // headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                // headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 503;
                 }
@@ -65,7 +65,7 @@ https://developer.tdameritrade.com/market-hours/apis
     // Retrieve market hours for specified single market
     getMarketHours: async(market) => {
         try {
-            //const token = await AuthService.getAccessToken();
+            //const accessToken = await AuthService.db.getAccessToken();
             var currentDate = moment();
             var todayDate = currentDate.format('YYYY-MM-DD');
             // The market for which you're requesting market hours EQUITY, OPTION, FUTURE, BOND, or FOREX.
@@ -81,7 +81,7 @@ https://developer.tdameritrade.com/market-hours/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/${market}/hours`, // Get Hours for a Single Market
                 params: params,
-                // headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                // headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -143,7 +143,7 @@ https://developer.tdameritrade.com/instruments/apis
             if (!validProjectionTypes.includes(projection)) {
                 throw new BadRequestError(`Invalid projection type: ${projection}`);
             }
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 symbol: symbol,
                 projection: projection
@@ -152,7 +152,7 @@ https://developer.tdameritrade.com/instruments/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/instruments`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 406 || status === 503;
                 }
@@ -187,11 +187,11 @@ https://developer.tdameritrade.com/instruments/apis
     // https://developer.tdameritrade.com/instruments/apis/get/instruments/%7Bcusip%7D
     getInstrument: async (cusip) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/instruments/${cusip}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -262,7 +262,7 @@ https://developer.tdameritrade.com/price-history/apis
     */
     getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 period: period,
                 periodType: periodType, // day, month, year, ytd
@@ -276,7 +276,7 @@ https://developer.tdameritrade.com/price-history/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/${symbol}/pricehistory`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -323,7 +323,7 @@ https://developer.tdameritrade.com/movers/apis
             if (!validChange.includes(change)) {
                 throw new BadRequestError(`Invalid change: ${change}`);
             }
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 //apiKey: config.auth.clientId, // (Optional) Pass your Client ID if making an unauthenticated request
                 direction: direction, // 'up' or  'down'
@@ -333,7 +333,7 @@ https://developer.tdameritrade.com/movers/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/${index}/movers`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -373,7 +373,7 @@ https://developer.tdameritrade.com/quotes/apis
     // https://developer.tdameritrade.com/quotes/apis/get/marketdata/quotes
     getQuotes: async (symbols) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 symbols: symbols
             };
@@ -381,7 +381,7 @@ https://developer.tdameritrade.com/quotes/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/quotes`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 406 || status === 503;
                 }
@@ -416,7 +416,7 @@ https://developer.tdameritrade.com/quotes/apis
     // https://developer.tdameritrade.com/quotes/apis/get/marketdata/%7Bsymbol%7D/quotes
     getQuote: async (symbol) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 symbol: symbol
             };
@@ -424,7 +424,7 @@ https://developer.tdameritrade.com/quotes/apis
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/${symbol}/quotes`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 406 || status === 503;
                 }

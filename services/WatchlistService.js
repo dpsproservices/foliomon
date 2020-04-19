@@ -16,11 +16,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/get/accounts/watchlists-0
     getWatchlists: async () => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/watchlists`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 401 || status === 503;
                 }
@@ -47,11 +47,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/get/accounts/%7BaccountId%7D/watchlists-0
     getAccountWatchlists: async (accountId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 401 || status === 403 || status === 503;
                 }
@@ -80,11 +80,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/get/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     getWatchlist: async (accountId,watchlistId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
@@ -118,11 +118,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/post/accounts/%7BaccountId%7D/watchlists-0
     createWatchlist: async (accountId, watchlist) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'POST',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
                     return status === 201 || status === 400 || status === 401 || status === 403 || status === 503;
@@ -154,11 +154,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/put/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     replaceWatchlist: async (accountId, watchlistId, watchlist) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'PUT',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
@@ -193,11 +193,11 @@ const api = {
     // https://developer.tdameritrade.com/watchlist/apis/patch/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
     updateWatchlist: async (accountId, watchlistId, watchlist) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'PATCH',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 data: watchlist,
                 validateStatus: function (status) {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
@@ -229,11 +229,11 @@ const api = {
     // Delete specific watchlist of a specific account from the TD API
     deleteWatchlist: async (accountId, watchlistId) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const options = {
                 method: 'DELETE',
                 url: `${config.auth.apiUrl}/accounts/${accountId}/watchlists/${watchlistId}`,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 204 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }

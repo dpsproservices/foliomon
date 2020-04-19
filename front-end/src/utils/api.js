@@ -25,7 +25,7 @@ export const getUser = async () => {
 // Get Streamer Subscription Keys
 export const getUserSubscriptionKeys = async (body) => {
   const url = `${API_URL}/user/sub`;
-  return await axios.get(url, body);
+  return await axios.post(url, body);
 };
 
 export const refreshAccounts = async () => {
@@ -65,7 +65,7 @@ export const getInstruments = async (body) => {
 
 export const getPriceHistory = async (body) => {
   const url = `${API_URL}/marketdata/pricehistory`;
-  return await axios.get(url, body);
+  return await axios.post(url, body);
 };
 
 export const getMovers = async (body) => {
@@ -75,5 +75,10 @@ export const getMovers = async (body) => {
 
 export const getAllWatchlists = async () => {
   const url = `${API_URL}/watchlists`;
+  return await axios.get(url);
+};
+
+export const getAccountWatchlists = async (accountId) => {
+  const url = `${API_URL}/watchlists/${accountId}`;
   return await axios.get(url);
 };
