@@ -63,7 +63,7 @@ const controller = {
     // Get the Access Token from the auth token in the database
     getAccessToken: async (req, res) => {
         try {
-            const authToken = await AuthService.db.getAuthToken();
+            const authToken = await AuthService.db.getAccessToken();
             let accessTokenExpirationDate = new Date(authToken.accessTokenExpirationDate);
             if (accessTokenExpirationDate > new Date() ) {
                 const accessToken = authToken.accessToken;
