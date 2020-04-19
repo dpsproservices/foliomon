@@ -16,7 +16,7 @@ const api = {
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0
     getUserPrincipals: async () => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 fields: 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds'
             };
@@ -24,7 +24,7 @@ const api = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/userprincipals`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 503;
                 }
@@ -53,7 +53,7 @@ const api = {
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals/streamersubscriptionkeys-0
     getStreamerSubscriptionKeys: async (accountIds) => {
         try {
-            const token = await AuthService.getAccessToken();
+            const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 accountIds: accountIds // comma separated string of account IDs, to fetch subscription keys for each of them
             };
@@ -61,7 +61,7 @@ const api = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/userprincipals/streamersubscriptionkeys`,
                 params: params,
-                headers: { 'Authorization': `Bearer ${token.accessToken}` },
+                headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
                     return status === 200 || status === 400 || status === 401 || status === 503;
                 }

@@ -254,6 +254,33 @@ controller = {
             }
             res.status(status).send({ error: error });
         }
+    },
+
+    initializeOrdersData: async () => {
+
+        var isOrdersDataAvailable = false;
+        var orders = null;
+
+        // Verify the orders are stored otherwise get them and store them
+        try {
+            orders = await OrderService.db.getOrders();
+            isOrdersDataAvailable = true;
+        } catch (err) {
+            isOrdersDataAvailable = false;
+        }
+
+        if (!isOrdersDataAvailable) {
+            console.log('initializeOrdersData No orders data available. Getting from TD...');
+
+            try {
+                const orders = await OrderService.api.getOrders();
+                const dbResult = await OrderService.db.resetOrders(orders);
+            } catch (err) {
+                console.log(`Error in initializeOrdersData ${err}`);
+            }
+
+        }
     }
+    
 };
 module.exports = controller;

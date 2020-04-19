@@ -329,3 +329,31 @@ exports.getOrdersByAccountId = async (req, res) => {
         res.status(500).send('Internal Server Error during Account orders request.');
     }
 }
+
+exports.initializeAccountsData = async () => {
+
+    var isAccountsDataAvailable = false;
+    var accounts = null;
+
+    // Verify the accounts are stored otherwise get them and store them
+    try {
+        accounts = await AccountService.getDbAccounts();
+        isAccountsDataAvailable = true;
+    } catch (err) {
+        console.log(`Error in initializeAccountsData ${err}`);
+        isAccountsDataAvailable = false;
+    }
+
+    if (!isAccountsDataAvailable) {
+        console.log('initializeAccountsData No accounts data available. Getting from TD...');
+
+        try {
+            accounts = await AccountService.getApiAccounts();
+            if (accounts && accounts.length > 0)
+                await AccountService.saveDbAccounts(accounts);
+        } catch (err) {
+            console.log(`Error in initializeAccountsData ${err}`);
+        }
+
+    }
+}

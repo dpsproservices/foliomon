@@ -35,12 +35,12 @@ const saveDbAccounts = function(accounts) {
 
 const getApiAccounts = async () => {
 
-    const token = await AuthService.getAccessToken();
+    const accessToken = await AuthService.db.getAccessToken();
 
     const options = {
         method: 'GET',
         url: `${config.auth.apiUrl}/accounts`,
-        headers: { 'Authorization': `Bearer ${token.accessToken}` }
+        headers: { 'Authorization': `Bearer ${accessToken}` }
     };
 
     try {
@@ -55,12 +55,12 @@ const getApiAccounts = async () => {
 
 const getApiAccountPositions = async (accountId) => {
 
-    const token = await AuthService.getAccessToken();
+    const accessToken = await AuthService.db.getAccessToken();
 
     const options = {
         method: 'GET',
         url: `${config.auth.apiUrl}/accounts/${accountId}`,
-        headers: { 'Authorization': `Bearer ${token.accessToken}` },
+        headers: { 'Authorization': `Bearer ${accessToken}` },
         params: { fields: 'positions' }
     };
 
@@ -76,12 +76,12 @@ const getApiAccountPositions = async (accountId) => {
 
 const getApiAccountOrders = async (accountId) => {
 
-    const token = await AuthService.getAccessToken();
+    const accessToken = await AuthService.db.getAccessToken();
 
     const options = {
         method: 'GET',
         url: `${config.auth.apiUrl}/accounts/${accountId}`,
-        headers: { 'Authorization': `Bearer ${token.accessToken}` },
+        headers: { 'Authorization': `Bearer ${accessToken}` },
         params: { fields: 'orders' }
     };
 

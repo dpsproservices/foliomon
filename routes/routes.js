@@ -12,22 +12,22 @@ Authentication routes
 =============================================================================*/
 
 // get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
-router.get('/foliomon/authorize', authController.authorize);
+router.get('/foliomon/authorize', authController.postAccessToken);
 
 // get a new Access Token and new Refresh Token from TD with a Refresh Token which hasnt expired
-router.get('/foliomon/reauthorize', authController.reauthorize);
+//router.get('/foliomon/reauthorize', authController.reauthorize);
 
 // get the Access Token stored in the database
 router.get('/foliomon/accesstoken', authController.getAccessToken);
 
 // save the Access Token into the database
-router.put('/foliomon/accesstoken', authController.saveAccessToken);
+//router.put('/foliomon/accesstoken', authController.saveAccessToken);
 
 // get the Reresh Token stored in the database
-router.get('/foliomon/refreshtoken', authController.getRefreshToken);
+//router.get('/foliomon/refreshtoken', authController.getRefreshToken);
 
 // save the Refresh Token into the database
-router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
+//router.put('/foliomon/refreshtoken', authController.saveRefreshToken);
 
 /*=============================================================================
 Account routes
@@ -125,7 +125,7 @@ User Info and Preferences routes
 router.get('/foliomon/user', userController.getUserPrincipals);
 
 // Get Streamer Subscription Keys
-router.get('/foliomon/user/sub', userController.getStreamerSubscriptionKeys);
+router.post('/foliomon/user/sub', userController.getStreamerSubscriptionKeys);
 
 /*=============================================================================
 Market Data routes
