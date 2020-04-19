@@ -131,26 +131,26 @@ router.get('/foliomon/user/sub', userController.getStreamerSubscriptionKeys);
 Market Data routes
 =============================================================================*/
 
-// Get Todays Market Hours or a specific market e.g. 'EQUITY'
+// Get Todays Market Hours or one specific market e.g. 'EQUITY'
 router.get('/foliomon/marketdata/hours/:market', marketDataController.getMarketHours);
 
-// Search or retrieve instrument data, including fundamental data
-router.get('/foliomon/marketdata/instruments', marketDataController.getInstruments);
+// Search or retrieve instrument data, including fundamental data on multiple symbols
+router.post('/foliomon/marketdata/instruments', marketDataController.getInstruments);
 
 // Get chart data, price history
-router.get('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
+router.post('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
 
 // Get top 10 (up or down) movers by value or percent for a particular market
-router.get('/foliomon/marketdata/movers', marketDataController.getMovers);
+router.post('/foliomon/marketdata/movers', marketDataController.getMovers);
 
 // Get realtime quote for one or more symbols
-router.get('/foliomon/marketdata/quotes', marketDataController.getQuotes);
+router.post('/foliomon/marketdata/quotes', marketDataController.getQuotes);
 
 // Get realtime quote for one symbol
 router.get('/foliomon/marketdata/:symbol/quotes/', marketDataController.getQuote);
 
 // Get delayed quote for one or more symbols
-router.get('/foliomon/marketdata/delayed', marketDataController.getDelayedQuotes);
+router.post('/foliomon/marketdata/delayed', marketDataController.getDelayedQuotes);
 
 // Get delayed quote for one symbol
 router.get('/foliomon/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
