@@ -119,11 +119,7 @@ Market Data routes
 // Get Todays Market Hours or one specific market e.g. 'EQUITY'
 router.get('/foliomon/marketdata/hours/:market', marketDataController.getMarketHours);
 
-<<<<<<< HEAD
-// Search or retrieve instrument data, including fundamental data
-=======
 // Search or retrieve instrument data, including fundamental data on multiple symbols
->>>>>>> 7553b6a35f994f0dc4969a0c52fd11b2f5789daf
 router.post('/foliomon/marketdata/instruments', marketDataController.getInstruments);
 
 // Get chart data, price history
