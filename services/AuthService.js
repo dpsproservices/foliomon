@@ -18,6 +18,7 @@ const api = {
     // POST the auth code url query parameter after the TD API login page redirect
     postAuthCode: async (code) => {
         try {
+            console.log(`authService.postAuthCode: ${code}`);
             var options = {
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded'
@@ -51,6 +52,7 @@ const api = {
                 throw new InternalServerError(message);
             }
         } catch (err) {
+            console.log(`Error in authService.postAuthCode: ${err.message}`);
             throw err;
         }
     },
@@ -58,6 +60,8 @@ const api = {
     // Post the refresh token to get a new access token and a new refresh token
     postRefreshToken: async (refreshToken) => {
         try {
+            console.log(`authService.postRefreshToken: ${refreshToken}`);
+
             var options = {
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded'
@@ -90,9 +94,64 @@ const api = {
                 throw new InternalServerError(message);
             }
         } catch (err) {
+            console.log(`Error in authService.postRefreshToken: ${err.message}`);
             throw err;
         }        
-    }
+    },
+
+    // Build a POJO AuthToken from the response data from TD API
+    getAuthTokenFromResponse: function (data) {
+        try {
+            // Validate the response data from TD API
+            if (!data.token_type) {
+                throw new InternalServerError('Response from TD API has invalid token_type.');
+            }
+            if (!data.access_token) {
+                throw new InternalServerError('Response from TD API has invalid access_token.');
+            }
+            if (!data.expires_in) {
+                throw new InternalServerError('Response from TD API has invalid expires_in.');
+            }
+            if (!data.refresh_token) {
+                throw new InternalServerError('Response from TD API has invalid refresh_token.');
+            }
+            if (!data.refresh_token_expires_in) {
+                throw new InternalServerError('Response from TD API has invalid refresh_token_expires_in.');
+            }
+
+            const tokenType = data.token_type; // 'Bearer'
+            const accessToken = data.access_token;
+            const accessTokenExpiresIn = data.expires_in; // 1800 seconds
+            const refreshToken = data.refresh_token;
+            const refreshTokenExpiresIn = data.refresh_token_expires_in; // 7776000 seconds
+
+            const grantedDate = new Date(); // date time now it was just granted
+            var accessTokenExpirationDate = new Date();
+            accessTokenExpirationDate.setTime(grantedDate.getTime() + (accessTokenExpiresIn * 1000));
+
+            var refreshTokenExpirationDate = new Date();
+            refreshTokenExpirationDate.setTime(grantedDate.getTime() + (refreshTokenExpiresIn * 1000));
+
+            console.log(`Access Token Expires: ${accessTokenExpirationDate} Refresh Token Expires: ${refreshTokenExpirationDate}`);
+
+            const authToken = {
+                tokenType: tokenType, // "Bearer"
+                accessToken: accessToken,
+                accessTokenExpiresInSeconds: accessTokenExpiresIn, // seconds to expire from now
+                accessTokenGrantedDate: grantedDate, // date time access token was granted
+                accessTokenExpirationDate: accessTokenExpirationDate, // date time access token will expire (granted date + expires in)
+                refreshToken: refreshToken,
+                refreshTokenExpiresInSeconds: refreshTokenExpiresIn, // seconds to expire from now
+                refreshTokenGrantedDate: grantedDate, // date time refresh token was granted
+                refreshTokenExpirationDate: refreshTokenExpirationDate // date time refresh token will expire (granted_date + expires_in)
+            };
+
+            return authToken;
+        } catch (err) {
+            console.log(err.message);
+            throw err;
+        }
+    }    
     
 };
 

@@ -3,7 +3,7 @@ const AuthService = require('../services/AuthService');
 
 const controller = {
 
-    // GET /foliomon/auth
+    // GET /foliomon/authorize
     // Authorize the foliomon app to use the TD account
 
     // See the Authentication API's Post Access Token method for more information
@@ -18,64 +18,22 @@ const controller = {
             
             if (req.query.code) {
                 // request a new Access Token and new Refresh Token from TD
-                // using the authorization code grant from the redirect url
+                // using the authorization code grant from the redirect url                
                 response = await AuthService.api.postAuthCode(req.query.code);
             } else {
                 refreshToken = await AuthService.db.getRefreshToken();
                 response = await AuthService.api.postRefreshToken(refreshToken);
             }
 
-            const authReply = response.data;
-
-            // Validate the response data from TD API
-            if (!authReply.token_type) {
-                throw new InternalServerError('Response from TD API has invalid token_type.');
-            }
-            if (!authReply.access_token) {
-                throw new InternalServerError('Response from TD API has invalid access_token.');
-            }
-            if (!authReply.expires_in) {
-                throw new InternalServerError('Response from TD API has invalid expires_in.');
-            }
-            if (!authReply.refresh_token) {
-                throw new InternalServerError('Response from TD API has invalid refresh_token.');
-            }
-            if (!authReply.refresh_token_expires_in) {
-                throw new InternalServerError('Response from TD API has invalid refresh_token_expires_in.');
-            }
-
-            const tokenType = authReply.token_type; // 'Bearer'
-            const accessToken = authReply.access_token;
-            const accessTokenExpiresIn = authReply.expires_in; // 1800 seconds
-            const refreshToken = authReply.refresh_token;
-            const refreshTokenExpiresIn = authReply.refresh_token_expires_in; // 7776000 seconds
-
-            const grantedDate = new Date(); // date time now it was just granted
-            var accessTokenExpirationDate = new Date();
-            accessTokenExpirationDate.setTime(grantedDate.getTime() + (accessTokenExpiresIn * 1000));
-
-            var refreshTokenExpirationDate = new Date();
-            refreshTokenExpirationDate.setTime(grantedDate.getTime() + (refreshTokenExpiresIn * 1000));
-
-            console.log(`Received access token expires: ${accessTokenExpirationDate} refresh token expires: ${refreshTokenExpirationDate}`);
-
-            const authTokenUpdate = {
-                tokenType: tokenType, // "Bearer"
-                accessToken: accessToken,
-                accessTokenExpiresInSeconds: accessTokenExpiresIn, // seconds to expire from now
-                accessTokenGrantedDate: grantedDate, // date time access token was granted
-                accessTokenExpirationDate: accessTokenExpirationDate, // date time access token will expire (granted date + expires in)
-                refreshToken: refreshToken,
-                refreshTokenExpiresInSeconds: refreshTokenExpiresIn, // seconds to expire from now
-                refreshTokenGrantedDate: grantedDate, // date time refresh token was granted
-                refreshTokenExpirationDate: refreshTokenExpirationDate // date time refresh token will expire (granted_date + expires_in)
-            };
+            console.log(`authorizeApp.postAccessToken received new tokens: ${response.data}`);
+            
             // store the access and refresh tokens into the db 
             // together with their expiration date times
-            const result = await AuthService.db.updateToken(authTokenUpdate);
-            res.status(200).send(authTokenUpdate);
+            const updatedAuthToken = AuthService.api.getAuthTokenFromResponse(response.data);
+            const result = await AuthService.db.updateToken(updatedAuthToken);
+            res.status(200).send(updatedAuthToken);
         } catch (err) {
-            console.log(`Error in authController.authorize: ${err.message}`);
+            console.log(`Error in authController.postAccessToken: ${err.message}`);
             var status = 500; // default
             var error = err.message;
             if (err instanceof BadRequestError) {
@@ -193,11 +151,15 @@ const controller = {
             if (accessTokenExpirationDate <= new Date()) {
                 console.log(`Access token has expired.`);
                 isAccessTokenExpired = true;
+            } else {
+                console.log(`Access token is valid.`);
             }
 
             if (refreshTokenExpirationDate <= new Date()) {
                 console.log(`Refresh token has expired.`);
                 isRefreshTokenExpired = true;
+            } else {
+                console.log(`Refresh token is valid.`);
             }
 
             accessToken = authToken.accessToken;
@@ -219,8 +181,9 @@ const controller = {
         } else if (isAccessTokenExpired && !isRefreshTokenExpired && refreshToken) {
             try {
                 const response = await AuthService.api.postRefreshToken(refreshToken);
-                if (response) {
-                    console.log('authorizeApp post refresh token received new tokens.');
+                if (response.data) {
+                    console.log(`authorizeApp post refresh token received new tokens.${response.data}`);
+                    const updatedAuthToken = AuthService.api.getAuthTokenFromResponse(response.data);
                     const result = await AuthService.db.updateToken(updatedAuthToken);
                     authorized = true;
                     return authorized;
