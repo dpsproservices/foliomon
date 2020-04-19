@@ -6,6 +6,7 @@ const orderController = require('../controllers/orderController');
 const watchlistController = require('../controllers/watchlistController');
 const userController = require('../controllers/userController');
 const marketDataController = require('../controllers/marketDataController');
+const transactionController = require('../controllers/transactionController');
 
 /*=============================================================================
 Authentication routes
