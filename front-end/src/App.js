@@ -32,7 +32,7 @@ function App() {
       try {
         setIsFetching(true);
         const res = await getAccessToken();
-        console.log(`Recieved access token: ${res.data}`);
+        //console.log(`Recieved access token: ${res.data}`);
         setToken(res.data);
       } catch (error) {
         console.log(error);    

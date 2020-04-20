@@ -44,7 +44,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Movers = () => {
-  const [movers, setMovers] = useState();
+  const [movers, setMoversData] = useState();
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState("$COMPX");
   const classes = useStyles();
@@ -58,7 +58,7 @@ const Movers = () => {
   };
 
   useEffect(() => {
-    const getData = async () => {
+    const getMoversData = async () => {
       try {
         const req = {
             index: selectedIndex,
@@ -66,13 +66,13 @@ const Movers = () => {
         };
         const res = await getMovers(req);
         console.log(res.data);
-        setMovers(res.data);
+        setMoversData(res.data);
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getMoversData();
   }, [selectedIndex]);
 
   const getPriceClass = (direction) => {

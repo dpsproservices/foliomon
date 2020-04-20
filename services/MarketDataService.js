@@ -139,10 +139,10 @@ https://developer.tdameritrade.com/instruments/apis
     */
     getInstruments: async (symbol, projection) => {
         try {
-            const validProjectionTypes = ['symbol-search', 'symbol-regex', 'desc-search', 'desc-regex', 'fundamental'];
-            if (!validProjectionTypes.includes(projection)) {
-                throw new BadRequestError(`Invalid projection type: ${projection}`);
-            }
+            //const validProjectionTypes = ['symbol-search', 'symbol-regex', 'desc-search', 'desc-regex', 'fundamental'];
+            //if (!validProjectionTypes.includes(projection)) {
+            //    throw new BadRequestError(`Invalid projection type: ${projection}`);
+            //}
             const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 symbol: symbol,
@@ -315,14 +315,14 @@ https://developer.tdameritrade.com/movers/apis
     // https://developer.tdameritrade.com/movers/apis
     getMovers: async (index, direction, change) => {
         try {
-            const validDirection = ['up', 'down'];
-            if (!validDirection.includes(direction)) {
-                throw new BadRequestError(`Invalid direction: ${direction}`);
-            }
-            const validChange = ['percent', 'value'];
-            if (!validChange.includes(change)) {
-                throw new BadRequestError(`Invalid change: ${change}`);
-            }
+            //const validDirection = ['up', 'down'];
+            //if (!validDirection.includes(direction)) {
+            //    throw new BadRequestError(`Invalid direction: ${direction}`);
+            //}
+            //const validChange = ['percent', 'value'];
+            //if (!validChange.includes(change)) {
+            //    throw new BadRequestError(`Invalid change: ${change}`);
+            //}
             const accessToken = await AuthService.db.getAccessToken();
             const params = {
                 //apiKey: config.auth.clientId, // (Optional) Pass your Client ID if making an unauthenticated request
