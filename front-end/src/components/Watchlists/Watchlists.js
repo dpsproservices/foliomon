@@ -64,7 +64,7 @@ const Watchlists = () => {
       try {
         const res = await getWatchlists();
         console.log(res.data);
-        setWatchListsData(res.data);
+        setWatchLists(res.data);
       } catch (error) {
         console.log(error);
       }

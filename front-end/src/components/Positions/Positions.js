@@ -11,9 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Select,
-  MenuItem,
-  InputLabel,
   Paper
 } from '@material-ui/core';
 import Highcharts from 'highcharts';
@@ -113,13 +110,13 @@ const Positions = ({ activeAccount }) => {
   }
 
   useEffect(() => {
-    const getAccountsData = async () => {
+    const getAccountPositionsData = async () => {
       try {
         if (activeAccount && activeAccount !== '') {
           const res = await getAccountPositions(activeAccount);
           console.log(res.data.securitiesAccount.positions);
           const nonCashPositions = res.data.securitiesAccount.positions.filter(p => p.instrument.symbol !== 'MMDA1');
-          setAccountPositionsData(nonCashPositions);
+          setPositions(nonCashPositions);
         }
       } catch (error) {
         console.log(error);
