@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
 import InputIcon from '@material-ui/icons/Input';
+import AccountSelector from '../AccountSelector';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -15,6 +16,9 @@ const useStyles = makeStyles(theme => ({
     },
     signOutButton: {
       marginLeft: theme.spacing(1)
+    },
+    accountSelector: {
+      marginLeft: 240
     }
   }));
 
@@ -31,6 +35,7 @@ const useStyles = makeStyles(theme => ({
         className={clsx(classes.root, className)}
       >
         <Toolbar>
+          <div className={classes.accountSelector}><AccountSelector /></div>
           <div className={classes.flexGrow} />
           <Hidden mdDown>
             <IconButton color="inherit">
@@ -62,4 +67,4 @@ const useStyles = makeStyles(theme => ({
     );
   };
   
-  export default Topbar;
+export default Topbar;

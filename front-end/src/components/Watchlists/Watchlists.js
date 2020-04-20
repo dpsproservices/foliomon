@@ -10,6 +10,14 @@ import {
   Paper,
   Typography,
   Divider,
+  Dialog,
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  InputLabel,
+  Input,
+  DialogTitle,
   IconButton
 } from '@material-ui/core';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
@@ -31,7 +39,25 @@ const useStyles = makeStyles(theme => ({
 
 const Watchlists = () => {
   const classes = useStyles();
-  const [watchLists, setWatchListsData] = useState();
+  const [watchLists, setWatchLists] = useState();
+  const [watchlistName, setWatchlistName] = useState();
+  const [openAddListDialog, setOpenAddListDialog] = useState(false);
+
+  const handleCloseAddList = () => {
+    setOpenAddListDialog(false);
+  };
+
+  const handleAddList = () => {
+
+  };
+
+  const handleInput = (event) => {
+    setWatchlistName(event.target.value);
+  };
+
+  const handleAddClick = () => {
+    setOpenAddListDialog(true);
+  };
 
   useEffect(() => {
     const getWatchlistsData = async () => {
@@ -54,7 +80,7 @@ const Watchlists = () => {
           <Typography className={classes.title} variant="h6">Watchlists</Typography>
         </Grid>
         <Grid item xs={6} align="right">
-          <IconButton edge="end" aria-label="add-list" size="small">
+          <IconButton edge="end" aria-label="add-list" size="small" onClick={handleAddClick}>
             <AddBoxIcon />
           </IconButton>
         </Grid>
@@ -64,23 +90,21 @@ const Watchlists = () => {
         <List className={classes.list}>
           <ListSubheader>
             {w.name}
-            <IconButton edge="end" aria-label="edit-list" size="small">
+            <IconButton edge="end" aria-label="edit-list" size="small" style={{ float: 'right' }}>
               <EditIcon />
             </IconButton>
-            <IconButton edge="end" aria-label="delete-list" size="small">
+            {/* <IconButton edge="end" aria-label="delete-list" size="small">
               <DeleteForeverIcon />
-            </IconButton>
+            </IconButton> */}
           </ListSubheader>
-          
-          
           {w.watchlistItems.map((item, idx) => (
             <Fragment>
               <ListItem key={item.sequenceId}>
                 <ListItemText primary={item.instrument.symbol}/>
                 <ListItemSecondaryAction>
-                  <IconButton edge="end" aria-label="delete-item" size="small">
+                  {/* <IconButton edge="end" aria-label="delete-item" size="small">
                     <DeleteForeverIcon />
-                  </IconButton>
+                  </IconButton> */}
                 </ListItemSecondaryAction>
               </ListItem>
               {(idx < w.watchlistItems.length-1) && <Divider component="li" />}
@@ -89,6 +113,28 @@ const Watchlists = () => {
         </List>
       ))}
       </Grid>
+      <Dialog onClose={handleCloseAddList} aria-labelledby="dialog" open={openAddListDialog}>
+        <DialogTitle id="dialog">Add watchlist</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <InputLabel htmlFor="watchlist-input">Name</InputLabel>
+            <Input
+              fullWidth
+              id="watchlist-input"
+              value={watchlistName}
+              onChange={handleInput}
+            />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddList} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddList} color="primary">
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

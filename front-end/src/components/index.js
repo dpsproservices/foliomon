@@ -13,3 +13,4 @@ export { default as Movers } from './Movers';
 export { default as Watchlists } from './Watchlists';
 export { default as RouteWithLayout } from './RouteWithLayout';
 export { default as Websocket } from './Websocket';
+export { default as AccountSelector } from './AccountSelector';

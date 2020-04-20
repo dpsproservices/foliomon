@@ -14,9 +14,17 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Paper  } from '@material-ui/core';
+  Paper
+} from '@material-ui/core';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { connect } from 'react-redux';
+
+const mapStateToProps = state => {
+  return {
+    activeAccount: state.accountId
+  };
+};
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -44,11 +52,9 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Positions = () => {
-  const [accounts, setAccountsData] = useState();
-  const [positions, setAccountPositionsData] = useState();
+const Positions = ({ activeAccount }) => {
+  const [positions, setPositions] = useState();
   const [prices, setPrices] = useState({});
-  const [activeAccount, setActiveAccount] = useState('');
   const classes = useStyles();
 
   const subscriptions = [];
@@ -109,29 +115,6 @@ const Positions = () => {
   useEffect(() => {
     const getAccountsData = async () => {
       try {
-        const res = await getAccounts();
-        console.log(res.data);
-
-        const accountData = res.data;
-        
-        if (accountData && accountData.length > 0) {
-          setActiveAccount(accountData[0].securitiesAccount.accountId);
-        } else {
-          setActiveAccount(accountData.securitiesAccount.accountId);
-        }
-
-        setAccountsData(accountData);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getAccountsData();
-  }, []);
-
-  useEffect(() => {
-    const getAccountPositionsData = async () => {
-      try {
         if (activeAccount && activeAccount !== '') {
           const res = await getAccountPositions(activeAccount);
           console.log(res.data.securitiesAccount.positions);
@@ -145,10 +128,6 @@ const Positions = () => {
 
     getAccountPositionsData();
   }, [activeAccount]);
-
-  const handleChange = (event) => {
-    setActiveAccount(event.target.value);
-  };
 
   const getPriceClass = (direction) => {
     if (direction === 'up') {
@@ -207,21 +186,6 @@ const Positions = () => {
   return (
     <Grid container className={classes.root}>
       <Websocket subscriptions={subscriptions} messageHandlers={messageHandlers} />
-      <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center" className={classes.selectRow}>
-        <Grid item xs={3}>
-          <InputLabel id="account-select-label">Account</InputLabel>
-          <Select
-            className={classes.select}
-            labelId="account-select-label"
-            id="account-select"
-            value={activeAccount}
-            onChange={handleChange}
-          >
-            <MenuItem value=""><em>Select</em></MenuItem>
-            {accounts && accounts.map(a => <MenuItem value={a.securitiesAccount.accountId} key={a.securitiesAccount.accountId}>{a.securitiesAccount.accountId}</MenuItem>)}
-          </Select>
-        </Grid>
-      </Grid>
       <Grid container spacing={0} direction="row" alignItems="flex-start" justify="center">
         <Grid item xs={5}>
           <HighchartsReact highcharts={Highcharts} options={chartOptions} />
@@ -279,4 +243,4 @@ const Positions = () => {
   );
 }
 
-export default Positions;
+export default connect(mapStateToProps, null)(Positions);
