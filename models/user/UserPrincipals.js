@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-// User Principal
+// User Principals
 const userPrincipalsSchema = new mongoose.Schema({
     authToken: { type: String },
     userId: { type: String, required: true },
