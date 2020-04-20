@@ -45,8 +45,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Positions = () => {
-  const [accounts, setAccounts] = useState();
-  const [positions, setPositions] = useState();
+  const [accounts, setAccountsData] = useState();
+  const [positions, setAccountPositionsData] = useState();
   const [prices, setPrices] = useState({});
   const [activeAccount, setActiveAccount] = useState('');
   const classes = useStyles();
@@ -107,40 +107,43 @@ const Positions = () => {
   }
 
   useEffect(() => {
-    const getData = async () => {
+    const getAccountsData = async () => {
       try {
         const res = await getAccounts();
-        console.log(res.data.accounts);
+        console.log(res.data);
 
-        const accountData = res.data.accounts;
-        setAccounts(accountData);
-
+        const accountData = res.data;
+        
         if (accountData && accountData.length > 0) {
-          setActiveAccount(accountData[0].accountId);
+          setActiveAccount(accountData[0].securitiesAccount.accountId);
+        } else {
+          setActiveAccount(accountData.securitiesAccount.accountId);
         }
+
+        setAccountsData(accountData);
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getAccountsData();
   }, []);
 
   useEffect(() => {
-    const getData = async () => {
+    const getAccountPositionsData = async () => {
       try {
         if (activeAccount && activeAccount !== '') {
           const res = await getAccountPositions(activeAccount);
           console.log(res.data.securitiesAccount.positions);
-          const newPositions = res.data.securitiesAccount.positions.filter(p => p.instrument.symbol !== 'MMDA1');
-          setPositions(newPositions);
+          const nonCashPositions = res.data.securitiesAccount.positions.filter(p => p.instrument.symbol !== 'MMDA1');
+          setAccountPositionsData(nonCashPositions);
         }
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getAccountPositionsData();
   }, [activeAccount]);
 
   const handleChange = (event) => {
@@ -215,7 +218,7 @@ const Positions = () => {
             onChange={handleChange}
           >
             <MenuItem value=""><em>Select</em></MenuItem>
-            {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
+            {accounts && accounts.map(a => <MenuItem value={a.securitiesAccount.accountId} key={a.securitiesAccount.accountId}>{a.securitiesAccount.accountId}</MenuItem>)}
           </Select>
         </Grid>
       </Grid>
