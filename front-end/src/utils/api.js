@@ -28,9 +28,10 @@ export const getUserSubscriptionKeys = async (body) => {
   return await axios.post(url, body);
 };
 
-export const refreshAccounts = async () => {
-  const url = `${API_URL}/accounts/refresh`;
-  return await axios.get(url);
+// only use this in cases app data needs to be reset
+export const resetAccounts = async () => {
+  const url = `${API_URL}/accounts/reset`;
+  return await axios.post(url);
 };
 
 export const getAccountPositions = async (accountId) => {
@@ -38,7 +39,7 @@ export const getAccountPositions = async (accountId) => {
   return await axios.get(url);
 };
 
-export const getAllOrders = async () => {
+export const getOrders = async () => {
   const url = `${API_URL}/orders`;
   return await axios.get(url);
 };
@@ -48,7 +49,7 @@ export const getAccountOrders = async (accountId) => {
   return await axios.get(url);
 };
 
-export const getAccountOrder = async (accountId,orderId) => {
+export const getOrder = async (accountId,orderId) => {
   const url = `${API_URL}/orders/${accountId}/${orderId}`;
   return await axios.get(url);
 };
@@ -73,12 +74,17 @@ export const getMovers = async (body) => {
   return await axios.post(url, body);
 };
 
-export const getAllWatchlists = async () => {
+export const getWatchlists = async () => {
   const url = `${API_URL}/watchlists`;
   return await axios.get(url);
 };
 
 export const getAccountWatchlists = async (accountId) => {
   const url = `${API_URL}/watchlists/${accountId}`;
+  return await axios.get(url);
+};
+
+export const getWatchlist = async (accountId,watchlistId) => {
+  const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
   return await axios.get(url);
 };

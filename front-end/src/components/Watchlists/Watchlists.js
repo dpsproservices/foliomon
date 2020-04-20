@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { getAllWatchlists } from '../../utils/api';
+import { getWatchlists } from '../../utils/api';
 import {
   List,
   Grid,
@@ -31,20 +31,20 @@ const useStyles = makeStyles(theme => ({
 
 const Watchlists = () => {
   const classes = useStyles();
-  const [watchLists, setWatchLists] = useState();
+  const [watchLists, setWatchListsData] = useState();
 
   useEffect(() => {
-    const getData = async () => {
+    const getWatchlistsData = async () => {
       try {
-        const res = await getAllWatchlists();
+        const res = await getWatchlists();
         console.log(res.data);
-        setWatchLists(res.data);
+        setWatchListsData(res.data);
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getWatchlistsData();
   }, []);
 
   return (

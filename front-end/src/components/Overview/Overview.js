@@ -25,21 +25,21 @@ const useStyles = makeStyles({
 });
 
 const Overview = () => {
-   const [accounts, setAccounts] = useState();
+   const [accounts, setAccountsData] = useState();
    const classes = useStyles();
 
   useEffect(() => {
-    const getData = async () => {
+    const getAccountsData = async () => {
       try {
         const res = await getAccounts();
-        console.log(res.data.accounts);
-        setAccounts(res.data.accounts);
+        console.log(res.data);
+        setAccountsData(res.data);
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getAccountsData();
   }, []);
 
   return (

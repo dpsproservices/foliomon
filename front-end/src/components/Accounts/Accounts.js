@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { getAllAccounts } from '../../utils/api';
+import { getAccounts } from '../../utils/api';
 
-const Orders = () => {
-   const [accounts, setAccounts] = useState();
+const Accounts = () => {
+  const [accounts, setAccountsData] = useState();
 
   useEffect(() => {
-    const getOrders = async () => {
+    const getAccountsData = async () => {
       try {
-        const res = await getAllAccounts();
+        const res = await getAccounts();
         console.log(res.data);
-        setAccounts(res.data);
+        setAccountsData(res.data);
       } catch (error) {
         console.log(error);
       }
     };
 
-    getOrders();
+    getAccountsData();
   }, []);
 
   return (
@@ -27,4 +27,4 @@ const Orders = () => {
   );
 }
 
-export default Orders;
+export default Accounts;
