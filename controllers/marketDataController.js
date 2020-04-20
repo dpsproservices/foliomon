@@ -27,7 +27,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Market(s) not found.`;
+                error = `Market(s) or markets hours not found.: ${err.message}`;
             } else if (err instanceof InternalServerError) {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
@@ -59,7 +59,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Market(s) not found.`;
+                error = `Market(s) or market hours not found: ${err.message}`;
             } else if (err instanceof InternalServerError) {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
@@ -91,7 +91,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbols or instruments not found: ${err.message}`;
             } else if (err instanceof NotAcceptableError) {
                 status = 406;
                 error = `Issue in the symbol regex, or number of symbols searched is over the maximum: ${err.message}`;
@@ -123,7 +123,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbol or instrument not found: ${err.message}`;
             } else if (err instanceof InternalServerError) {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
@@ -155,7 +155,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Watchlist not found.`;
+                error = `Symbol or price history not found: ${err.message}`;
             } else if (err instanceof InternalServerError) {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
@@ -187,7 +187,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Watchlist not found.`;
+                error = `Movers not found: ${err.message}`;
             } else if (err instanceof InternalServerError) {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
@@ -219,7 +219,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbol or instruemnt not found: ${err.message}`;
             } else if (err instanceof NotAcceptableError) {
                 status = 406;
                 error = `Issue in the symbol regex, or number of symbols searched is over the maximum: ${err.message}`;
@@ -254,7 +254,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbol or instrument not found: ${err.message}`;
             } else if (err instanceof NotAcceptableError) {
                 status = 406;
                 error = `Issue in the symbol regex, or number of symbols searched is over the maximum: ${err.message}`;
@@ -289,7 +289,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbol or instrument not found: ${err.message}`;
             } else if (err instanceof NotAcceptableError) {
                 status = 406;
                 error = `Issue in the symbol regex, or number of symbols searched is over the maximum: ${err.message}`;
@@ -324,7 +324,7 @@ const controller = {
                 error = `User does not have permission to access.`;
             } else if (err instanceof NotFoundError) {
                 status = 404;
-                error = `Symbol or instruemnt not found.`;
+                error = `Symbol or instrument not found: ${err.message}`;
             } else if (err instanceof NotAcceptableError) {
                 status = 406;
                 error = `Issue in the symbol regex, or number of symbols searched is over the maximum: ${err.message}`;
