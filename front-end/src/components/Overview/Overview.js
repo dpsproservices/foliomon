@@ -45,7 +45,7 @@ const Overview = () => {
   return (
     <Grid container className={classes.root} spacing={2} direction="row" justify="center">
       {accounts && accounts.map(a => (
-        <Grid item xs={11} key={a._id}>
+        <Grid item xs={11} key={a.securitiesAccount.accountId}>
           <Card className={classes.card}>
             <CardContent>
               <Typography variant="h5" component="h2">
@@ -56,13 +56,13 @@ const Overview = () => {
               </Typography>
               
               <Typography className={classes.pos} color="textSecondary">
-                Total value: ${a.currentBalances.liquidationValue.toFixed(2)}
+                Total value: ${a.securitiesAccount.currentBalances.liquidationValue.toFixed(2)}
               </Typography>
               <Typography variant="body2" component="p">
-                Long market value: ${a.currentBalances.longMarketValue.toFixed(2)}
+                Long market value: ${a.securitiesAccount.currentBalances.longMarketValue.toFixed(2)}
               </Typography>
               <Typography variant="body2" component="p">
-                Money market balance: ${a.currentBalances.moneyMarketFund.toFixed(2)}
+                Money market balance: ${a.securitiesAccount.currentBalances.moneyMarketFund.toFixed(2)}
               </Typography>
             </CardContent>
           </Card>
