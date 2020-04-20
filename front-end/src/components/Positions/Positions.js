@@ -14,9 +14,17 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Paper  } from '@material-ui/core';
+  Paper
+} from '@material-ui/core';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { connect } from 'react-redux';
+
+const mapStateToProps = state => {
+  return {
+    activeAccount: state.accountId
+  };
+};
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -44,11 +52,9 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Positions = () => {
-  const [accounts, setAccounts] = useState();
+const Positions = ({ activeAccount }) => {
   const [positions, setPositions] = useState();
   const [prices, setPrices] = useState({});
-  const [activeAccount, setActiveAccount] = useState('');
   const classes = useStyles();
 
   const subscriptions = [];
@@ -109,26 +115,6 @@ const Positions = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await getAccounts();
-        console.log(res.data.accounts);
-
-        const accountData = res.data.accounts;
-        setAccounts(accountData);
-
-        if (accountData && accountData.length > 0) {
-          setActiveAccount(accountData[0].accountId);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    getData();
-  }, []);
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
         if (activeAccount && activeAccount !== '') {
           const res = await getAccountPositions(activeAccount);
           console.log(res.data.securitiesAccount.positions);
@@ -142,10 +128,6 @@ const Positions = () => {
 
     getData();
   }, [activeAccount]);
-
-  const handleChange = (event) => {
-    setActiveAccount(event.target.value);
-  };
 
   const getPriceClass = (direction) => {
     if (direction === 'up') {
@@ -204,21 +186,6 @@ const Positions = () => {
   return (
     <Grid container className={classes.root}>
       <Websocket subscriptions={subscriptions} messageHandlers={messageHandlers} />
-      <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center" className={classes.selectRow}>
-        <Grid item xs={3}>
-          <InputLabel id="account-select-label">Account</InputLabel>
-          <Select
-            className={classes.select}
-            labelId="account-select-label"
-            id="account-select"
-            value={activeAccount}
-            onChange={handleChange}
-          >
-            <MenuItem value=""><em>Select</em></MenuItem>
-            {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
-          </Select>
-        </Grid>
-      </Grid>
       <Grid container spacing={0} direction="row" alignItems="flex-start" justify="center">
         <Grid item xs={5}>
           <HighchartsReact highcharts={Highcharts} options={chartOptions} />
@@ -276,4 +243,4 @@ const Positions = () => {
   );
 }
 
-export default Positions;
+export default connect(mapStateToProps, null)(Positions);
