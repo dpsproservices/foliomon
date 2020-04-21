@@ -11,7 +11,7 @@ import { getPriceHistory } from '../../utils/api';
 //   }
 // }));
 
-const Chart = ({ symbol }) => {
+const Chart = React.memo(({ symbol }) => {
   const [isDay, setIsDay] = useState(false);
   const [isCandle, setIsCandle] = useState(true);
   const [results, setResults] = useState();
@@ -235,6 +235,6 @@ const Chart = ({ symbol }) => {
       </ButtonGroup>
     </div>
   );
-};
+});
 
 export default Chart;
