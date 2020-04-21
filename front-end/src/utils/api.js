@@ -84,7 +84,17 @@ export const getAccountWatchlists = async (accountId) => {
   return await axios.get(url);
 };
 
-export const getWatchlist = async (accountId,watchlistId) => {
+export const getAccountWatchlist = async (accountId, watchlistId) => {
   const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
   return await axios.get(url);
+};
+
+export const createAccountWatchlist = async (accountId, req) => {
+  const url = `${API_URL}/watchlists/${accountId}`;
+  return await axios.post(url, req);
+};
+
+export const deleteAccountWatchlist = async (accountId, watchlistId) => {
+  const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
+  return await axios.delete(url);
 };
