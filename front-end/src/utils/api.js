@@ -98,3 +98,8 @@ export const deleteAccountWatchlist = async (accountId, watchlistId) => {
   const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
   return await axios.delete(url);
 };
+
+export const replaceAccountWatchlist = async (accountId, watchlistId, req) => {
+  const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
+  return await axios.put(url, req);
+};
