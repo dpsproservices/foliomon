@@ -15,6 +15,7 @@ import { getInstruments } from '../../utils/api';
 import Search from '../Search';
 import Chart from '../Chart';
 import Movers from '../Movers';
+import Headlines from '../Headlines';
 import Websocket from '../Websocket';
 import Watchlists from '../Watchlists';
 
@@ -38,6 +39,7 @@ const Stocks = ({ match } ) => {
   const [result, setResult] = useState();
   const [selectedSymbol, setSelectedSymbol] = useState(match && match.params && match.params.symbol);
   const [prices, setPrices] = useState({});
+  const [headlines, setHeadlines] = useState([]);
   const classes = useStyles();
 
   const subscriptions = [];
@@ -49,10 +51,27 @@ const Stocks = ({ match } ) => {
       "service": "QUOTE",
       "command": "SUBS",
       "parameters": {
-          "keys": selectedSymbol.toString(),
-          "fields": "0,1,2,3,4,5,15,28,29"
+        "keys": selectedSymbol.toString(),
+        "fields": "0,1,2,3,4,5,15,28,29"
       }
-    });
+    }
+    // {
+    //   "service": "NEWS_HEADLINE",
+    //   "command": "SUBS",
+    //   "parameters": {
+    //     "keys": selectedSymbol.toString(),
+    //     "fields": "0,2,3,5,10"
+    //   }
+    // },
+    // {
+    //   "service": "NEWS_HEADLINE_LIST",
+    //   "command": "GET",
+    //   "parameters": {
+    //     "keys": selectedSymbol.toString(),
+    //     "fields": "0"
+    //   }
+    //}
+    );
 
     messageHandlers.push((message) => {
       if (message.data && message.data.length === 1
@@ -112,6 +131,22 @@ const Stocks = ({ match } ) => {
             });
           });
         }
+    });
+
+    messageHandlers.push((message) => {
+      if (message.data && message.data.length === 1
+        && message.data[0].service === 'NEWS_HEADLINE_LIST') {
+          const { content } = message.data[0];
+          const newHeadlines = content && content.map(row => ({
+            dateTime: row['2'],
+            headlineId: row['3'],
+            headline: row['5'],
+            storySource: row['10']
+          }));
+          setHeadlines(prevHeadlines => {
+            return([...prevHeadlines, newHeadlines]);
+          });
+      }
     });
   }
 
@@ -203,6 +238,9 @@ const Stocks = ({ match } ) => {
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
               <Grid item xs={6}>
                 <Chart symbol={selectedSymbol} />
+              </Grid>
+              <Grid item xs={6}>
+                <Headlines headlines={headlines}/>
               </Grid>
             </Grid>
             <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">

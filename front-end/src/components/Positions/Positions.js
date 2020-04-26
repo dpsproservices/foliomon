@@ -31,6 +31,9 @@ const useStyles = makeStyles(theme => ({
   table: {
     minWidth: 650
   },
+  tableContainer: {
+    marginTop: '15px'
+  },
   selectRow: {
     height: '100px'
   },
@@ -190,7 +193,7 @@ const Positions = ({ activeAccount }) => {
         </Grid>
       <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center">
         <Grid item xs={11}>
-          <TableContainer component={Paper} elevation={4}>
+          <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>
             <Table className={classes.table} aria-label="table" size="small">
               <TableHead>
                 <TableRow>

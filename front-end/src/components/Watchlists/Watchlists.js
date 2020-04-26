@@ -192,7 +192,7 @@ const Watchlists = ({ activeAccount }) => {
       </Grid>
       <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
       {watchlists && watchlists.map(w => (
-        <List className={classes.list}>
+        <List className={classes.list} key={w.watchlistId}>
           <ListSubheader>
             {w.name}
             <IconButton id={w.watchlistId} edge="end" aria-label="edit-list" size="small" style={{ float: 'right' }} onClick={handleEditClick}>
@@ -203,8 +203,8 @@ const Watchlists = ({ activeAccount }) => {
             </IconButton>
           </ListSubheader>
           {w.watchlistItems.map((item, idx) => (
-            <Fragment>
-              <ListItem key={item.sequenceId}>
+            <Fragment key={item.sequenceId}>
+              <ListItem>
                 <Link to={`/stocks/${item.instrument.symbol}`}>
                   {item.instrument.symbol}
                 </Link>

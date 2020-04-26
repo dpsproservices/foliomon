@@ -119,35 +119,37 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
       const currServices = {};
 
       prevSubscriptions && prevSubscriptions.forEach(p => {
-        if (p.command === 'SUBS') {
-          prevServices[p.service] = p.parameters;
-        }
+        prevServices[p.service] = { parameters: p.parameters, command: p.command };
       });
       subscriptions && subscriptions.forEach(c => {
-        if (c.command === 'SUBS') {
-          currServices[c.service] = c.parameters;
-        }
+        currServices[c.service] = { parameters: c.parameters, command: c.command };
       });
     
       Object.keys(currServices).forEach(key => {
         // New subscription added.
         if (!prevServices[key]) {
-          newSubscriptions.push({ service: key, command: 'SUBS', parameters: currServices[key] });
+          newSubscriptions.push({ service: key, command: currServices[key].command, parameters: currServices[key].parameters });
         }
       });
 
       Object.keys(prevServices).forEach(key => {
         // Unsubscribe removed subscription.
-        if (!currServices[key]) {
-          newSubscriptions.push({ service: key, command: 'UNSUBS', parameters: prevServices[key] });
+        if (!currServices[key] && prevServices[key].command === 'SUBS') {
+          newSubscriptions.push({ service: key, command: 'UNSUBS', parameters: prevServices[key].parameters });
         } else {
-          Object.keys(currServices[key]).forEach(param => {
+          const params = Object.keys(currServices[key].parameters);
+          for (let i=0; i < params.length; i++) {
             // Parameter change. Unsubscribe and resubscribe.
-            if (currServices[key][param] !== prevServices[key][param]) {
-              newSubscriptions.push({ service: key, command: 'UNSUBS', parameters: prevServices[key] });
-              newSubscriptions.push({ service: key, command: 'SUBS', parameters: currServices[key] });
+            if (currServices[key].parameters[params[i]] !== prevServices[key].parameters[params[i]]) {
+              if (prevServices[key].command === 'SUBS') {
+                newSubscriptions.push({ service: key, command: 'UNSUBS', parameters: prevServices[key].parameters });
+                newSubscriptions.push({ service: key, command: 'SUBS', parameters: currServices[key].parameters });
+              } else {
+                newSubscriptions.push({ service: key, command: currServices[key].command, parameters: currServices[key].parameters });
+              }
+              break;
             }
-          });
+          }
         }
       });
 
