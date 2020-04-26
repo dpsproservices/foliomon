@@ -82,8 +82,8 @@ const AccountSelector = ({ setSelectedAccount }) => {
           icon: classes.icon
         }}
       >
-        <MenuItem value="" ><em>Select</em></MenuItem>
-        {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a._id}>{a.accountId}</MenuItem>)}
+        <MenuItem key="item-0" value="" ><em>Select</em></MenuItem>
+        {accounts && accounts.map(a => <MenuItem value={a.accountId} key={a.accountId}>{a.accountId}</MenuItem>)}
       </Select>
     </div>
   );
