@@ -17,6 +17,11 @@ export const getAccounts = async () => {
   return await axios.get(url);
 };
 
+export const getAccount = async (accountId) => {
+  const url = `${API_URL}/accounts/${accountId}`;
+  return await axios.get(url);
+};
+
 export const getUser = async () => {
   const url = `${API_URL}/user`;
   return await axios.get(url);
@@ -102,4 +107,9 @@ export const deleteAccountWatchlist = async (accountId, watchlistId) => {
 export const replaceAccountWatchlist = async (accountId, watchlistId, req) => {
   const url = `${API_URL}/watchlists/${accountId}/${watchlistId}`;
   return await axios.put(url, req);
+};
+
+export const getAccountTransactions = async (accountId) => {
+  const url = `${API_URL}/transactions/${accountId}`;
+  return await axios.get(url);
 };
