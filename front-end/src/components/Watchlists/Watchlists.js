@@ -52,6 +52,9 @@ const useStyles = makeStyles(theme => ({
   dialogContent: {
     width: '400px',
     height: '400px'
+  },
+  paper: {
+    padding: theme.spacing(1)
   }
 }));
 
