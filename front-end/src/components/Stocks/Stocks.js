@@ -345,11 +345,10 @@ const Stocks = ({ match } ) => {
             </Grid>
           </Fragment>
       }
-      <Grid container spacing={4} direction="row" justify="flex-start">
+      <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start">
         <Grid item xs={4}>
           <Movers />
         </Grid>
-
         <Grid item xs={4}>
           <Watchlists />
         </Grid>

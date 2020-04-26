@@ -1,5 +1,4 @@
-import _ from 'lodash'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Grid,
   Input,
@@ -11,6 +10,7 @@ import SearchResults from './SearchResults';
 
 const Search = ({ onSelect }) => {
   const [searchString, setSearchString] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState('');
 
   const handleChange = (event) => {
     const newValue = event.target.value.trim();
@@ -20,6 +20,16 @@ const Search = ({ onSelect }) => {
   const handleClear = () => {
     setSearchString('');
   };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(searchString);
+    }, 600);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchString]);
 
   return (
     <Grid container>
@@ -31,7 +41,7 @@ const Search = ({ onSelect }) => {
             id="search-input"
             autoComplete="off"
             value={searchString}
-            onChange={_.debounce(handleChange, 500, { leading: true })}
+            onChange={handleChange}
             endAdornment={
               <InputAdornment position="end">
                 <SearchIcon />
@@ -40,7 +50,7 @@ const Search = ({ onSelect }) => {
           />
         </Grid>
 
-        <SearchResults onSelect={onSelect} searchString={searchString} clearSearch={handleClear} />
+        <SearchResults onSelect={onSelect} searchString={debouncedValue} clearSearch={handleClear} />
       </Grid>
     </Grid>
   );
