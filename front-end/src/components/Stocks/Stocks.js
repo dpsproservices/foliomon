@@ -230,7 +230,11 @@ const Stocks = ({ match } ) => {
       </Grid>
       {isLoading
         ?
-          <CircularProgress size={38} />
+        <Grid container spacing={2} direction="row" justify="center">
+          <Grid item xs={4}>
+            <CircularProgress size={82} thickness={2} />
+          </Grid>
+        </Grid>
         :
           data &&
           <Fragment>
