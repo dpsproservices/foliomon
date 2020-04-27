@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getAccountPositions, getAccounts } from '../../utils/api';
+import { getAccountPositions } from '../../utils/api';
+import { Link } from 'react-router-dom';
 import Websocket from '../Websocket';
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -31,15 +32,11 @@ const useStyles = makeStyles(theme => ({
   table: {
     minWidth: 650
   },
+  tableHeader: {
+    fontSize: '0.80rem !important'
+  },
   tableContainer: {
-    marginTop: '15px'
-  },
-  selectRow: {
-    height: '100px'
-  },
-  select: {
-    margin: theme.spacing(1),
-    minWidth: 120
+    //margin: '15px'
   },
   tableRow: {
     '&:nth-child(even)': { background: '#f5f5f5' }
@@ -186,25 +183,20 @@ const Positions = ({ activeAccount }) => {
   return (
     <Grid container className={classes.root}>
       <Websocket subscriptions={subscriptions} messageHandlers={messageHandlers} />
-      <Grid container spacing={0} direction="row" alignItems="flex-start" justify="center">
-        <Grid item xs={5}>
-          <HighchartsReact highcharts={Highcharts} options={chartOptions} />
-        </Grid>
-        </Grid>
       <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center">
-        <Grid item xs={11}>
+        <Grid item xs={10}>
           <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>
             <Table className={classes.table} aria-label="table" size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Symbol</TableCell>
-                  <TableCell align="right">Long Quantity</TableCell>
-                  <TableCell align="right">Short Quantity</TableCell>
-                  <TableCell align="right">Avg. Price $</TableCell>
-                  <TableCell align="right">Bid Price $</TableCell>
-                  <TableCell align="right">Ask Price $</TableCell>
-                  <TableCell align="right">Last Price $</TableCell>
-                  <TableCell align="right">Market Value $</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }}>Symbol</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Long Quantity</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Short Quantity</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Avg. Price $</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Bid Price $</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Ask Price $</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Last Price $</TableCell>
+                  <TableCell classes={{ root: classes.tableHeader }} align="right">Market Value $</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -222,7 +214,9 @@ const Positions = ({ activeAccount }) => {
                   return (
                     <TableRow key={symbol} className={classes.tableRow}>
                       <TableCell component="th" scope="row">
-                        {symbol}
+                        <Link to={`/stocks/${symbol}`}>
+                          {symbol}
+                        </Link>
                       </TableCell>
                       <TableCell align="right">{row.longQuantity}</TableCell>
                       <TableCell align="right">{row.shortQuantity}</TableCell>
@@ -238,6 +232,9 @@ const Positions = ({ activeAccount }) => {
           </TableContainer>
         </Grid>
 
+        <Grid item xs={12}>
+          <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+        </Grid>
       </Grid>
     </Grid>
   );

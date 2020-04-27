@@ -146,32 +146,32 @@ const Overview = ({ activeAccount }) => {
       </Grid>
       <Grid container className={classes.root} spacing={2} direction="row" justify="center">
         {transactions &&
-        <Grid item xs={12}>
-          <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>
-            <Table className={classes.table} aria-label="table" size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Datetime</TableCell>
-                  <TableCell align="right">Description</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-              {transactions && transactions.filter(f => f.type !== 'RECEIVE_AND_DELIVER' && f.type !== 'JOURNAL')
-                .map(t => (
-                  <TableRow key={t.transactionId} className={classes.tableRow}>
-                    <TableCell component="th" scope="row">
-                      <Moment format="MM/DD/YYYY HH:mm:ss">{t.transactionDate}</Moment>
-                    </TableCell>
-                    <TableCell align="right">{getDescription(t)}</TableCell>
-                    <TableCell align="right">{numberWithCommas(t.netAmount)}</TableCell>
+          <Grid item xs={12}>
+            <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>
+              <Table className={classes.table} aria-label="table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Datetime</TableCell>
+                    <TableCell align="right">Description</TableCell>
+                    <TableCell align="right">Amount</TableCell>
                   </TableRow>
-                )
-              )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
+                </TableHead>
+                <TableBody>
+                {transactions && transactions.filter(f => f.type !== 'RECEIVE_AND_DELIVER' && f.type !== 'JOURNAL')
+                  .map((t, idx) => (
+                    <TableRow key={idx} className={classes.tableRow}>
+                      <TableCell component="th" scope="row">
+                        <Moment format="MM/DD/YYYY HH:mm:ss">{t.transactionDate}</Moment>
+                      </TableCell>
+                      <TableCell align="right">{getDescription(t)}</TableCell>
+                      <TableCell align="right">{numberWithCommas(t.netAmount)}</TableCell>
+                    </TableRow>
+                  )
+                )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
         }
       </Grid>
     </Grid>
