@@ -138,8 +138,8 @@ const controller = {
     // Get price history for a symbol
     getPriceHistory: async (req, res) => {
         try { // will be a POST request on the client route
-            const { symbol, period, periodType, frequency, frequencyType } = req.body;
-            const priceHistory = await MarketDataService.api.getPriceHistory(symbol, period, periodType, frequency, frequencyType);
+            const { symbol, period, periodType, frequency, frequencyType, startDate, endDate } = req.body;
+            const priceHistory = await MarketDataService.api.getPriceHistory(symbol, period, periodType, frequency, frequencyType, startDate, endDate);
             res.status(200).send(priceHistory);
         } catch (err) {
             var status = 500; // default

@@ -193,7 +193,7 @@ https://developer.tdameritrade.com/instruments/apis
                 url: `${config.auth.apiUrl}/instruments/${cusip}`,
                 headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
-                    return status === 200 || status === 401 || status === 403 || status === 404 || status === 503;
+                    return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
             const response = await axios(options);
@@ -202,6 +202,8 @@ https://developer.tdameritrade.com/instruments/apis
             const message = response.data.error;
             if (status === 200) {
                 return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
             } else if (status === 401) {
                 throw new UnauthorizedError(message);
             } else if (status === 403) {
@@ -259,26 +261,53 @@ https://developer.tdameritrade.com/price-history/apis
             daily: 1 (default)
             weekly: 1 (default)
             monthly: 1 (default)
+
+    endDate: End date as milliseconds since epoch. If startDate and endDate are provided,
+                period should not be provided. Default is previous trading day.
+            
+    startDate: Start date as milliseconds since epoch. If startDate and endDate are provided, period should not be provided.
+
+    needExtendedHoursData: true to return extended hours data, false for regular market hours only. Default true
     */
     getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
         try {
             const accessToken = await AuthService.db.getAccessToken();
-            const params = {
-                period: period,
-                periodType: periodType, // day, month, year, ytd
-                frequency: frequency,
-                frequencyType: frequencyType,
-                startDate: startDate, // End date as milliseconds since epoch. If startDate and endDate are provided, period should not be provided. Default is previous trading day.
-                endDate: endDate // Start date as milliseconds since epoch. If startDate and endDate are provided, period should not be provided.
-                //needExtendedHoursData // true to return extended hours data, false for regular market hours only. Default true
-            };
+
+            let params = {};
+
+            if (startDate && endDate) {
+
+                //var currentDate = moment();
+                //var todayDate = currentDate.format('YYYY-MM-DD');
+
+                //const todayDateNow = new Date()
+                //const endDateMilliSecSinceEpoch = Math.round(todayDateNow.getTime() / 1000) 
+
+                params = {
+                    periodType: periodType,
+                    frequency: frequency,
+                    frequencyType: frequencyType,
+                    startDate: startDate,
+                    endDate: endDate
+                };
+            } else {
+                params = {
+                    period: period,
+                    periodType: periodType,
+                    frequency: frequency,
+                    frequencyType: frequencyType
+                };
+            }
+
+            //console.log({params});
+
             const options = {
                 method: 'GET',
                 url: `${config.auth.apiUrl}/marketdata/${symbol}/pricehistory`,
                 params: params,
                 headers: { 'Authorization': `Bearer ${accessToken}` },
                 validateStatus: function (status) {
-                    return status === 200 || status === 401 || status === 403 || status === 404 || status === 503;
+                    return status === 200 || status === 400 || status === 401 || status === 403 || status === 404 || status === 503;
                 }
             };
             const response = await axios(options);
@@ -287,6 +316,8 @@ https://developer.tdameritrade.com/price-history/apis
             const message = response.data.error;
             if (status === 200) {
                 return data;
+            } else if (status === 400) {
+                throw new BadRequestError(message);
             } else if (status === 401) {
                 throw new UnauthorizedError(message);
             } else if (status === 403) {

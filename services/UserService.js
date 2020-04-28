@@ -1,7 +1,7 @@
 const config = require('../config/config.js');
 const axios = require('axios');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
-const UserPrincipal = require('../models/user/UserPrincipal');
+const UserPrincipals = require('../models/user/UserPrincipals');
 const AuthService = require('./AuthService');
 
 /*=============================================================================
@@ -12,7 +12,7 @@ https://developer.tdameritrade.com/user-principal/apis
 
 const api = {
 
-    // Get User Principals details from TD API
+    // Get User Principals details of currently authenticated user from TD API
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0
     getUserPrincipals: async () => {
         try {
@@ -49,7 +49,7 @@ const api = {
         } 
     },
 
-    // Get Streamer Subscription Keys
+    // Get Streamer Subscription Keys of currently authenticated user from TD API
     // https://developer.tdameritrade.com/user-principal/apis/get/userprincipals/streamersubscriptionkeys-0
     getStreamerSubscriptionKeys: async (accountIds) => {
         try {
@@ -94,10 +94,10 @@ User Info and Preferences database service methods
 
 const db = {
 
-    // Get User Principals details from database
-    getUserPrincipals: async () => {
+    // Get all User Principals details of all users from the database
+    getAllUserPrincipals: async () => {
         try {
-            const foundUserPrincipals = await UserPrincipal.find();
+            const foundUserPrincipals = await UserPrincipals.find();
             if (foundUserPrincipals) {
                 return foundUserPrincipals;
             } else {
@@ -112,26 +112,44 @@ const db = {
         }
     },
 
-    // Create one userPrincipal on one account in the database
-    createUserPrincipal: async (userPrincipal) => {
+    // Get User Principals details of one userId from the database
+    getUserPrincipals: async (userId) => {
         try {
-            let result = null;
-            return result = await UserPrincipal.create(userPrincipal);
-        } catch (err) {
-            if (err.name === 'ValidationError') {
-                throw new BadRequestError(`Error creating userPrincipal in database validation: ${err.message}`);
+            const foundUserPrincipals = await UserPrincipals.findOne({ userId: userId });
+            if (foundUserPrincipals) {
+                return foundUserPrincipals;
             } else {
-                throw new InternalServerError(`Error creating userPrincipal in database: ${err.message}`);
+                throw new NotFoundError(`Error user principals Not Found in database.`);
+            }
+        } catch (err) {
+            if (err.name === 'NotFoundError') {
+                throw err;
+            } else {
+                throw new InternalServerError(`Error fetching user principals from database: ${err.message}`);
             }
         }
     },
 
-    // Replace Specific userPrincipal for a specific userId in the database
-    replaceUserPrincipal: async (userId, userPrincipal) => {
+    // Create userPrincipals for one user in the database
+    createUserPrincipals: async (userPrincipals) => {
         try {
-            if (userId && userPrincipal && (userPrincipal.userId === userId) ) {
+            let result = null;
+            return result = await UserPrincipals.create(userPrincipals);
+        } catch (err) {
+            if (err.name === 'ValidationError') {
+                throw new BadRequestError(`Error creating userPrincipals in database validation: ${err.message}`);
+            } else {
+                throw new InternalServerError(`Error creating userPrincipals in database: ${err.message}`);
+            }
+        }
+    },
+
+    // Replace userPrincipals for a specific userId in the database
+    replaceUserPrincipals: async (userId, userPrincipals) => {
+        try {
+            if (userId && userPrincipals && (userPrincipals.userId === userId) ) {
                 let filter = { userId: userId };
-                let replacement = userPrincipal;
+                let replacement = userPrincipals;
                 let options = {
                     new: true,
                     upsert: false,
@@ -139,36 +157,36 @@ const db = {
                 };
                 let result = null;
                 try {
-                    result = await UserPrincipal.replaceOne(filter, replacement, options);
+                    result = await UserPrincipals.replaceOne(filter, replacement, options);
                     // matched and replaced only 1 document
                     if (result.n === 1 && result.nModified === 1) {
                         return result;
                     } else {
-                        throw new NotFoundError('UserPrincipal with userId specified Not Found in database.');
+                        throw new NotFoundError('UserPrincipals with userId specified Not Found in database.');
                     }
                 } catch (err) {
                     if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Error replacing userPrincipal in database for userId: ${err.message}`);
+                        throw new BadRequestError(`Error replacing userPrincipals in database for userId: ${err.message}`);
                     } else if (err.name === 'NotFoundError') {
                         throw err;
                     } else {
-                        throw new InternalServerError(`Error replacing userPrincipal in database: ${err.message}`);
+                        throw new InternalServerError(`Error replacing userPrincipals in database: ${err.message}`);
                     }
                 }
             } else {
-                throw new BadRequestError(`Error replacing userPrincipal in database invalid userId or UserPrincipal object.`);
+                throw new BadRequestError(`Error replacing userPrincipals in database invalid userId or UserPrincipals object.`);
             }
         } catch (err) {
             throw err;
         }
     },
 
-    // Partially update userPrincipal for a specific account in the database
-    updateUserPrincipal: async (userId, userPrincipal) => {
+    // Partially update userPrincipals of specific userId in the database
+    updateUserPrincipals: async (userId, userPrincipals) => {
         try {
-            if (userId && userPrincipal && (userPrincipal.userId === userId) ) {
+            if (userId && userPrincipals && (userPrincipals.userId === userId) ) {
                 let filter = { userId: userId };
-                let update = userPrincipal;
+                let update = userPrincipals;
                 let options = {
                     new: true,
                     upsert: false,
@@ -176,53 +194,53 @@ const db = {
                 };
                 let result = null;
                 try {
-                    result = await UserPrincipal.updateOne(filter, update, options);
+                    result = await UserPrincipals.updateOne(filter, update, options);
                     // matched and updated only 1 document
                     if (result.n === 1 && result.nModified === 1) {
                         return result;
                     } else {
-                        throw new NotFoundError('UserPrincipal with userId specified Not Found in database.');
+                        throw new NotFoundError('UserPrincipals with userId specified Not Found in database.');
                     }
                 } catch (err) {
                     if (err.name === 'ValidationError') {
-                        throw new BadRequestError(`Error updatng userPrincipal in database for userId: ${err.message}`);
+                        throw new BadRequestError(`Error updatng userPrincipals in database for userId: ${err.message}`);
                     } else if (err.name === 'NotFoundError') {
                         throw err;
                     } else {
-                        throw new InternalServerError(`Error updatng userPrincipal in database: ${err.message}`);
+                        throw new InternalServerError(`Error updatng userPrincipals in database: ${err.message}`);
                     }
                 }
             } else {
-                throw new BadRequestError(`Error updatng userPrincipal in database invalid userId or userPrincipal object.`);
+                throw new BadRequestError(`Error updatng userPrincipals in database invalid userId or userPrincipals object.`);
             }
         } catch (err) {
             throw err;
         }
     },
 
-    // Delete all userPrincipals from the database
-    deleteUserPrincipals: async () => {
+    // Delete all userPrincipals of all users from the database
+    deleteAllUserPrincipals: async () => {
         let result = null;
         try {
-            result = await UserPrincipal.deleteMany();
+            result = await UserPrincipals.deleteMany();
             return result;
         } catch (err) {
             throw new InternalServerError(`Error deleting all userPrincipals from database: ${err.message}`);
         }
     },
 
-    // Delete order for a specific userId from the database
-    deleteUserPrincipal: async (userId) => {
+    // Delete userPrincipals for a specific userId from the database
+    deleteUserPrincipals: async (userId) => {
         try {
             if (userId) {
-                let result = await UserPrincipal.deleteOne({ userId: userId });
+                let result = await UserPrincipals.deleteOne({ userId: userId });
                 if (result.n === 1 && result.nModified === 1) {
                     return result;
                 } else {
-                    throw new NotFoundError(`Error deleting UserPrincipal Not Found in database for userId.`);
+                    throw new NotFoundError(`Error deleting UserPrincipals Not Found in database for userId.`);
                 }
             } else {
-                throw new BadRequestError(`Error deleting UserPrincipal from database invalid userId.`);
+                throw new BadRequestError(`Error deleting UserPrincipals from database invalid userId.`);
             }
         } catch (err) {
             throw err;
