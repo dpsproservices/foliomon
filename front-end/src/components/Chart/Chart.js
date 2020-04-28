@@ -13,7 +13,8 @@ import { getPriceHistory } from '../../utils/api';
 
 const Chart = React.memo(({ symbol }) => {
   const [isDay, setIsDay] = useState(false);
-  const [isCandle, setIsCandle] = useState(true);
+  const [priceSeriesType, setPriceSeriesType] = useState('candlestick');
+  const [volumeSeriesType, setVolumeSeriesType] = useState('column');  
   const [results, setResults] = useState();
   //const classes = useStyles();
 
@@ -22,9 +23,9 @@ const Chart = React.memo(({ symbol }) => {
       try {
         const req = (isDay
           ? 
-            { symbol, period: '5', periodType: 'day', frequency: '1', frequencyType: 'minute' }
+            { symbol, period: '10', periodType: 'day', frequency: '1', frequencyType: 'minute' }
           :
-            { symbol, period: '5', periodType: 'year', frequency: '1', frequencyType: 'daily' }
+            { symbol, period: '20', periodType: 'year', frequency: '1', frequencyType: 'daily' }
         );
         const res = await getPriceHistory(req);
         console.log(res.data);
@@ -46,47 +47,71 @@ const Chart = React.memo(({ symbol }) => {
     if (['button-year', 'button-day'].includes(event.currentTarget.id)) {
       setIsDay(prev => !prev);
     }
-    if (['button-candle', 'button-line'].includes(event.currentTarget.id)) {
-      setIsCandle(prev => !prev);
-    }
+    if (event.currentTarget.id === 'button-candle') {
+      setPriceSeriesType('candlestick');
+      setVolumeSeriesType('column');
+    } else if (event.currentTarget.id === 'button-line') {
+      setPriceSeriesType('line');
+      setVolumeSeriesType('column');
+    } else if (event.currentTarget.id === 'button-ohlc') {
+      setPriceSeriesType('ohlc');
+      setVolumeSeriesType('column');
+    }   
   };
 
   const ohlc = results && results.candles.map(o => [o.datetime, o.open, o.high, o.low, o.close]);
-  const volumes = results && results.candles.map(o => [o.datetime, o.volume]);
   const line = results && results.candles.map(o => [o.datetime, o.close]);
+  const volume = results && results.candles.map(o => [o.datetime, o.volume]);  
 
-  const series = (isCandle
-    ?
-      [{
-        type: 'ohlc',
-        id: `${symbol}-ohlc`,
-        name: `${symbol} Stock Price`,
-        data: ohlc || [],
-        dataGrouping: {
-          approximation: 'ohlc'
-        }
-      },
-      {
-        type: 'column',
-        id: `${symbol}-vol`,
-        name: `${symbol} Volume`,
-        data: volumes || [],
-        yAxis: 1
-      }]
-    :
-      [{
-        type: 'line',
-        id: `${symbol}-line`,
-        name: `${symbol} Stock Price`,
-        data: line || [],
-        dataGrouping: {
-          approximation: 'average'
-        },
-        tooltip: {
-          valueDecimals: 2
-        }
-      }]
-  );
+  let priceSeriesData = ohlc;
+  let dataGrouping = {
+      units: [
+        [
+          'week', // unit name
+          [1] // allowed multiples
+        ], [
+          'month',
+          [1, 2, 3, 4, 6]
+        ]
+      ]
+  };
+
+  if (priceSeriesType === 'ohlc') {
+    priceSeriesData = ohlc;
+    dataGrouping = {
+      approximation: 'ohlc'
+    };
+  } else if (priceSeriesType === 'candlestick') {
+    priceSeriesData = ohlc;
+    dataGrouping = {
+      approximation: 'ohlc'
+    };
+  } else if (priceSeriesType === 'line') {
+    priceSeriesData = line;
+    dataGrouping = {
+      approximation: 'average'
+    };
+  }
+
+  const series = [
+    {
+      type: priceSeriesType,
+      id: `${symbol}-${priceSeriesType}`,
+      name: `${symbol} Stock Price`,
+      data: priceSeriesData || [],
+      dataGrouping: dataGrouping,
+      tooltip: {
+        valueDecimals: 2
+      }
+    },
+    {
+      type: volumeSeriesType,
+      id: `${symbol}-vol`,
+      name: `${symbol} Volume`,
+      data: volume || [],
+      yAxis: 1
+    }
+  ];
 
   const rangeButtons = (isDay
     ?
@@ -102,8 +127,13 @@ const Chart = React.memo(({ symbol }) => {
           text: '1d'
         },
         {
-          type: 'all',
+          type: 'day',
+          count: 5,
           text: '5d'
+        },
+        {
+          type: 'all',
+          text: '10d'
         }
       ]
     :
@@ -143,14 +173,23 @@ const Chart = React.memo(({ symbol }) => {
           text: '2y'
         },
         {
-          type: 'all',
+          type: 'year',
+          count: 5,
           text: '5y'
+        },
+        {
+          type: 'year',
+          count: 10,
+          text: '10y'
+        },
+        {
+          type: 'all',
+          text: '20y'
         }
       ]
   );
 
-  const yAxis = (isCandle
-    ?
+  const yAxis = 
       [
         {
           labels: {
@@ -169,20 +208,7 @@ const Chart = React.memo(({ symbol }) => {
           height: '20%',
           offset: 0
         }
-      ]
-    :
-      [
-        {
-          labels: {
-              align: 'left'
-          },
-          height: '80%',
-          resize: {
-              enabled: true
-          }
-        }
-      ]
-    );
+      ];
 
   const options = {
     time: {
@@ -220,14 +246,21 @@ const Chart = React.memo(({ symbol }) => {
       <ButtonGroup variant="text" color="secondary" size="small" aria-label="button-group">
         <Button
           id="button-candle"
-          disabled={isCandle}
+          disabled={priceSeriesType === 'candlestick'}
           onClick={handleClick}
         >
           Candle
         </Button>
         <Button
+          id="button-ohlc"
+          disabled={priceSeriesType === 'ohlc'}
+          onClick={handleClick}
+        >
+          OHLC
+        </Button>        
+        <Button
           id="button-line"
-          disabled={!isCandle}
+          disabled={priceSeriesType === 'line'}
           onClick={handleClick}
         >
           Line
