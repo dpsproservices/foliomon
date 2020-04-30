@@ -125,6 +125,12 @@ router.post('/foliomon/marketdata/instruments', marketDataController.getInstrume
 // Get chart data, price history
 router.post('/foliomon/marketdata/pricehistory', marketDataController.getPriceHistory);
 
+// Get all available daily price and volume OHLC chart data for 20 years including today 
+router.get('/foliomon/marketdata/pricehistory/:symbol/daily', marketDataController.getDailyPriceHistory);
+
+// Get all available minute price and volume OHLC chart data for 10 days including today 
+router.get('/foliomon/marketdata/pricehistory/:symbol/minute', marketDataController.getMinutePriceHistory);
+
 // Get top 10 (up or down) movers by value or percent for a particular market
 router.post('/foliomon/marketdata/movers', marketDataController.getMovers);
 

@@ -277,12 +277,6 @@ https://developer.tdameritrade.com/price-history/apis
 
             if (startDate && endDate) {
 
-                //var currentDate = moment();
-                //var todayDate = currentDate.format('YYYY-MM-DD');
-
-                //const todayDateNow = new Date()
-                //const endDateMilliSecSinceEpoch = Math.round(todayDateNow.getTime() / 1000) 
-
                 params = {
                     periodType: periodType,
                     frequency: frequency,
