@@ -55,6 +55,12 @@ const useStyles = makeStyles({
   },
   tableRow: {
     '&:nth-child(even)': { background: '#f5f5f5' }
+  },
+  changeUp: {
+    color: 'green'
+  },
+  changeDown: {
+    color: 'red'
   }
 });
 
@@ -115,6 +121,16 @@ const Overview = ({ activeAccount }) => {
     }
   };
 
+  const totalValue = account && account.currentBalances.liquidationValue;
+  const initialValue = account && account.initialBalances.liquidationValue;
+
+  let valueChange = 0;
+  let percentChange = 0;
+  if (account) {
+    valueChange = totalValue - initialValue;
+    percentChange = ((valueChange / initialValue) * 100);
+  }
+
   return (
     <Grid container>
       <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start">
@@ -129,10 +145,14 @@ const Overview = ({ activeAccount }) => {
                 <Typography className={classes.title} color="textSecondary" gutterBottom>
                   Type: {accountType}
                 </Typography>
-                
-                <Typography className={classes.pos} color="textSecondary" align="right">
-                  Total value: {account.currentBalances.liquidationValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </Typography>
+                <div className={classes.pos}>
+                  <Typography color="textSecondary" variant="h5" align="right">
+                    Total value: {totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                  </Typography>
+                  <Typography className={percentChange >= 0 ? classes.changeUp: classes.changeDown} variant="h6" align="right">
+                    Change: {`(${percentChange.toFixed(2)}%) ${valueChange.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
+                  </Typography>
+                </div>
                 <Typography variant="body2" component="p" align="right">
                   Long market value: {account.currentBalances.longMarketValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </Typography>
