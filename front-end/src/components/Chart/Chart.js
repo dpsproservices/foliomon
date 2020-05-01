@@ -3,7 +3,7 @@ import { Typography, Button, ButtonGroup } from '@material-ui/core';
 //import { makeStyles } from '@material-ui/core/styles';
 import * as Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-import { getPriceHistory } from '../../utils/api';
+import { getPriceHistory, getMinutePriceHistory, getDailyPriceHistory} from '../../utils/api';
 
 // const useStyles = makeStyles(theme => ({
 //   button: {
@@ -21,6 +21,8 @@ const Chart = React.memo(({ symbol }) => {
   useEffect(() => {
     const getStockData = async () => {
       try {
+        
+        /*
         const req = (isDay
           ? 
             { symbol, period: '10', periodType: 'day', frequency: '1', frequencyType: 'minute' }
@@ -28,6 +30,15 @@ const Chart = React.memo(({ symbol }) => {
             { symbol, period: '20', periodType: 'year', frequency: '1', frequencyType: 'daily' }
         );
         const res = await getPriceHistory(req);
+        */
+
+        const res = (isDay
+          ?
+          await getMinutePriceHistory(symbol)
+          :
+          await getDailyPriceHistory(symbol)
+        );
+
         console.log(res.data);
         setResults(res.data);
       } catch (error) {

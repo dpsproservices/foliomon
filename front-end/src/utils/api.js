@@ -74,6 +74,16 @@ export const getPriceHistory = async (body) => {
   return await axios.post(url, body);
 };
 
+export const getDailyPriceHistory = async (symbol) => {
+  const url = `${API_URL}/marketdata/pricehistory/${symbol}/daily`;
+  return await axios.get(url);
+};
+
+export const getMinutePriceHistory = async (symbol) => {
+  const url = `${API_URL}/marketdata/pricehistory/${symbol}/minute`;
+  return await axios.get(url);
+};
+
 export const getMovers = async (body) => {
   const url = `${API_URL}/marketdata/movers`;
   return await axios.post(url, body);
