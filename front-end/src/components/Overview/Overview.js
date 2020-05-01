@@ -178,16 +178,6 @@ const Overview = ({ activeAccount }) => {
     }
   };
 
-  const totalValue = account && account.currentBalances.liquidationValue;
-  const initialValue = account && account.initialBalances.liquidationValue;
-
-  let valueChange = 0;
-  let percentChange = 0;
-  if (account) {
-    valueChange = totalValue - initialValue;
-    percentChange = ((valueChange / initialValue) * 100);
-  }
-
   const basicChartOptions = {
     time: {
       timezoneOffset: new Date().getTimezoneOffset()
@@ -306,38 +296,54 @@ const Overview = ({ activeAccount }) => {
     ...basicChartOptions
   };
 
+  const totalValue = account && account.currentBalances.liquidationValue;
+  const initialValue = account && account.initialBalances.liquidationValue;
+
+  let valueChange = 0;
+  let percentChange = 0;
+  let changeDisplay = 0;
+  let totalValueDisplay = 0;
+  let longValueDisplay = 0;
+  let moneyMarketBalanceDisplay = 0;
+  if (account) {
+    valueChange = totalValue - initialValue;
+    percentChange = ((valueChange / initialValue) * 100);
+    totalValueDisplay = totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    changeDisplay = `(${percentChange.toFixed(2)}%) ${valueChange.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`;
+    longValueDisplay = account.currentBalances.longMarketValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    moneyMarketBalanceDisplay = account.currentBalances.moneyMarketFund.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+  }
+
   return (
     <Grid container className={classes.root}>
       <Grid container spacing={2} direction="row" justify="flex-start">
-        {account &&
-          <Grid item sm={6}>
-            <Card className={classes.card}>
-              <CardContent>
-                <AccountBalanceIcon fontSize="large" className={classes.icon}/>
-                <Typography className={classes.pos} variant="h5" component="h2">
-                  Account {account.accountId}
+        <Grid item sm={6}>
+          <Card className={classes.card}>
+            <CardContent>
+              <AccountBalanceIcon fontSize="large" className={classes.icon}/>
+              <Typography className={classes.pos} variant="h5" component="h2">
+                Account {account && account.accountId}
+              </Typography>
+              <Typography className={classes.title} color="textSecondary" gutterBottom>
+                Type: {accountType}
+              </Typography>
+              <div className={classes.pos}>
+                <Typography color="textSecondary" variant="h5" align="right">
+                  Total value: {totalValueDisplay}
                 </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                  Type: {accountType}
+                <Typography className={percentChange >= 0 ? classes.changeUp: classes.changeDown} variant="h6" align="right">
+                  Change: {changeDisplay}
                 </Typography>
-                <div className={classes.pos}>
-                  <Typography color="textSecondary" variant="h5" align="right">
-                    Total value: {totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                  </Typography>
-                  <Typography className={percentChange >= 0 ? classes.changeUp: classes.changeDown} variant="h6" align="right">
-                    Change: {`(${percentChange.toFixed(2)}%) ${valueChange.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                  </Typography>
-                </div>
-                <Typography variant="body2" component="p" align="right">
-                  Long market value: {account.currentBalances.longMarketValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </Typography>
-                <Typography variant="body2" component="p" align="right">
-                  Money market balance: {account.currentBalances.moneyMarketFund.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        }
+              </div>
+              <Typography variant="body2" component="p" align="right">
+                Long market value: {longValueDisplay}
+              </Typography>
+              <Typography variant="body2" component="p" align="right">
+                Money market balance: {moneyMarketBalanceDisplay}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
       <Grid container className={classes.root} spacing={4} direction="row" justify="space-between">
