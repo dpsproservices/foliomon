@@ -34,9 +34,9 @@ const controller = {
 
     // Get Transactions for Single Account
     getAccountTransactions: async (req, res) => {
-        let accountId = req.params.accountId;
+        const { accountId, months } = req.params;
         try {        
-            const transactions = await TransactionService.api.getAccountTransactions(accountId);
+            const transactions = await TransactionService.api.getAccountTransactions(accountId, months);
             res.status(200).send(transactions);
         } catch (err) {
             var status = 500; // default

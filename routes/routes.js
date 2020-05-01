@@ -144,8 +144,8 @@ router.get('/foliomon/marketdata/:symbol/delayed/', marketDataController.getDela
 Transaction History routes
 =============================================================================*/
 
-// Get all transactions of one single account from TD API
-router.get('/foliomon/transactions/:accountId', transactionController.getAccountTransactions);
+// Get transactions of one single account from TD API
+router.get('/foliomon/transactions/:accountId/:months', transactionController.getAccountTransactions);
 
 // Get one transaction of an account from TD API
 router.get('/foliomon/transactions/:accountId/:transactionId', transactionController.getTransaction);

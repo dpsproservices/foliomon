@@ -109,7 +109,7 @@ export const replaceAccountWatchlist = async (accountId, watchlistId, req) => {
   return await axios.put(url, req);
 };
 
-export const getAccountTransactions = async (accountId) => {
-  const url = `${API_URL}/transactions/${accountId}`;
+export const getAccountTransactions = async (accountId, months) => {
+  const url = `${API_URL}/transactions/${accountId}/${months}`;
   return await axios.get(url);
 };
