@@ -221,7 +221,7 @@ const Stocks = ({ match } ) => {
   return (
     <Grid container className={classes.root}>
       <Grid container spacing={2} direction="row" justify="flex-start">
-        <Grid item xs={4}>
+        <Grid item xs={6} sm={4}>
           <Search onSelect={handleSelect} />
         </Grid>
         {data &&
@@ -243,7 +243,7 @@ const Stocks = ({ match } ) => {
           <Fragment>
             <Websocket subscriptions={subscriptions} messageHandlers={messageHandlers} />
             <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start" className={classes.row}>
-              <Grid item xs={6}>
+              <Grid item xs={10} sm={6}>
                 <Chart symbol={selectedSymbol} />
               </Grid>
               <Grid item xs={6}>
