@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 import clsx from 'clsx';
 import { NavLink as RouterLink } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
-import { Drawer, List, ListItem, Button, colors } from '@material-ui/core';
+import { Drawer, Hidden, List, ListItem, Button, colors } from '@material-ui/core';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ViewListIcon from '@material-ui/icons/ViewList';
 import InsertChartIcon from '@material-ui/icons/InsertChart';
@@ -12,10 +12,11 @@ import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 const useStyles = makeStyles(theme => ({
     drawer: {
       width: 240,
-      //[theme.breakpoints.up('lg')]: {
-        marginTop: 64,
-        height: 'calc(100% - 64px)'
-      //}
+      marginTop: 64,
+      height: 'calc(100% - 64px)',
+      [theme.breakpoints.down('xs')]: {
+        width: 100
+      }
     },
     root: {
       backgroundColor: theme.palette.white,
@@ -95,7 +96,7 @@ const Sidebar = props => {
             to="/overview"
           >
             <div className={classes.icon}><DashboardIcon /></div>
-            Overview
+            <Hidden xsDown>Overview</Hidden>
           </Button>
         </ListItem>
         <ListItem
@@ -110,7 +111,7 @@ const Sidebar = props => {
             to="/positions"
           >
             <div className={classes.icon}><InsertChartIcon /></div>
-            Positions
+            <Hidden xsDown>Positions</Hidden>
           </Button>
         </ListItem>
         <ListItem
@@ -125,7 +126,7 @@ const Sidebar = props => {
             to="/orders"
           >
             <div className={classes.icon}><ViewListIcon /></div>
-            Orders
+            <Hidden xsDown>Orders</Hidden>
           </Button>
         </ListItem>
         <ListItem
@@ -140,7 +141,7 @@ const Sidebar = props => {
             to="/stocks"
           >
             <div className={classes.icon}><TrendingUpIcon /></div>
-            Stocks
+            <Hidden xsDown>Stocks</Hidden>
           </Button>
         </ListItem>
       </List>

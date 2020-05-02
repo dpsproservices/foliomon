@@ -6,14 +6,17 @@ import { Sidebar, Topbar } from '../../components';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    paddingTop: 56,
+    //paddingTop: 56,
     height: '100%',
-    [theme.breakpoints.up('sm')]: {
+    //[theme.breakpoints.up('sm')]: {
       paddingTop: 64
-    }
+    //}
   },
   shiftContent: {
-    paddingLeft: 240
+    paddingLeft: 240,
+    [theme.breakpoints.down('xs')]: {
+      paddingLeft: 100
+    }
   },
   content: {
     height: '100%'

@@ -27,8 +27,14 @@ const mapStateToProps = state => {
   };
 };
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   root: {
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
+  },
+  row: {
     padding: '25px'
   },
   card: {
@@ -71,7 +77,7 @@ const useStyles = makeStyles({
     //maxHeight: 200,
     //minWidth: 340
   }
-});
+}));
 
 const Overview = ({ activeAccount }) => {
    const [account, setAccount] = useState();
@@ -316,7 +322,7 @@ const Overview = ({ activeAccount }) => {
 
   return (
     <Grid container className={classes.root}>
-      <Grid container spacing={2} direction="row" justify="flex-start">
+      <Grid container spacing={2} direction="row" justify="flex-start" className={classes.row}>
         <Grid item sm={6}>
           <Card className={classes.card}>
             <CardContent>
@@ -346,7 +352,7 @@ const Overview = ({ activeAccount }) => {
         </Grid>
       </Grid>
 
-      <Grid container className={classes.root} spacing={4} direction="row" justify="space-between">
+      <Grid container className={classes.row} spacing={4} direction="row" justify="space-between">
         <Grid item sm={8} md={4} className={classes.item} align="center">
           <HighchartsReact highcharts={Highcharts} options={ncChartOptions} />
         </Grid>
@@ -359,7 +365,7 @@ const Overview = ({ activeAccount }) => {
         </Grid>
       </Grid>
 
-      <Grid container className={classes.root} spacing={2} direction="row" justify="center">
+      <Grid container className={classes.row} spacing={2} direction="row" justify="center">
         {transactions &&
           <Grid item xs={12}>
             <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>

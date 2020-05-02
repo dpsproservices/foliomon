@@ -12,7 +12,7 @@ import { getPriceHistory, getMinutePriceHistory, getDailyPriceHistory} from '../
 // }));
 
 const Chart = React.memo(({ symbol }) => {
-  const [isDay, setIsDay] = useState(false);
+  const [isDay, setIsDay] = useState(true);
   const [priceSeriesType, setPriceSeriesType] = useState('candlestick');
   const [volumeSeriesType, setVolumeSeriesType] = useState('column');  
   const [results, setResults] = useState();
@@ -231,6 +231,7 @@ const Chart = React.memo(({ symbol }) => {
     },
     series,
     rangeSelector: {
+      inputEnabled: false,
       buttons: rangeButtons
     }
   };
