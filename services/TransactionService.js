@@ -15,18 +15,19 @@ const api = {
 
     // Get all Transactions for a specific account. 
     // https://developer.tdameritrade.com/transaction-history/apis/get/accounts/%7BaccountId%7D/transactions-0
-    getAccountTransactions: async (accountId) => {
+    getAccountTransactions: async (accountId, months) => {
         try {
             const accessToken = await AuthService.db.getAccessToken();
+            const numberOfMonths = months ? months : 12;
             var currentDate = moment();
-            var todayDate = currentDate.format('YYYY-MM-DD');
-            var oneYearAgo = currentDate.subtract(1, 'years').format('YYYY-MM-DD');
+            var endDate = currentDate.format('YYYY-MM-DD'); // today
+            var startDate = currentDate.subtract(numberOfMonths, 'months').format('YYYY-MM-DD');
             // const validTypes = ['ALL','TRADE','BUY_ONLY','SELL_ONLY','CASH_IN_OR_CASH_OUT','CHECKING','DIVIDEND','INTEREST','OTHER','ADVISOR_FEES'];
             const params = {
                 type: 'ALL', // UI will search through all transaction types
                 //symbol: symbol,  // UI will search through all transaction symbols
-                startDate: oneYearAgo, // yyyy-MM-dd. Date must be within 1 yaer from today's date.
-                endDate: todayDate //, // yyyy-MM-dd
+                startDate, // yyyy-MM-dd. Date must be within 1 yaer from today's date.
+                endDate   // yyyy-MM-dd
             };
             const options = {
                 method: 'GET',

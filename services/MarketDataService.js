@@ -272,7 +272,6 @@ https://developer.tdameritrade.com/price-history/apis
     getPriceHistory: async (symbol, period, periodType, frequency, frequencyType, startDate, endDate) => {
         try {
             const accessToken = await AuthService.db.getAccessToken();
-
             let params = {};
 
             if (startDate && endDate) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAccount, getAccountTransactions } from '../../utils/api';
+import { getAccount, getAccountTransactions, getPriceHistory } from '../../utils/api';
 import { convertCase, numberWithCommas } from '../../utils/utils';
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -18,6 +18,8 @@ import {
 import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import { connect } from 'react-redux';
 import Moment from 'react-moment';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 const mapStateToProps = state => {
   return {
@@ -25,9 +27,15 @@ const mapStateToProps = state => {
   };
 };
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   root: {
-    padding: '25px',
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
+  },
+  row: {
+    padding: '25px'
   },
   card: {
     minWidth: 275
@@ -61,12 +69,22 @@ const useStyles = makeStyles({
   },
   changeDown: {
     color: 'red'
+  },
+  list: {
+    padding: 0
+  },
+  item: {
+    //maxHeight: 200,
+    //minWidth: 340
   }
-});
+}));
 
 const Overview = ({ activeAccount }) => {
    const [account, setAccount] = useState();
    const [transactions, setTransactions] = useState();
+   const [spData, setSPData] = useState();
+   const [djData, setDJData] = useState();
+   const [ncData, setNCData] = useState();
    const classes = useStyles();
 
   useEffect(() => {
@@ -74,9 +92,9 @@ const Overview = ({ activeAccount }) => {
       try {
         if (activeAccount && activeAccount !== '') {
           const accountRes = await getAccount(activeAccount);
-          console.log(accountRes.data);
-          const transactionsRes = await getAccountTransactions(activeAccount);
-          console.log(transactionsRes.data);
+          //console.log(accountRes.data);
+          const transactionsRes = await getAccountTransactions(activeAccount, 1);
+          //console.log(transactionsRes.data);
           
           const accountData = accountRes.data && accountRes.data.securitiesAccount;
           setAccount(accountData);
@@ -89,6 +107,51 @@ const Overview = ({ activeAccount }) => {
 
     getAccountsData();
   }, [activeAccount]);
+
+  useEffect(() => {
+    const getStockData = async () => {
+      try {
+        const endDate = new Date().getTime();
+        const date = new Date();
+        date.setHours(8,0,0,0);
+        const startDate = date.getTime();
+
+        let req = {
+          symbol: '$SPX.X',
+          period: undefined,
+          periodType: undefined,
+          frequency: '30',
+          frequencyType: 'minute',
+          startDate,
+          endDate
+        };
+
+        // S&P 500
+        const resSP = await getPriceHistory(req);
+        //console.log(resSP.data);
+        const spLine = resSP.data && resSP.data.candles.map(o => [o.datetime, o.close]);
+        setSPData(spLine);
+
+        // Dow Jones Industrials
+        req.symbol = '$DJI';
+        const resDJ = await getPriceHistory(req);
+        //console.log(resDJ.data);
+        const djLine = resDJ.data && resDJ.data.candles.map(o => [o.datetime, o.close]);
+        setDJData(djLine);
+
+        // Nasdaq Composite
+        req.symbol = '$COMPX';
+        const resNC = await getPriceHistory(req);
+        //console.log(resNC.data);
+        const ncLine = resNC.data && resNC.data.candles.map(o => [o.datetime, o.close]);
+        setNCData(ncLine);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getStockData();
+  }, []);
 
   const accountType = account && account.type && convertCase(account.type);
 
@@ -121,50 +184,188 @@ const Overview = ({ activeAccount }) => {
     }
   };
 
+  const basicChartOptions = {
+    time: {
+      timezoneOffset: new Date().getTimezoneOffset()
+    },
+    chart: {
+      zoomType: 'x',
+      backgroundColor: null,
+      borderWidth: 0,
+      spacingTop: 20,
+      spacingBottom: 20,
+      width: 350,
+      height: 200,
+      style: {
+        overflow: 'visible'
+      },
+      skipClone: true
+    },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      crosshair: true,
+      type: 'datetime',
+      labels: {
+        enabled: true
+      },
+      startOnTick: false,
+      endOnTick: false,
+    },
+    yAxis: {
+      endOnTick: false,
+      startOnTick: false,
+      labels: {
+        enabled: true,
+        formatter: function() {
+          return Highcharts.numberFormat(this.value, 0, '', ',');
+        }
+      },
+      title: {
+        text: null
+      },
+    },
+    legend: {
+      enabled: false
+    },
+    tooltip: {
+      borderWidth: 0,
+      backgroundColor: 'none',
+      pointFormatter: function() {
+        return Highcharts.numberFormat(this.y, 0, '', ',');
+      },
+      shadow: false,
+      style: {
+          fontSize: '18px'
+      }
+    },
+    plotOptions: {
+      area: {
+        connectNulls: false,
+        threshold: null,
+        animation: false,
+        lineWidth: 1,
+        shadow: false,
+        states: {
+          hover: {
+            lineWidth: 1
+          }
+        },
+        marker: {
+          radius: 2,
+          states: {
+            hover: {
+              radius: 2
+            }
+          }
+        },
+        fillOpacity: 0.25
+      },
+      column: {
+        negativeColor: '#910000',
+        borderColor: 'silver'
+      }
+    }
+  };
+
+  const ncChartOptions = {
+    title: {
+      text: 'Nasdaq Composite'
+    },
+    series: [{
+      type: 'area',
+      data: ncData
+    }],
+    ...basicChartOptions
+  };
+
+  const djChartOptions = {
+    title: {
+      text: 'Dow Jones Industrials'
+    },
+    series: [{
+      type: 'area',
+      data: djData
+    }],
+    ...basicChartOptions
+  };
+
+  const spChartOptions = {
+    title: {
+      text: 'S&P 500'
+    },
+    series: [{
+      type: 'area',
+      data: spData
+    }],
+    ...basicChartOptions
+  };
+
   const totalValue = account && account.currentBalances.liquidationValue;
   const initialValue = account && account.initialBalances.liquidationValue;
 
   let valueChange = 0;
   let percentChange = 0;
+  let changeDisplay = 0;
+  let totalValueDisplay = 0;
+  let longValueDisplay = 0;
+  let moneyMarketBalanceDisplay = 0;
   if (account) {
     valueChange = totalValue - initialValue;
     percentChange = ((valueChange / initialValue) * 100);
+    totalValueDisplay = totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    changeDisplay = `(${percentChange.toFixed(2)}%) ${valueChange.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`;
+    longValueDisplay = account.currentBalances.longMarketValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    moneyMarketBalanceDisplay = account.currentBalances.moneyMarketFund.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
   }
 
   return (
-    <Grid container>
-      <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start">
-        {account &&
-          <Grid item xs={4}>
-            <Card className={classes.card}>
-              <CardContent>
-                <AccountBalanceIcon fontSize="large" className={classes.icon}/>
-                <Typography className={classes.pos} variant="h5" component="h2">
-                  Account {account.accountId}
+    <Grid container className={classes.root}>
+      <Grid container spacing={2} direction="row" justify="flex-start" className={classes.row}>
+        <Grid item sm={6}>
+          <Card className={classes.card}>
+            <CardContent>
+              <AccountBalanceIcon fontSize="large" className={classes.icon}/>
+              <Typography className={classes.pos} variant="h5" component="h2">
+                Account {account && account.accountId}
+              </Typography>
+              <Typography className={classes.title} color="textSecondary" gutterBottom>
+                Type: {accountType}
+              </Typography>
+              <div className={classes.pos}>
+                <Typography color="textSecondary" variant="h5" align="right">
+                  Total value: {totalValueDisplay}
                 </Typography>
-                <Typography className={classes.title} color="textSecondary" gutterBottom>
-                  Type: {accountType}
+                <Typography className={percentChange >= 0 ? classes.changeUp: classes.changeDown} variant="h6" align="right">
+                  Change: {changeDisplay}
                 </Typography>
-                <div className={classes.pos}>
-                  <Typography color="textSecondary" variant="h5" align="right">
-                    Total value: {totalValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                  </Typography>
-                  <Typography className={percentChange >= 0 ? classes.changeUp: classes.changeDown} variant="h6" align="right">
-                    Change: {`(${percentChange.toFixed(2)}%) ${valueChange.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                  </Typography>
-                </div>
-                <Typography variant="body2" component="p" align="right">
-                  Long market value: {account.currentBalances.longMarketValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </Typography>
-                <Typography variant="body2" component="p" align="right">
-                  Money market balance: {account.currentBalances.moneyMarketFund.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        }
+              </div>
+              <Typography variant="body2" component="p" align="right">
+                Long market value: {longValueDisplay}
+              </Typography>
+              <Typography variant="body2" component="p" align="right">
+                Money market balance: {moneyMarketBalanceDisplay}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-      <Grid container className={classes.root} spacing={2} direction="row" justify="center">
+
+      <Grid container className={classes.row} spacing={4} direction="row" justify="space-between">
+        <Grid item sm={8} md={4} className={classes.item} align="center">
+          <HighchartsReact highcharts={Highcharts} options={ncChartOptions} />
+        </Grid>
+        <Grid item sm={8} md={4} className={classes.item} align="center">
+          <span></span>
+          <HighchartsReact highcharts={Highcharts} options={djChartOptions} />
+        </Grid>
+        <Grid item sm={8} md={4} className={classes.item} align="center">
+          <HighchartsReact highcharts={Highcharts} options={spChartOptions} />
+        </Grid>
+      </Grid>
+
+      <Grid container className={classes.row} spacing={2} direction="row" justify="center">
         {transactions &&
           <Grid item xs={12}>
             <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>

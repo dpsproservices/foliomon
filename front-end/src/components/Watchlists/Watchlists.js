@@ -23,7 +23,8 @@ import {
   DialogContentText,
   TextField,
   DialogTitle,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
@@ -61,6 +62,7 @@ const useStyles = makeStyles(theme => ({
 const Watchlists = ({ activeAccount }) => {
   const classes = useStyles();
   const [watchlists, setWatchLists] = useState();
+  const [isFetching, setIsFetching] = useState(false);
   const [editWatchlistId, setEditWatchlistId] = useState();
   const [deleteWatchlistId, setDeleteWatchlistId] = useState();
   const [watchlistName, setWatchlistName] = useState();
@@ -150,6 +152,7 @@ const Watchlists = ({ activeAccount }) => {
 
   const handleAddClick = () => {
     setWatchlistName();
+    setAlertMessage();
     setWatchlistItems([]);
     setDialogEditMode(false);
     setOpenAddListDialog(true);
@@ -169,9 +172,11 @@ const Watchlists = ({ activeAccount }) => {
     const getWatchlistsData = async () => {
       try {
         if (activeAccount && activeAccount !== '') {
+          setIsFetching(true);
           const res = await getAccountWatchlists(activeAccount);
           console.log(res.data);
           setWatchLists(res.data);
+          setIsFetching(false);
         }
       } catch (error) {
         console.log(error);
@@ -193,33 +198,43 @@ const Watchlists = ({ activeAccount }) => {
           </IconButton>
         </Grid>
       </Grid>
-      <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
-      {watchlists && watchlists.map(w => (
-        <List className={classes.list} key={w.watchlistId}>
-          <ListSubheader>
-            {w.name}
-            <IconButton id={w.watchlistId} edge="end" aria-label="edit-list" size="small" style={{ float: 'right' }} onClick={handleEditClick}>
-              <EditIcon />
-            </IconButton>
-            <IconButton id={w.watchlistId} edge="end" aria-label="delete-list" size="small" style={{ float: 'right' }} onClick={handleDeleteListClick}>
-              <DeleteForeverIcon />
-            </IconButton>
-          </ListSubheader>
-          {w.watchlistItems.map((item, idx) => (
-            <Fragment key={item.sequenceId}>
-              <ListItem>
-                <Link to={`/stocks/${item.instrument.symbol}`}>
-                  {item.instrument.symbol}
-                </Link>
-                <ListItemSecondaryAction>
-                </ListItemSecondaryAction>
-              </ListItem>
-              {(idx < w.watchlistItems.length-1) && <Divider component="li" />}
-            </Fragment>
-          ))}
-        </List>
-      ))}
-      </Grid>
+
+      {isFetching
+        ?
+          <Grid container spacing={2} direction="row" justify="center">
+            <Grid item xs={4}>
+              <CircularProgress size={42} thickness={2} />
+            </Grid>
+          </Grid>
+        :
+          <Grid container spacing={2} direction="row" justify="flex-start" alignItems="flex-start">
+            {watchlists && watchlists.map(w => (
+              <List className={classes.list} key={w.watchlistId}>
+                <ListSubheader>
+                  {w.name}
+                  <IconButton id={w.watchlistId} edge="end" aria-label="edit-list" size="small" style={{ float: 'right' }} onClick={handleEditClick}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton id={w.watchlistId} edge="end" aria-label="delete-list" size="small" style={{ float: 'right' }} onClick={handleDeleteListClick}>
+                    <DeleteForeverIcon />
+                  </IconButton>
+                </ListSubheader>
+                {w.watchlistItems.map((item, idx) => (
+                  <Fragment key={item.sequenceId}>
+                    <ListItem>
+                      <Link to={`/stocks/${item.instrument.symbol}`}>
+                        {item.instrument.symbol}
+                      </Link>
+                      <ListItemSecondaryAction>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    {(idx < w.watchlistItems.length-1) && <Divider component="li" />}
+                  </Fragment>
+                ))}
+              </List>
+            ))}
+          </Grid>
+      }
 
       <Dialog onClose={handleCloseAddList} aria-labelledby="dialog" open={openAddListDialog}>
         <DialogTitle id="dialog">{dialogEditMode ? 'Edit' : 'Add'} watchlist</DialogTitle>

@@ -18,7 +18,10 @@ const useStyles = makeStyles(theme => ({
       marginLeft: theme.spacing(1)
     },
     accountSelector: {
-      marginLeft: 240
+      marginLeft: 240,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 100
+      }
     }
   }));
 
