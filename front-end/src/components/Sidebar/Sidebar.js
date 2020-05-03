@@ -11,24 +11,27 @@ import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 
 const useStyles = makeStyles(theme => ({
     drawer: {
+      flexShrink: 0,
+      whiteSpace: 'nowrap',
       width: 240,
       marginTop: 64,
-      height: 'calc(100% - 64px)',
+      height: 'calc(100 - 64px)',
       [theme.breakpoints.down('xs')]: {
-        width: 100
-      }
+        width: 80
+      },
+      overflowX: 'hidden'
     },
     root: {
       backgroundColor: theme.palette.white,
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
       padding: theme.spacing(2)
     },
     divider: {
       margin: theme.spacing(2, 0)
     },
     nav: {
+      padding: 0,
       marginBottom: theme.spacing(2)
     },
     item: {
@@ -43,9 +46,13 @@ const useStyles = makeStyles(theme => ({
       textTransform: 'none',
       letterSpacing: 0,
       width: '100%',
-      fontWeight: theme.typography.fontWeightMedium
+      fontWeight: theme.typography.fontWeightMedium,
+      [theme.breakpoints.down('xs')]: {
+        justifyContent: 'center'
+      }
     },
     icon: {
+      textAlign: 'center',
       color: theme.palette.icon,
       width: 24,
       height: 24,
@@ -78,6 +85,7 @@ const Sidebar = props => {
   return (
     <Drawer
       anchor="left"
+      className={classes.drawer}
       classes={{ paper: classes.drawer }}
       onClose={onClose}
       open={open}

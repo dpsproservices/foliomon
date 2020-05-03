@@ -9,7 +9,11 @@ import AccountSelector from '../AccountSelector';
 
 const useStyles = makeStyles(theme => ({
     root: {
-      boxShadow: 'none'
+      boxShadow: 'none',
+      height: 64
+    },
+    toolbar: {
+      height: 64
     },
     flexGrow: {
       flexGrow: 1
@@ -20,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     accountSelector: {
       marginLeft: 240,
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 100
+        marginLeft: 80
       }
     }
   }));
@@ -37,7 +41,7 @@ const useStyles = makeStyles(theme => ({
         {...rest}
         className={clsx(classes.root, className)}
       >
-        <Toolbar>
+        <Toolbar disableGutters className={classes.toolbar}>
           <div className={classes.accountSelector}><AccountSelector /></div>
           <div className={classes.flexGrow} />
           <Hidden mdDown>

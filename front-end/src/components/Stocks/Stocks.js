@@ -24,7 +24,10 @@ const useStyles = makeStyles(theme => ({
     paddingTop: '25px',
     paddingLeft: '10px',
     height: '100vh',
-    width: '100vw'
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
   },
   upTick: {
     color: colors.green[400]
@@ -57,15 +60,15 @@ const Stocks = ({ match } ) => {
         "keys": selectedSymbol.toString(),
         "fields": "0,1,2,3,4,5,15,28,29"
       }
-    }
-    // {
-    //   "service": "NEWS_HEADLINE",
-    //   "command": "SUBS",
-    //   "parameters": {
-    //     "keys": selectedSymbol.toString(),
-    //     "fields": "0,2,3,5,10"
-    //   }
-    // },
+    },
+    {
+      "service": "NEWS_HEADLINE",
+      "command": "SUBS",
+      "parameters": {
+        "keys": selectedSymbol.toString(),
+        "fields": "0,2,3,5,6,10"
+      }
+    },
     // {
     //   "service": "NEWS_HEADLINE_LIST",
     //   "command": "GET",
@@ -77,78 +80,86 @@ const Stocks = ({ match } ) => {
     );
 
     messageHandlers.push((message) => {
-      if (message.data && message.data.length === 1
-        && message.data[0].service === 'QUOTE') {
-          const { content } = message.data[0];
-          content && content.forEach(row => {
-            const symbol = row.key;
-            let bidPrice = row['1'];
-            let askPrice = row['2'];
-            let lastPrice = row['3'];
-            let bidSize = row['4'];
-            let askSize = row['5'];
-            let closePrice = row['15'];
-            let openPrice = row['28'];
-            let netChange = row['29'];
+      if (message.data && message.data.length > 0) {
+        message.data.forEach(dataRow => {
+          if (dataRow.service === 'QUOTE') {
+            const { content } = dataRow;
+            content && content.forEach(row => {
+              const symbol = row.key;
+              let bidPrice = row['1'];
+              let askPrice = row['2'];
+              let lastPrice = row['3'];
+              let bidSize = row['4'];
+              let askSize = row['5'];
+              let closePrice = row['15'];
+              let openPrice = row['28'];
+              let netChange = row['29'];
 
-            setPrices(prevPrices => {
-              const prevPrice = prevPrices[symbol];
-              const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
-              const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
-              const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
-              const prevBidSize = (prevPrice && prevPrice.bidSize) || 0;
-              const prevAskSize = (prevPrice && prevPrice.askSize) || 0;
-              const prevClosePrice = (prevPrice && prevPrice.closePrice) || 0;
-              const prevOpenPrice = (prevPrice && prevPrice.openPrice) || 0;
-              const prevNetChange = (prevPrice && prevPrice.netChange) || 0;
+              setPrices(prevPrices => {
+                const prevPrice = prevPrices[symbol];
+                const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
+                const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
+                const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
+                const prevBidSize = (prevPrice && prevPrice.bidSize) || 0;
+                const prevAskSize = (prevPrice && prevPrice.askSize) || 0;
+                const prevClosePrice = (prevPrice && prevPrice.closePrice) || 0;
+                const prevOpenPrice = (prevPrice && prevPrice.openPrice) || 0;
+                const prevNetChange = (prevPrice && prevPrice.netChange) || 0;
 
-              bidPrice = bidPrice || prevBidPrice || 0;
-              askPrice = askPrice || prevAskPrice || 0;
-              lastPrice = lastPrice || prevLastPrice || 0;
-              bidSize = bidSize || prevBidSize || 0;
-              askSize = askSize || prevAskSize || 0;
-              closePrice = closePrice || prevClosePrice || 0;
-              openPrice = openPrice || prevOpenPrice || 0;
-              netChange = netChange || prevNetChange || 0;
+                bidPrice = bidPrice || prevBidPrice || 0;
+                askPrice = askPrice || prevAskPrice || 0;
+                lastPrice = lastPrice || prevLastPrice || 0;
+                bidSize = bidSize || prevBidSize || 0;
+                askSize = askSize || prevAskSize || 0;
+                closePrice = closePrice || prevClosePrice || 0;
+                openPrice = openPrice || prevOpenPrice || 0;
+                netChange = netChange || prevNetChange || 0;
 
-              const bidDirection = bidPrice === prevBidPrice || prevBidPrice === 0 ? 'none' : bidPrice > prevBidPrice ? 'up' : 'down';
-              const askDirection = askPrice === prevAskPrice || prevAskPrice === 0 ? 'none' : askPrice > prevAskPrice ? 'up' : 'down';
-              const lastDirection = lastPrice === prevLastPrice || prevLastPrice === 0 ? 'none' : lastPrice > prevLastPrice ? 'up' : 'down';
-              
-              return ({
-                ...prevPrices,
-                [symbol]: {
-                  bidPrice,
-                  askPrice,
-                  lastPrice,
-                  bidDirection,
-                  askDirection,
-                  lastDirection,
-                  bidSize,
-                  askSize,
-                  closePrice,
-                  openPrice,
-                  netChange
-                }
+                const bidDirection = bidPrice === prevBidPrice || prevBidPrice === 0 ? 'none' : bidPrice > prevBidPrice ? 'up' : 'down';
+                const askDirection = askPrice === prevAskPrice || prevAskPrice === 0 ? 'none' : askPrice > prevAskPrice ? 'up' : 'down';
+                const lastDirection = lastPrice === prevLastPrice || prevLastPrice === 0 ? 'none' : lastPrice > prevLastPrice ? 'up' : 'down';
+                
+                return ({
+                  ...prevPrices,
+                  [symbol]: {
+                    bidPrice,
+                    askPrice,
+                    lastPrice,
+                    bidDirection,
+                    askDirection,
+                    lastDirection,
+                    bidSize,
+                    askSize,
+                    closePrice,
+                    openPrice,
+                    netChange
+                  }
+                });
               });
             });
-          });
-        }
+          }
+        });
+      }
     });
 
     messageHandlers.push((message) => {
-      if (message.data && message.data.length === 1
-        && message.data[0].service === 'NEWS_HEADLINE_LIST') {
-          const { content } = message.data[0];
-          const newHeadlines = content && content.map(row => ({
-            dateTime: row['2'],
-            headlineId: row['3'],
-            headline: row['5'],
-            storySource: row['10']
-          }));
-          setHeadlines(prevHeadlines => {
-            return([...prevHeadlines, newHeadlines]);
-          });
+      if (message.data && message.data.length > 0) {
+        message.data.forEach(dataRow => {
+          if (dataRow.service === 'NEWS_HEADLINE') {
+            const { content } = dataRow;
+            const newHeadlines = content && content.map(row => ({
+              dateTime: row['2'],
+              headlineId: row['3'],
+              headline: row['5'],
+              storyId: row['6'],
+              storySource: row['10'],
+              sequence: row.seq
+            }));
+            setHeadlines(prevHeadlines => {
+              return([...prevHeadlines, ...newHeadlines]);
+            });
+          }
+        });
       }
     });
   }
@@ -246,12 +257,12 @@ const Stocks = ({ match } ) => {
               <Grid item xs={10} sm={6}>
                 <Chart symbol={selectedSymbol} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                 <Headlines headlines={headlines}/>
               </Grid>
             </Grid>
             <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start" className={classes.row}>
-              <Grid item xs={10} sm={4}>
+              <Grid item xs={10} sm={5}>
                 <List className={classes.list}>
                   <ListItem>
                     <ListItemText primary="Last"/>
@@ -304,7 +315,7 @@ const Stocks = ({ match } ) => {
                   </ListItem>
                 </List>
               </Grid>
-              <Grid item xs={10} sm={4}>
+              <Grid item xs={10} sm={5}>
                 <List>
                   <ListItem>
                     <ListItemText primary="Dividend Amount/Yield"/>
@@ -353,10 +364,10 @@ const Stocks = ({ match } ) => {
           </Fragment>
       }
       <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start" className={classes.row}>
-        <Grid item xs={10} sm={4}>
+        <Grid item xs={10} sm={5}>
           <Movers />
         </Grid>
-        <Grid item xs={10} sm={4}>
+        <Grid item xs={10} sm={5}>
           <Watchlists />
         </Grid>
       </Grid>
