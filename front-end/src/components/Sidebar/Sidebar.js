@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
       whiteSpace: 'nowrap',
       width: 240,
       marginTop: 64,
-      height: 'calc(100% - 64px)',
+      height: 'calc(100 - 64px)',
       [theme.breakpoints.down('xs')]: {
         width: 80
       },

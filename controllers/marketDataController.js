@@ -279,7 +279,12 @@ const controller = {
             startDate = momentStartDate.valueOf();
             endDate = momentEndDate.valueOf();
 
-            const priceHistoryToday = await MarketDataService.api.getPriceHistory(symbol, period, periodType, frequency, frequencyType, startDate, endDate);
+            let priceHistoryToday = { candles: [] };
+            try {
+                priceHistoryToday = await MarketDataService.api.getPriceHistory(symbol, period, periodType, frequency, frequencyType, startDate, endDate);
+            } catch (error) {
+                // Today's price history not available (i.e. Weekend).
+            }
 
             let priceHistory = [];
 

@@ -307,6 +307,9 @@ https://developer.tdameritrade.com/price-history/apis
             const status = response.status;
             const data = response.data;
             const message = response.data.error;
+
+            //console.log({response});
+
             if (status === 200) {
                 return data;
             } else if (status === 400) {
