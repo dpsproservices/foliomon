@@ -28,6 +28,10 @@ const useStyles = makeStyles(theme => ({
   root: {
     paddingTop: '25px',
     //height: '100vh'
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
   },
   table: {
     minWidth: 650

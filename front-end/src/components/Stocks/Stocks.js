@@ -24,7 +24,10 @@ const useStyles = makeStyles(theme => ({
     paddingTop: '25px',
     paddingLeft: '10px',
     height: '100vh',
-    width: '100vw'
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
   },
   upTick: {
     color: colors.green[400]
@@ -254,12 +257,12 @@ const Stocks = ({ match } ) => {
               <Grid item xs={10} sm={6}>
                 <Chart symbol={selectedSymbol} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={4}>
                 <Headlines headlines={headlines}/>
               </Grid>
             </Grid>
             <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start" className={classes.row}>
-              <Grid item xs={10} sm={4}>
+              <Grid item xs={10} sm={5}>
                 <List className={classes.list}>
                   <ListItem>
                     <ListItemText primary="Last"/>
@@ -312,7 +315,7 @@ const Stocks = ({ match } ) => {
                   </ListItem>
                 </List>
               </Grid>
-              <Grid item xs={10} sm={4}>
+              <Grid item xs={10} sm={5}>
                 <List>
                   <ListItem>
                     <ListItemText primary="Dividend Amount/Yield"/>
@@ -361,10 +364,10 @@ const Stocks = ({ match } ) => {
           </Fragment>
       }
       <Grid container spacing={4} direction="row" justify="flex-start" alignItems="flex-start" className={classes.row}>
-        <Grid item xs={10} sm={4}>
+        <Grid item xs={10} sm={5}>
           <Movers />
         </Grid>
-        <Grid item xs={10} sm={4}>
+        <Grid item xs={10} sm={5}>
           <Watchlists />
         </Grid>
       </Grid>

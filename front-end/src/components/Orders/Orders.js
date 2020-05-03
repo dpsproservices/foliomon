@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  colors,
   Grid,
   Table,
   TableBody,
@@ -15,7 +14,10 @@ import { getOrders } from '../../utils/api';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    paddingTop: '25px'
+    width: 'calc(100vw - 240px)',
+    [theme.breakpoints.down('xs')]: {
+      width: 'calc(100vw - 100px)'
+    }
   },
   table: {
     minWidth: 650
@@ -53,7 +55,7 @@ const Orders = () => {
   };
 
   return (
-    <Grid container spacing={2} direction="row" alignItems="flex-start" justify="center">
+    <Grid container className={classes.root} spacing={2} direction="row" alignItems="flex-start" justify="center">
       <Grid item xs={12}>
         <TableContainer component={Paper} elevation={4} className={classes.tableContainer}>
           <Table className={classes.table} aria-label="table" size="small">
