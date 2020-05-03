@@ -57,15 +57,15 @@ const Stocks = ({ match } ) => {
         "keys": selectedSymbol.toString(),
         "fields": "0,1,2,3,4,5,15,28,29"
       }
-    }
-    // {
-    //   "service": "NEWS_HEADLINE",
-    //   "command": "SUBS",
-    //   "parameters": {
-    //     "keys": selectedSymbol.toString(),
-    //     "fields": "0,2,3,5,10"
-    //   }
-    // },
+    },
+    {
+      "service": "NEWS_HEADLINE",
+      "command": "SUBS",
+      "parameters": {
+        "keys": selectedSymbol.toString(),
+        "fields": "0,2,3,5,6,10"
+      }
+    },
     // {
     //   "service": "NEWS_HEADLINE_LIST",
     //   "command": "GET",
@@ -138,12 +138,13 @@ const Stocks = ({ match } ) => {
 
     messageHandlers.push((message) => {
       if (message.data && message.data.length === 1
-        && message.data[0].service === 'NEWS_HEADLINE_LIST') {
+        && message.data[0].service === 'NEWS_HEADLINE') {
           const { content } = message.data[0];
           const newHeadlines = content && content.map(row => ({
             dateTime: row['2'],
             headlineId: row['3'],
             headline: row['5'],
+            storyId: row['6'],
             storySource: row['10']
           }));
           setHeadlines(prevHeadlines => {
