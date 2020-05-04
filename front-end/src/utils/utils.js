@@ -7,7 +7,7 @@ export const API_URL = `https://localhost:4000/foliomon`;
 export const convertCase = (str) => {
   if (!str) return;
 
-  return str[0].toUpperCase() + str.slice(1).toLowerCase();
+  return str[0].toUpperCase() + str.slice(1).toLowerCase().replace('_', ' ');
 };
 
 export const numberWithCommas = (x) => {
