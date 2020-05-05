@@ -56,62 +56,67 @@ const useStyles = makeStyles(theme => ({
 const Positions = ({ activeAccount }) => {
   const [positions, setPositions] = useState();
   const [prices, setPrices] = useState({});
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [messageHandlers, setMessageHandlers] = useState([]);
   const classes = useStyles();
-
-  const subscriptions = [];
   
-  if (positions) {
-    const symbols = positions && positions.map(p => p.instrument.symbol).toString();
-    subscriptions.push({
-      "service": "QUOTE",
-      "command": "SUBS",
-      "parameters": {
-          "keys": symbols,
-          "fields": "0,1,2,3"
-      }
-    });
-  }
-  
-  const messageHandlers = [];
-
-  if (positions) {
-    messageHandlers.push((message) => {
-      if (message.data && message.data.length === 1
-        && message.data[0].service === 'QUOTE') {
-          const { content } = message.data[0];
-          content && content.forEach(row => {
-            let bidPrice = row['1'];
-            let askPrice = row['2'];
-            let lastPrice = row['3'];
-            const symbol = row.key;
-
-            setPrices(prevPrices => {
-              const prevPrice = prevPrices[symbol];
-              const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
-              const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
-              const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
-              bidPrice = bidPrice || prevBidPrice || 0;
-              askPrice = askPrice || prevAskPrice || 0;
-              lastPrice = lastPrice || prevLastPrice || 0;
-              const bidDirection = bidPrice === prevBidPrice || prevBidPrice === 0 ? 'none' : bidPrice > prevBidPrice ? 'up' : 'down';
-              const askDirection = askPrice === prevAskPrice || prevAskPrice === 0 ? 'none' : askPrice > prevAskPrice ? 'up' : 'down';
-              const lastDirection = lastPrice === prevLastPrice || prevLastPrice === 0 ? 'none' : lastPrice > prevLastPrice ? 'up' : 'down';
-              return ({
-                ...prevPrices,
-                [symbol]: {
-                  bidPrice,
-                  askPrice,
-                  lastPrice,
-                  bidDirection,
-                  askDirection,
-                  lastDirection
-                }
-              });
-            });
-          });
+  useEffect(() => {
+    if (positions) {
+      const symbols = positions && positions.map(p => p.instrument.symbol).toString();
+      setSubscriptions([{
+        "service": "QUOTE",
+        "command": "SUBS",
+        "parameters": {
+            "keys": symbols,
+            "fields": "0,1,2,3"
         }
-    });
-  }
+      }]);
+    }
+
+    if (positions) {
+
+      setMessageHandlers([(message) => {
+        if (message.data && message.data.length > 0) {
+          message.data.forEach(dataRow => {
+            if (dataRow.service === 'QUOTE') {
+              const { content } = dataRow;
+              content && content.forEach(row => {
+                let bidPrice = row['1'];
+                let askPrice = row['2'];
+                let lastPrice = row['3'];
+                const symbol = row.key;
+
+                setPrices(prevPrices => {
+                  const prevPrice = prevPrices[symbol];
+                  const prevBidPrice = (prevPrice && prevPrice.bidPrice) || 0;
+                  const prevAskPrice = (prevPrice && prevPrice.askPrice) || 0;
+                  const prevLastPrice = (prevPrice && prevPrice.lastPrice) || 0;
+                  bidPrice = bidPrice || prevBidPrice || 0;
+                  askPrice = askPrice || prevAskPrice || 0;
+                  lastPrice = lastPrice || prevLastPrice || 0;
+                  const bidDirection = bidPrice === prevBidPrice || prevBidPrice === 0 ? 'none' : bidPrice > prevBidPrice ? 'up' : 'down';
+                  const askDirection = askPrice === prevAskPrice || prevAskPrice === 0 ? 'none' : askPrice > prevAskPrice ? 'up' : 'down';
+                  const lastDirection = lastPrice === prevLastPrice || prevLastPrice === 0 ? 'none' : lastPrice > prevLastPrice ? 'up' : 'down';
+                  return ({
+                    ...prevPrices,
+                    [symbol]: {
+                      bidPrice,
+                      askPrice,
+                      lastPrice,
+                      bidDirection,
+                      askDirection,
+                      lastDirection
+                    }
+                  });
+                
+                });
+              });
+              }
+            });
+          }
+      }]);
+    }
+  }, [positions]);
 
   useEffect(() => {
     const getAccountPositionsData = async () => {

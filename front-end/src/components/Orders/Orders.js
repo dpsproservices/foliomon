@@ -108,7 +108,7 @@ const Orders = ({ activeAccount }) => {
   };
 
   const getStopOrder = (symbol) => {
-    const stopOrders = orders && orders.filter(o => o.status === 'WORKING' &&
+    const stopOrders = orders && orders.filter(o => ['WORKING','QUEUED'].includes(o.status) &&
       o.orderLegCollection[0].instrument.symbol === symbol
     );
     if (stopOrders.length > 0) return stopOrders[0];
