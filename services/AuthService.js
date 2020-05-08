@@ -1,8 +1,11 @@
 const config = require('../config/config.js');
 const axios = require('axios');
 const qs = require('querystring')
+//const bcrypt = require('bcrypt');
+//const jwt = require('jwt-simple');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
 const AuthToken = require('../models/AuthToken');
+//const User = require('../models/user/User');
 
 /*=============================================================================
 TD API Authentication endpoint wrappers service methods
@@ -152,7 +155,7 @@ const api = {
             console.log(`Error in authService.getAuthTokenFromResponse: ${err.message}`);
             throw err;
         }
-    }    
+    }
     
 };
 
@@ -273,8 +276,7 @@ db = {
         } catch (err) {
             throw err;
         }
-    }  
-
+    }
 };
 module.exports.api = api;
 module.exports.db = db;

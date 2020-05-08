@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
+const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const config = require('./config/config');
 const routes = require('./routes/routes');
@@ -16,6 +17,7 @@ const app = express();
 if (process.env.NODE_ENV !== 'production') {
     app.use(cors());
 }
+app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', routes);

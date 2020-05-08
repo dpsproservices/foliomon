@@ -40,6 +40,8 @@ const password = process.env.FOLIOMON_PASSWORD;
 
 const defaultMarkets = process.env.FOLIOMON_DEFAULT_MARKETS;
 
+const jwtSecret = process.env.FOLIOMON_JWT_SECRET;
+
 const config = {
 
     webServer: {
@@ -74,7 +76,8 @@ const config = {
             tokenType: tokenTypeDefault
         },
         username: username,
-        password: password
+        password: password,
+        jwtSecret: jwtSecret
     },
 
     app: {

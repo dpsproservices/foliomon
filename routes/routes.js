@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
+const requireAuth = passport.authenticate('jwt', { session: false });
+const requireSignIn = passport.authenticate('local', { session: false });
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
 const orderController = require('../controllers/orderController');
@@ -7,6 +10,10 @@ const watchlistController = require('../controllers/watchlistController');
 const userController = require('../controllers/userController');
 const marketDataController = require('../controllers/marketDataController');
 const transactionController = require('../controllers/transactionController');
+
+router.get('/test', requireAuth, function (req, res) {
+    res.send({ test: 'ok' });
+});
 
 /*=============================================================================
 Authentication routes
@@ -23,6 +30,10 @@ router.get('/foliomon/accesstoken', authController.getAccessToken);
 
 // Get the Refresh Token stored in the database for testing
 //router.get('/foliomon/refreshtoken', authController.getRefreshToken);
+
+router.post('/foliomon/signup', authController.signup);
+
+router.post('/foliomon/signin', requireSignIn, authController.signin);
 
 /*=============================================================================
 Account routes
