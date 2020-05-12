@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
+//import { useTheme } from '@material-ui/styles';
 //import { useMediaQuery } from '@material-ui/core';
 import { Sidebar, Topbar } from '../../components';
 

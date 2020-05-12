@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Button, ButtonGroup } from '@material-ui/core';
+import { Button, ButtonGroup } from '@material-ui/core';
+//import { Typography } from '@material-ui/core';
 //import { makeStyles } from '@material-ui/core/styles';
 import * as Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-import { getPriceHistory, getMinutePriceHistory, getDailyPriceHistory} from '../../utils/api';
+import { getMinutePriceHistory, getDailyPriceHistory} from '../../utils/api';
 
 // const useStyles = makeStyles(theme => ({
 //   button: {

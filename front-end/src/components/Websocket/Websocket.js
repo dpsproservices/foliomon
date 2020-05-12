@@ -17,7 +17,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
     return () => {
       // executed when unmounted
       isMounted.current = false;
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const jsonToQueryString = (json) => {
@@ -60,7 +60,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
       }
     };
 
-    getData();
+    getData(); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
       };
 
       ws.send(JSON.stringify(request));
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isConnected]);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
         console.log("Logging out...")
         ws.send(JSON.stringify(logout));
       };
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isLoggedIn, isMounted]);
 
   useEffect(() => {
@@ -171,7 +171,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
         ws.send(JSON.stringify(requests));
         setPrevSubscriptions(subscriptions)
       }
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, subscriptions]);
 
   useEffect(() => {
@@ -218,7 +218,7 @@ const Websocket = ({ subscriptions, messageHandlers }) => {
       ws.onerror = (err) => {
         console.log(err);
       };
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (<div style={{ height: 0 }} />);

@@ -225,7 +225,7 @@ const controller = {
     },
 
     // New User Signup with email and password
-    signup: async (req, res) => {
+    signUp: async (req, res) => {
         let { email, password } = req.body;
         try {
 
@@ -269,7 +269,7 @@ const controller = {
     },
 
     // User sign in with email and password
-    signin: async (req, res) => {
+    signIn: async (req, res) => {
         let user = req.user; // from passport
         try {
             const jwt = PassportService.util.getJwt(user);
@@ -278,6 +278,17 @@ const controller = {
             var status = 500; // default
             res.status(status).send({ error: error });
             //return next(err);
+        }
+    },
+
+    // User sign out logout
+    signOut: async (req, res) => {
+        try {
+            req.logout();
+            res.status(200).send({ });
+        } catch (err) {
+            var status = 500; // default
+            res.status(status).send({ error: error });            
         }
     }
 

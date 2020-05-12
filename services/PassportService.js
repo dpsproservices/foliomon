@@ -137,8 +137,9 @@ const db = {
                 throw new InternalServerError(`Error creating user in database: ${err.message}`);
             }
         }
-    },
+    } //,
 
+    /*
     verifyPassword: async (user) => {
         try {
             let result = null;
@@ -147,6 +148,7 @@ const db = {
 
         }
     }
+    */
 };
 module.exports.util = util;
 module.exports.db = db;

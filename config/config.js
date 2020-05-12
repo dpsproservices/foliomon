@@ -7,6 +7,8 @@ if (dotenv.error) {
 //console.log("Loaded environment config:");
 //console.log(dotenv.parsed);
 
+const mode = process.env.FOLIOMON_MODE; // development or production`
+
 const hostname = process.env.FOLIOMON_HOSTNAME;
 const httpPort = process.env.FOLIOMON_HTTP_PORT;
 const httpsPort = process.env.FOLIOMON_HTTPS_PORT;
@@ -83,7 +85,9 @@ const config = {
     app: {
         defaults: {
             markets: defaultMarkets
-        }
+        },
+
+        mode: mode
     }
 
 };

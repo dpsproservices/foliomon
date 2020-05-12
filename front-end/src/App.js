@@ -68,7 +68,7 @@ function App() {
     }
   }, []);
 
-  console.log(token);
+  //console.log(token);
 
   return (
     <ThemeProvider theme={theme}>

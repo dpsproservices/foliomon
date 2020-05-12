@@ -57,16 +57,17 @@ const AccountSelector = ({ setSelectedAccount }) => {
         setAccounts(accountData);
 
         if (accountData && accountData.length > 0) {
-          setActiveAccount(accountData[0].accountId);
           setSelectedAccount(accountData[0].accountId);
+          setActiveAccount(accountData[0].accountId);
         }
       } catch (error) {
         console.log(error);
       }
     };
 
-    getData();
+    getData(); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   return (
     <div>

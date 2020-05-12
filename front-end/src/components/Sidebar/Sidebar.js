@@ -79,7 +79,8 @@ const CustomRouterLink = forwardRef((props, ref) => (
 ));
 
 const Sidebar = props => {
-  const { open, variant, onClose, className } = props;
+  const { open, variant, onClose } = props;
+  //const { className } = props;
   const classes = useStyles();
 
   return (

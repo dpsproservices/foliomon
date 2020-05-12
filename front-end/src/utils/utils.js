@@ -2,8 +2,6 @@
 
 //export const PORT = process.env.PORT || 443;
 
-export const API_URL = `https://localhost:4000/foliomon`;
-
 export const convertCase = (str) => {
   if (!str) return;
 
