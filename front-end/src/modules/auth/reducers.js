@@ -1,6 +1,3 @@
-import { combineReducers } from 'redux';
-import { reducer as formReducer } from 'redux-form';
-
 import {
     //REGISTER_USER,
     REGISTER_USER_SUCCESS,
@@ -20,7 +17,7 @@ const initialState = {
     errorMessage: ''
 };
 
-const authStateReducer = (state = initialState, action) => {
+const authReducer = (state = initialState, action) => {
     switch (action.type) {
         case REGISTER_USER_SUCCESS:
             localStorage.setItem('token', action.response.data.token);
@@ -56,10 +53,5 @@ const authStateReducer = (state = initialState, action) => {
             return state;
     }
 };
-
-const authReducer = combineReducers({
-    status: authStateReducer,
-    form: formReducer
-});
 
 export default authReducer;

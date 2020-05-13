@@ -44,7 +44,7 @@ async function startServer() {
         });
        
         // run the app scheduled jobs
-        await AppController.runMainEventLoop();
+        //await AppController.runMainEventLoop();
 
     } catch (err) {
         console.log(err);
