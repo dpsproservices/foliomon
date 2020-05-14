@@ -3,18 +3,18 @@ const axios = require('axios');
 
 // Register new user
 export const postSignUp = async (body) => {
-    const url = `${API_URL}/signup`;
+    const url = `${API_URL}/register`;
     return await axios.post(url, body);
 };
 
 // Login user
 export const postSignIn = async (body) => {
-    const url = `${API_URL}/signin`;
+    const url = `${API_URL}/login`;
     return await axios.post(url, body);
 };
 
 // Logout user
 export const postSignOut = async () => {
-    const url = `${API_URL}/signout`;
+    const url = `${API_URL}/logout`;
     return await axios.post(url);
 };

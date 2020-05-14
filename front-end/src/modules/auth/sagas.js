@@ -20,40 +20,40 @@ import {
     LOGOUT_USER_ERROR
 } from './actions';
 
-function* registerSaga(formProps) {
+function* registerSaga(action) {
     try {
-        const response = yield call(postSignUp, formProps);
-        yield put({ type: REGISTER_USER_SUCCESS, response: response });
+        const response = yield call(postSignUp, action.payload);
+        yield put({ type: REGISTER_USER_SUCCESS, payload: response });
     } catch (err) {
-        yield put({ type: REGISTER_USER_ERROR, errorMessage: err.message });
+        yield put({ type: REGISTER_USER_ERROR, payload: err.message });
     }
 }
 
-function* loginSaga(formProps) {
+function* loginSaga(action) {
     try {
-        const response = yield call(postSignIn, formProps);
-        yield put({ type: LOGIN_USER_SUCCESS, response: response });
+        const response = yield call(postSignIn, action.payload);
+        yield put({ type: LOGIN_USER_SUCCESS, payload: response });
     } catch (err) {
-        yield put({ type: LOGIN_USER_ERROR, errorMessage: err.message });
+        yield put({ type: LOGIN_USER_ERROR, payload: err.message });
     }
 }
 
-function* logoutSaga(formProps) {
+function* logoutSaga(action) {
     try {
-        const response = yield call(postSignOut, formProps);
-        yield put({ type: LOGOUT_USER_SUCCESS, response: response });
+        const response = yield call(postSignOut, action.payload);
+        yield put({ type: LOGOUT_USER_SUCCESS, payload: response });
     } catch (err) {
-        yield put({ type: LOGOUT_USER_ERROR, errorMessage: err.message });
+        yield put({ type: LOGOUT_USER_ERROR, payload: err.message });
     }
 }
 
 /*
-function* forgotPasswordSaga(formProps) {
+function* forgotPasswordSaga(action) {
     try {
-        const response = yield call(forgotPassword, formProps);
-        yield put({ type: FORGOT_PASSWORD_SUCCESS, response: response });
+        const response = yield call(forgotPassword, action.payload);
+        yield put({ type: FORGOT_PASSWORD_SUCCESS, payload: response });
     } catch (err) {
-        yield put({ type: FORGOT_PASSWORD_ERROR, errorMessage: err.message });
+        yield put({ type: FORGOT_PASSWORD_ERROR, payload: err.message });
     }
 }
 */

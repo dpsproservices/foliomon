@@ -20,34 +20,37 @@ const initialState = {
 const authReducer = (state = initialState, action) => {
     switch (action.type) {
         case REGISTER_USER_SUCCESS:
-            localStorage.setItem('token', action.response.data.token);
+            localStorage.setItem('token', action.payload.data.token);
             return { 
-                ...state, 
-                authenticated: action.response.data.token 
+                authenticated: action.payload.data.token,
+                errorMessage: '' 
             };
         case REGISTER_USER_ERROR:
+            localStorage.removeItem('token');
             return { 
-                ...state, 
-                errorMessage: action.errorMessage 
+                authenticated: '',
+                errorMessage: action.payload 
             };
         case LOGIN_USER_SUCCESS:
-            localStorage.setItem('token', action.response.data.token);
+            localStorage.setItem('token', action.payload.data.token);
             return {
-                ...state,
-                authenticated: action.response.data.token
+                authenticated: action.payload.data.token,
+                errorMessage: ''
             };
         case LOGIN_USER_ERROR:
+            localStorage.removeItem('token');
             return { 
-                ...state, 
-                errorMessage: action.errorMessage
+                authenticated: '',
+                errorMessage: action.payload
             };
         case LOGOUT_USER_SUCCESS: // reset to initial state
             localStorage.removeItem('token');
             return initialState;
         case LOGOUT_USER_ERROR:
+            localStorage.removeItem('token');
             return {
-                ...state,
-                errorMessage: action.errorMessage
+                authenticated: '',
+                errorMessage: action.payload
             };
         default:
             return state;
