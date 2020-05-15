@@ -7,10 +7,9 @@ import createReduxPromiseListener from 'redux-promise-listener';
 
 const reduxPromiseListener = createReduxPromiseListener();
 
-//const logger = store => (next: Next) => (action: Action): State => {
 const logger = store => (next) => (action) => {
-    console.log(action)
-    return next(action)
+    console.log(action);
+    return next(action);
 }
 
 const sagaMiddleware = createSagaMiddleware();
@@ -33,6 +32,6 @@ export default createStore(
     composeEnhancers(middleware)
 );
 
-export const promiseListener = reduxPromiseListener; // <---------- IMPORTANT
+export const promiseListener = reduxPromiseListener;
 
 sagaMiddleware.run(rootSaga);

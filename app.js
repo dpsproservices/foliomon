@@ -1,5 +1,6 @@
 const fs = require('fs');
 const https = require('https');
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -15,6 +16,7 @@ require("dotenv").config();
 
 const app = express();
 if (process.env.NODE_ENV !== 'production') {
+    
     app.use(cors());
 }
 app.use(morgan('combined'));

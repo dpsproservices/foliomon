@@ -1,10 +1,11 @@
 import React from 'react';
 import { useState } from 'react';
-import { Form, Field } from 'react-final-form'
-import { FORM_ERROR } from 'final-form'
+import { Form, Field } from 'react-final-form';
+import { FORM_ERROR } from 'final-form';
+import createDecorator from 'final-form-focus';
 import { LOGIN_USER, LOGIN_USER_SUCCESS, LOGIN_USER_ERROR } from '../../modules/auth/actions';
-import MakeAsyncFunction from 'react-redux-promise-listener'
-import { promiseListener } from '../../store'
+import MakeAsyncFunction from 'react-redux-promise-listener';
+import { promiseListener } from '../../store';
 
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -51,7 +52,9 @@ const SubmitError = ({ name }) => (
     </Field>
 );
 
-const LoginForm = ({subscription}) => {
+const focusOnError = createDecorator();
+
+const LoginForm = (props) => {
 
     /*
     const initialValues = {
@@ -81,6 +84,7 @@ const LoginForm = ({subscription}) => {
         //});
         
     };
+    
     */
 
     return (
@@ -93,9 +97,10 @@ const LoginForm = ({subscription}) => {
             {onSubmit => (
                 <Form
                     onSubmit={onSubmit}
+                    decorators={[focusOnError]}
                     //initialValues={submittedValues ? submittedValues : initialValues}
                     // validate={validate}
-                    subscription={subscription}
+                    subscription={{ submitting: true, pristine: true }}
                     render={
                         ({ submitError, handleSubmit, form, submitting, pristine, values }) => (
                         <form noValidate={true} autoComplete="off" onSubmit={handleSubmit}>

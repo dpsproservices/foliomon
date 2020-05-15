@@ -26,7 +26,7 @@ const Login = (props) => {
                     <Box display="flex" alignItems="center" justifyContent="center" pt={3} pb={3}>
                         <Typography variant="h3">Welcome Back!</Typography>
                     </Box>
-                    <LoginForm subscription={{ submitting: true, pristine: true }} />
+                    <LoginForm />
                 </Box>
                 <Box m={3}>
                     <Copyright />

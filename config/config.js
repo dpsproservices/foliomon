@@ -22,8 +22,8 @@ const mongoPort = process.env.MONGO_PORT;
 const mongoUrl = `mongodb://${mongoHostname}:${mongoPort}/${mongoDB}?authSource=admin`;
 
 // SSL cert generated with openssl
-const privateKey = fs.readFileSync(path.resolve(__dirname, './server.key'), 'utf8');
-const certificate = fs.readFileSync(path.resolve(__dirname, './server.crt'), 'utf8');
+const privateKey = fs.readFileSync(path.resolve(__dirname, './ssl/server.key'), 'utf8');
+const certificate = fs.readFileSync(path.resolve(__dirname, './ssl/server.crt'), 'utf8');
 const credentials = { key: privateKey, cert: certificate };
 
 const redirectUrl = process.env.FOLIOMON_REDIRECT_URI;

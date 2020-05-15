@@ -13,6 +13,7 @@
     "axios": "^0.19.2",
     "clsx": "^1.1.0",
     "final-form": "^4.19.1",
+    "final-form-focus": "^1.1.2",
     "highcharts": "^8.0.4",
     "highcharts-react-official": "^3.0.0",
     "history": "^4.10.1",

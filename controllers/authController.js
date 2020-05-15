@@ -240,7 +240,7 @@ const controller = {
 
             // must be 8 characters 1 uppercase 1 number 1 special character
             if (!PassportService.util.validatePassword(password) ) {
-                throw new BadRequestError('Password must contain 1 Uppercase 1Lowercase 1 Number 1 Special character.');
+                throw new BadRequestError('Password must contain 1 Uppercase 1 Lowercase 1 Number 1 Special character.');
             }
 
             // verify user with email exists

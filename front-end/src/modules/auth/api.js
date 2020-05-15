@@ -18,3 +18,9 @@ export const postSignOut = async () => {
     const url = `${API_URL}/logout`;
     return await axios.post(url);
 };
+
+// user Forgot Password
+export const postForgotPassword = async () => {
+    const url = `${API_URL}/forgot`;
+    return await axios.post(url);
+};
