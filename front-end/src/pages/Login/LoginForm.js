@@ -107,7 +107,7 @@ const LoginForm = (props) => {
             resolve={LOGIN_USER_SUCCESS}
             reject={LOGIN_USER_ERROR}
         >
-            {onSubmit => props.authenticated ? (
+            {onSubmit => (props.authenticated && !props.errorMessage) ? (
                 <Redirect to="/overview" /> // Redirect to Overview after login
             ) : (
                 <Form
