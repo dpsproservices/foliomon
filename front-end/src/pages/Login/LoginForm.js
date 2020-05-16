@@ -1,12 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
+import { Redirect } from "react-router";
+import { connect } from 'react-redux';
 import { Form, Field } from 'react-final-form';
-import { FORM_ERROR } from 'final-form';
 import createDecorator from 'final-form-focus';
 import { LOGIN_USER, LOGIN_USER_SUCCESS, LOGIN_USER_ERROR } from '../../modules/auth/actions';
 import MakeAsyncFunction from 'react-redux-promise-listener';
 import { promiseListener } from '../../store';
-
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
@@ -15,6 +15,18 @@ import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import MuiAlert from '@material-ui/lab/Alert';
+
+const mapStateToProps = state => {
+    return {
+        authenticated: state.auth.authenticated,
+        errorMessage: state.auth.errorMessage
+    };
+};
+
+function Alert(props) {
+    return <MuiAlert elevation={1} variant="filled" {...props} />;
+}
 
 const isRequired = value => (value ? undefined : 'Required');
 
@@ -41,18 +53,32 @@ const validate = (values) => {
 }
 */
 
-const SubmitError = ({ name }) => (
-    <Field
-        name={name}
-        subscription={{ submitError: true, dirtySinceLastSubmit: true }}
-    >
-        {({ meta: { submitError, dirtySinceLastSubmit } }) =>
-            submitError && !dirtySinceLastSubmit ? <span>{submitError}</span> : null
-        }
-    </Field>
-);
-
 const focusOnError = createDecorator();
+
+const Fields = ({
+    names,
+    subscription,
+    fieldsState = {},
+    children,
+    originalRender
+}) => {
+    if (!names.length) {
+        return (originalRender || children)(fieldsState);
+    }
+    const [name, ...rest] = names;
+    return (
+        <Field name={name} subscription={subscription}>
+            {fieldState => (
+                <Fields
+                    names={rest}
+                    subscription={subscription}
+                    originalRender={originalRender || children}
+                    fieldsState={{ ...fieldsState, [name]: fieldState }}
+                />
+            )}
+        </Field>
+    );
+};
 
 const LoginForm = (props) => {
 
@@ -74,19 +100,6 @@ const LoginForm = (props) => {
         event.preventDefault();
     };
 
-    /*
-    const onSubmit = async (values) => {
-
-        alert(JSON.stringify(values, 0, 2));
-
-        //props.signin(values, () => {
-        //    props.history.push('/overview'); // redirect to the Overview page
-        //});
-        
-    };
-    
-    */
-
     return (
         <MakeAsyncFunction
             listener={promiseListener}
@@ -94,15 +107,17 @@ const LoginForm = (props) => {
             resolve={LOGIN_USER_SUCCESS}
             reject={LOGIN_USER_ERROR}
         >
-            {onSubmit => (
+            {onSubmit => props.authenticated ? (
+                <Redirect to="/overview" /> // Redirect to Overview after login
+            ) : (
                 <Form
                     onSubmit={onSubmit}
                     decorators={[focusOnError]}
-                    //initialValues={submittedValues ? submittedValues : initialValues}
+                    //initialValues={initialValues}
                     // validate={validate}
                     subscription={{ submitting: true, pristine: true }}
                     render={
-                        ({ submitError, handleSubmit, form, submitting, pristine, values }) => (
+                        ({  handleSubmit, form, submitting, pristine, values }) => (
                         <form noValidate={true} autoComplete="off" onSubmit={handleSubmit}>
                             <Box ml={3} mr={3}>
                                 <Typography variant="h5">Email</Typography>
@@ -119,7 +134,6 @@ const LoginForm = (props) => {
                                         />
                                     )}
                                 </Field>
-                                <SubmitError name="email" />
                             </Box>
                             <Box mt={4} ml={3} mr={3}>
                                 <Typography variant="h5">Password</Typography>
@@ -151,13 +165,32 @@ const LoginForm = (props) => {
                                     Sign In
                                 </Button>
                             </Box>
-                            {submitError && <div>{submitError}</div>}
+                            <Box display="flex" alignItems="center" justifyContent="center" mt={3} ml={3} mr={3} mb={3}>
+                                <Fields names={["email", "password"]}>
+                                    {fieldsState => (
+                                        <Field
+                                            name="errorMessage"
+                                            subscription={{ submitError: true, dirtySinceLastSubmit: true, values: true }}
+                                        >
+                                            {({ meta: { submitError, dirtySinceLastSubmit } }) =>
+                                                !fieldsState.email.meta.dirtySinceLastSubmit
+                                                &&
+                                                !fieldsState.password.meta.dirtySinceLastSubmit
+                                                &&
+                                                submitError && !dirtySinceLastSubmit ?
+                                                <Alert severity="error">{submitError}</Alert> : null
+                                            }
+                                        </Field>
+                                        //<pre>{JSON.stringify(fieldsState, undefined, 2)}</pre>
+                                    )}
+                                </Fields>
+                            </Box>
                         </form>
                     )}
                 />
-            )}
+            )} 
         </MakeAsyncFunction>
     );
 }
 
-export default LoginForm;
+export default connect(mapStateToProps, null)(LoginForm);

@@ -22,16 +22,16 @@ const Login = (props) => {
                 </Box>
             </Box>
             <Paper elevation={8}>
-                <Box width={400} height={400}>
+                <Box width={400} height={500}>
                     <Box display="flex" alignItems="center" justifyContent="center" pt={3} pb={3}>
                         <Typography variant="h3">Welcome Back!</Typography>
                     </Box>
                     <LoginForm />
                 </Box>
-                <Box m={3}>
-                    <Copyright />
-                </Box>
             </Paper>
+            <Box m={3}>
+                <Copyright />
+            </Box>
         </Grid>
     );
 }

@@ -39,9 +39,8 @@ function* loginSaga(action) {
         const response = yield call(postSignIn, action.payload);
         yield put({ type: LOGIN_USER_SUCCESS, payload: response });
     } catch (err) {
-
         console.log({err});
-        yield put({ type: LOGIN_USER_ERROR, payload: err.message });
+        yield put({ type: LOGIN_USER_ERROR, payload: { errorMessage: err.message } } );
     }
 }
 
