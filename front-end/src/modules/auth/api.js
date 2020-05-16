@@ -1,6 +1,14 @@
 const API_URL = process.env.REACT_APP_API_URL;
 const axios = require('axios');
 
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
+}
+
 // Register new user
 export const postSignUp = async (body) => {
     try {
@@ -50,6 +58,7 @@ export const postSignIn = async (body) => {
         const response = await axios.post(url, body, options);
         const status = response.status;
         //const message = response.data.error;
+        //sleep(2000);
         if (status === 200) {
             return response;
         } else if (status === 400) { // Bad Request

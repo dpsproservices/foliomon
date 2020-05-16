@@ -16,6 +16,24 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import MuiAlert from '@material-ui/lab/Alert';
+import clsx from 'clsx';
+import { makeStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { green } from '@material-ui/core/colors';
+
+const useStyles = makeStyles((theme) => ({
+    buttonSuccess: {
+        backgroundColor: green[500],
+        '&:hover': {
+            backgroundColor: green[700],
+        },
+    },
+    buttonProgress: {
+        color: green[500],
+        position: 'absolute',
+        left: '50%',
+    },
+}));
 
 const mapStateToProps = state => {
     return {
@@ -82,6 +100,8 @@ const Fields = ({
 
 const LoginForm = (props) => {
 
+    const classes = useStyles();
+   
     /*
     const initialValues = {
         email: undefined,
@@ -161,9 +181,13 @@ const LoginForm = (props) => {
                                 </Field>
                             </Box>
                             <Box display="flex" alignItems="center" justifyContent="center" mt={7} ml={3} mr={3} mb={3}>
-                                <Button type="submit" variant="contained" color="primary" fullWidth size="large" height="50px" disabled={submitting}>
+                                <Button type="submit" variant="contained" color="primary" fullWidth size="large" height="50px" 
+                                        disabled={submitting}
+                                        className={clsx({ [classes.buttonSuccess]: !submitting })}
+                                >
                                     Sign In
                                 </Button>
+                                {submitting && <CircularProgress size={24} className={classes.buttonProgress} />}
                             </Box>
                             <Box display="flex" alignItems="center" justifyContent="center" mt={3} ml={3} mr={3} mb={3}>
                                 <Fields names={["email", "password"]}>
