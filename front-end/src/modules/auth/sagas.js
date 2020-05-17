@@ -40,7 +40,7 @@ function* loginSaga(action) {
         yield put({ type: LOGIN_USER_SUCCESS, payload: response });
     } catch (err) {
         console.log({err});
-        yield put({ type: LOGIN_USER_ERROR, payload: { errorMessage: err.message } } );
+        yield put({ type: LOGIN_USER_ERROR, payload: { errorMessage: err.message } });
     }
 }
 
@@ -49,7 +49,7 @@ function* logoutSaga(action) {
         const response = yield call(postSignOut, action.payload);
         yield put({ type: LOGOUT_USER_SUCCESS, payload: response });
     } catch (err) {
-        yield put({ type: LOGOUT_USER_ERROR, payload: err.message });
+        yield put({ type: LOGOUT_USER_ERROR, payload: { errorMessage: err.message } });
     }
 }
 

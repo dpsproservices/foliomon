@@ -5,7 +5,7 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import logo from './logo.png'; 
 import LoginForm from './LoginForm';
-import Copyright from '../../components/Copyright';
+import Copyright from '../Copyright';
 
 const Login = (props) => {
     return (

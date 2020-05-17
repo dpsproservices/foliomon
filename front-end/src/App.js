@@ -6,8 +6,7 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import theme from './theme';
 
 //import PrivateRoute from './privateRoute';
-import { Login, Main } from './pages';
-import { RouteWithLayout, NotFound } from './components';
+import { Login, Logout, Main, RouteWithLayout, NotFound } from './components';
 import { Overview, Positions, Orders, Stocks } from './components';
 
 class App extends Component {
@@ -24,6 +23,7 @@ class App extends Component {
             {/* <Route path='/forgot' component={ForgotComponent} /> */}
 
             {/* <PrivateRoute path='/logout' component={Logout} /> */}
+            <Route exact path='/logout' component={Logout} />
 
             <RouteWithLayout exact path="/overview" layout={Main} component={Overview} />
             <RouteWithLayout exact path="/positions" layout={Main} component={Positions} />

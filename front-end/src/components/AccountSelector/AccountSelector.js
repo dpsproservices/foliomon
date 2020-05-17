@@ -6,7 +6,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { getAccounts } from '../../utils/api';
 import { bindActionCreators } from 'redux';
-import { setSelectedAccount } from '../../redux/actions';
+import { setSelectedAccount } from '../../modules/account/actions';
 import { connect } from 'react-redux';
 
 const mapDispatchToProps = dispatch => {

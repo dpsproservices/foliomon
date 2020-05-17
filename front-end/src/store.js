@@ -23,7 +23,8 @@ var middleware = applyMiddleware(
 var composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const initialState = {
-    auth: { authenticated: localStorage.getItem('token') }
+    auth: { authenticated: localStorage.getItem('token') },
+    account: { accountId: localStorage.getItem('accountId') }
 };
 
 export default createStore(

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NavLink as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { AppBar, Toolbar, Badge, Hidden, IconButton } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
@@ -29,13 +30,26 @@ const useStyles = makeStyles(theme => ({
     }
   }));
 
+  const CustomRouterLink = forwardRef((props, ref) => (
+    <div
+      ref={ref}
+      style={{ flexGrow: 1 }}
+    >
+      <RouterLink {...props} />
+    </div>
+  ));
+
   const Topbar = props => {
     const { className, onSidebarOpen, ...rest } = props;
   
     const classes = useStyles();
   
     const [notifications] = useState([]);
-  
+
+    const onClickLogout = () => { 
+      console.log('1');
+    }
+ 
     return (
       <AppBar
         {...rest}
@@ -57,8 +71,10 @@ const useStyles = makeStyles(theme => ({
             <IconButton
               className={classes.signOutButton}
               color="inherit"
+              component={CustomRouterLink}
+              to="/logout"
             >
-              <InputIcon />
+              <InputIcon/>
             </IconButton>
           </Hidden>
           <Hidden lgUp>

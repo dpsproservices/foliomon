@@ -264,7 +264,6 @@ const controller = {
                 error = `Internal Server Error: ${err.message}`;
             }
             res.status(status).send({ error: error });
-            //return next(err);
         }
     },
 
@@ -277,7 +276,6 @@ const controller = {
         } catch (err) {
             var status = 500; // default
             res.status(status).send({ error: error });
-            //return next(err);
         }
     },
 

@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/styles';
 //import { useTheme } from '@material-ui/styles';
 //import { useMediaQuery } from '@material-ui/core';
-import { Sidebar, Topbar } from '../../components';
+import { Sidebar, Topbar } from '..';
 
 const useStyles = makeStyles(theme => ({
   root: {
