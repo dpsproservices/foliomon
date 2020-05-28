@@ -1,6 +1,5 @@
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const AuthService = require('../services/AuthService');
-const PassportService = require('../services/PassportService');
 
 const controller = {
 
@@ -222,72 +221,6 @@ const controller = {
         }
 
         return authorized;
-    },
-
-    // New User Signup with email and password
-    signUp: async (req, res) => {
-        let { email, password } = req.body;
-        try {
-
-            if(!email || !password) {
-                throw new BadRequestError('You must provide email and password.');
-            }
-
-            // validate email address and password
-            if (!PassportService.util.validateEmail(email) ) {
-                throw new BadRequestError('Invalid email.');
-            }
-
-            // must be 8 characters 1 uppercase 1 number 1 special character
-            if (!PassportService.util.validatePassword(password) ) {
-                throw new BadRequestError('Password must contain 1 Uppercase 1 Lowercase 1 Number 1 Special character.');
-            }
-
-            // verify user with email exists
-            // when user already exists return error
-
-            // when user with enail does not exist create and save user record
-            const hash = await PassportService.util.encrypt(password);
-            const user = { email: email, password: hash };
-            const result = await PassportService.db.createUser(user);
-            // respond to request indicating user was created
-            //const userId = result.id;
-            const jwt = PassportService.util.getJwt(result);
-            res.status(200).send({ token: jwt });
-        } catch (err) {
-            var status = 500; // default
-            var error = err.message;
-            if (err instanceof BadRequestError) {
-                status = 400;
-            } else if (err instanceof InternalServerError) {
-                status = 500;
-                error = `Internal Server Error: ${err.message}`;
-            }
-            res.status(status).send({ error: error });
-        }
-    },
-
-    // User sign in with email and password
-    signIn: async (req, res) => {
-        let user = req.user; // from passport
-        try {
-            const jwt = PassportService.util.getJwt(user);
-            res.status(200).send({ token: jwt });
-        } catch (err) {
-            var status = 500; // default
-            res.status(status).send({ error: error });
-        }
-    },
-
-    // User sign out logout
-    signOut: async (req, res) => {
-        try {
-            req.logout();
-            res.status(200).send({ });
-        } catch (err) {
-            var status = 500; // default
-            res.status(status).send({ error: error });            
-        }
     }
 
 };

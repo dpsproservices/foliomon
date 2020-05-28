@@ -6,34 +6,69 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 const morgan = require('morgan');
+//const passport = require('passport');
 const bodyParser = require("body-parser");
 const config = require('./config/config');
-const routes = require('./routes/routes');
-const AppController = require('./controllers/appController');
-const util = require('util');
-const path = require('path');
+const routes = require('./routes');
+//const AppController = require('./controllers/appController');
+//const util = require('util');
+//const path = require('path');
 require("dotenv").config();
 
 const app = express();
 if (process.env.NODE_ENV !== 'production') {
-    
     app.use(cors());
 }
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/', routes);
 app.use(express.static("front-end/build"));
+
+//app.use(passport.initialize());
+
+app.use('/', routes);
 
 const httpsServer = https.createServer(config.webServer.sslKeyCert, app);
 
-async function startServer() {
+const startServer = async () => {
     try {
         console.log("Starting Web Server...");
         // Connect MongoDB
         await mongoose.connect(config.mongodb.url, { useNewUrlParser: true })
-            .then(() => console.log('MongoDB connected…'))
-            .catch(err => console.log(err));
+            .then(() => {
+                console.log('MongoDB connected…')
+                // var addr = server.address();
+                // var bind = typeof addr === 'string'
+                //     ? 'pipe ' + addr
+                //     : 'port ' + addr.port;
+                // console.log('Database listening on ' + bind + '...');
+            })
+            .catch(err => {
+                //console.log(err)
+                if (err.syscall !== 'listen') {
+                    throw err;
+                }
+
+                // var bind = typeof port === 'string'
+                //     ? 'Pipe ' + port
+                //     : 'Port ' + port;
+
+                // handle specific listen errors with friendly messages
+                switch (err.code) {
+                    case 'EACCES':
+                        //console.error(bind + ' requires elevated privileges');
+                        console.error('port requires elevated privileges');
+                        process.exit(1);
+                        break;
+                    case 'EADDRINUSE':
+                        //console.error(bind + ' is already in use');
+                        console.error('port is already in use');
+                        process.exit(1);
+                        break;
+                    default:
+                        throw err;
+                }
+            });
 
         /*
         httpServer.listen(config.webServer.httpPort, () => {

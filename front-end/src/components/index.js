@@ -16,6 +16,10 @@ export { default as RouteWithLayout } from './RouteWithLayout';
 export { default as Websocket } from './Websocket';
 export { default as AccountSelector } from './AccountSelector';
 // pages
+export { default as Register } from './Register';
+export { default as Setup2fa } from './Setup2fa';
 export { default as Login } from './Login';
+export { default as Test } from './Test';
+export { default as Logout } from './Logout';
 export { default as Main } from './Main';
 export { default as Connect } from './Connect';

@@ -37,12 +37,11 @@ const tokenUrl = process.env.FOLIOMON_TOKEN_URL;
 const authTokenExpiresInDefault = process.env.FOLIOMON_AUTH_TOKEN_EXPIRES_IN;
 const refreshTokenExpiresInDefault = process.env.FOLIOMON_REFRESH_TOKEN_EXPIRES_IN;
 const tokenTypeDefault = process.env.FOLIOMON_TOKEN_TYPE;
-const username = process.env.FOLIOMON_USERNAME;
-const password = process.env.FOLIOMON_PASSWORD;
 
 const defaultMarkets = process.env.FOLIOMON_DEFAULT_MARKETS;
 
 const jwtSecret = process.env.FOLIOMON_JWT_SECRET;
+const jwtExpiry = process.env.FOLIOMON_JWT_EXPIRY;
 
 const config = {
 
@@ -77,9 +76,8 @@ const config = {
             refreshTokenExpiresIn: refreshTokenExpiresInDefault,
             tokenType: tokenTypeDefault
         },
-        username: username,
-        password: password,
-        jwtSecret: jwtSecret
+        jwtSecret: jwtSecret,
+        jwtExpiry: jwtExpiry
     },
 
     app: {

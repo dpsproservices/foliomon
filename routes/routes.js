@@ -2,14 +2,13 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const config = require('../config/config.js');
-
 const isProdMode = config.app.mode === 'production';
+
 const jwtAuth = passport.authenticate('jwt', { session: false });
-const localAuth = passport.authenticate('local', { session: false });
+
 // pass thru middleware function bypass auth
-const noAuth = function (req, res, next) { next(); };
-const requireAuth = isProdMode ? jwtAuth : noAuth;
-const requireSignIn = isProdMode ? localAuth : noAuth;
+const noAuth = function (req, res, next) { return next(); };
+const requireJwt = isProdMode ? jwtAuth : noAuth;
 
 const authController = require('../controllers/authController');
 const accountController = require('../controllers/accountController');
@@ -19,20 +18,13 @@ const userController = require('../controllers/userController');
 const marketDataController = require('../controllers/marketDataController');
 const transactionController = require('../controllers/transactionController');
 
-router.get('/test', requireAuth, function (req, res) {
-    res.send({ test: 'ok' });
+router.get('/testjwt', requireJwt, function (req, res) {
+    res.send({ testjwt: 'ok' });
 });
 
 /*=============================================================================
-Authentication routes
+TD API Authentication routes
 =============================================================================*/
-
-router.post('/register', authController.signUp);
-
-router.post('/login', requireSignIn, authController.signIn);
-//router.post('/signin', authController.signIn);
-
-router.post('/logout', authController.signOut);
 
 // Get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
 router.get('/authorize', authController.postAccessToken);
@@ -47,7 +39,7 @@ router.get('/accesstoken', authController.getAccessToken);
 //router.get('/refreshtoken', authController.getRefreshToken);
 
 /*=============================================================================
-Account routes
+TD API Account routes
 =============================================================================*/
 
 // Get all of the user's linked accounts from TD API
@@ -68,7 +60,7 @@ router.get('/accounts/:accountId/positions', accountController.getAccountPositio
 router.get('/accounts/:accountId/orders', accountController.getAccountOrders);
 
 /*=============================================================================
-Orders routes
+TD API Orders routes
 =============================================================================*/
 
 // Get all orders of all of the user's linked accounts from TD API
@@ -95,7 +87,7 @@ router.put('/orders/:accountId/:orderId', orderController.replaceOrder);
 router.delete('/orders/:accountId/:orderId', orderController.cancelOrder);
 
 /*=============================================================================
-Watchlist routes
+TD API Watchlist routes
 =============================================================================*/
 
 // Get all watchlists of all of the user's linked accounts from TD API
@@ -125,7 +117,7 @@ router.patch('/watchlists/:accountId/:watchlistId', watchlistController.updateWa
 router.delete('/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
 
 /*=============================================================================
-User Info and Preferences routes
+TD API User Info and Preferences routes
 =============================================================================*/
 
 // Get User Principals
@@ -135,7 +127,7 @@ router.get('/user', userController.getUserPrincipals);
 router.post('/user/sub', userController.getStreamerSubscriptionKeys);
 
 /*=============================================================================
-Market Data routes
+TD API Market Data routes
 =============================================================================*/
 
 // Get Todays Market Hours or one specific market e.g. 'EQUITY'
@@ -169,7 +161,7 @@ router.post('/marketdata/delayed', marketDataController.getDelayedQuotes);
 router.get('/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
 
 /*=============================================================================
-Transaction History routes
+TD API Transaction History routes
 =============================================================================*/
 
 // Get transactions of one single account from TD API

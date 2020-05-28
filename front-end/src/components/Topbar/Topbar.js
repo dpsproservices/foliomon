@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { NavLink as RouterLink } from 'react-router-dom';
 import clsx from 'clsx';
 import { AppBar, Toolbar, Badge, Hidden, IconButton } from '@material-ui/core';
@@ -45,10 +45,6 @@ const useStyles = makeStyles(theme => ({
     const classes = useStyles();
   
     const [notifications] = useState([]);
-
-    const onClickLogout = () => { 
-      console.log('1');
-    }
  
     return (
       <AppBar

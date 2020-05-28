@@ -1,25 +1,30 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Redirect } from "react-router";
 import { connect } from 'react-redux';
 import { Form, Field } from 'react-final-form';
 import createDecorator from 'final-form-focus';
-import { LOGIN_USER, LOGIN_USER_SUCCESS, LOGIN_USER_ERROR } from '../../modules/auth/actions';
+//import { GET_QR, GET_QR_SUCCESS, GET_QR_ERROR } from '../../modules/auth/actions';
+import { SETUP_2FA, SETUP_2FA_SUCCESS, SETUP_2FA_ERROR } from '../../modules/auth/actions';
 import MakeAsyncFunction from 'react-redux-promise-listener';
 import { promiseListener } from '../../store';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { TextField } from 'mui-rff';
-import IconButton from '@material-ui/core/IconButton';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
+
+//import InputAdornment from '@material-ui/core/InputAdornment';
+
 import MuiAlert from '@material-ui/lab/Alert';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { green } from '@material-ui/core/colors';
+
+import Image from 'material-ui-image';
+import svgToMiniDataURI from 'mini-svg-data-uri';
+
+import { getQrData } from '../../modules/auth/api';
 
 const useStyles = makeStyles((theme) => ({
     buttonSuccess: {
@@ -38,6 +43,9 @@ const useStyles = makeStyles((theme) => ({
 const mapStateToProps = state => {
     return {
         appAuthToken: state.auth.appAuthToken,
+        //secret: state.auth.secret,
+        //qr: state.auth.qr,
+        setup2fa: state.auth.setup2fa,
         errorMessage: state.auth.errorMessage
     };
 };
@@ -48,28 +56,11 @@ function Alert(props) {
 
 const isRequired = value => (value ? undefined : 'Required');
 
-const isValidEmail = email => (
-    (email && /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email)) ? undefined : 'Enter a valid email address.'
+const isValidCode = code => (
+    (code && code.length === 6 && /[0-9]/.test(code) ) ? undefined : 'Enter the valid 6 digit code.'
 );
 
 const composeValidators = (...validators) => (value, allValues) => validators.reduce((error, validator) => error || validator(value, allValues), undefined);
-
-/*
-const validate = (values) => {
-    const errors = {}
-    if (!values.email) {
-        errors.email = 'Email required.';
-    }
-    if (!values.password) {
-        errors.password = 'Password required.';
-    }
-    if ( values.email && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email) ) {
-        errors.email = 'Enter a valid email address.';
-    }
-
-    return errors;
-}
-*/
 
 const focusOnError = createDecorator();
 
@@ -98,84 +89,75 @@ const Fields = ({
     );
 };
 
-const LoginForm = (props) => {
+const Setup2faForm = (props) => {
 
     const classes = useStyles();
-   
-    /*
-    const initialValues = {
-        email: undefined,
-        password: undefined,
-        showPassword: false
-    };
-    */
 
-    const [showPassword, setShowPassword] = useState(false);
+    //const { appAuthToken } = props;
 
-    const handleClickShowPassword = () => {
-        setShowPassword(!showPassword);
-    };
+    const [appAuthToken, setAppAuthToken] = useState(props.appAuthToken);
+    const [qrDataUri, setQrDataUri] = useState("");
 
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
-    };
+    // useEffect( () => {
+    //     setAppAuthToken();
+    // }, []);
+
+    useEffect( () => {
+
+        const getQrDataUri = async () => {
+            try {
+                if (appAuthToken) {
+                    const response = await getQrData({appAuthToken: appAuthToken});
+                    //console.log({ response });
+                    const qrSvgString = response.data.qr;
+                    //console.log({ qrSvgString });
+                    const dataUri = svgToMiniDataURI(qrSvgString);
+                    //console.log({ dataUri });
+                    setQrDataUri(dataUri);
+                }
+            } catch (error) {
+                console.log({error});
+            }
+        };
+
+        getQrDataUri();
+
+    }, [appAuthToken]);
 
     return (
         <MakeAsyncFunction
             listener={promiseListener}
-            start={LOGIN_USER}
-            resolve={LOGIN_USER_SUCCESS}
-            reject={LOGIN_USER_ERROR}
+            start={SETUP_2FA}
+            resolve={SETUP_2FA_SUCCESS}
+            reject={SETUP_2FA_ERROR}
         >
-            {onSubmit => (props.appAuthToken && !props.errorMessage) ? (
-                <Redirect to="/test" /> // Redirect page after login
+            {onSubmit => (props.appAuthToken && !props.errorMessage && props.setup2fa) ? (
+                <Redirect to="/test" /> // Redirect page after setup
             ) : (
                 <Form
                     onSubmit={onSubmit}
                     decorators={[focusOnError]}
-                    //initialValues={initialValues}
-                    // validate={validate}
                     subscription={{ submitting: true, pristine: true }}
                     render={
                         ({  handleSubmit, form, submitting, pristine, values }) => (
                         <form noValidate={true} autoComplete="off" onSubmit={handleSubmit}>
+                            <Box display="flex" alignItems="center" justifyContent="center" mt={1} mb={3} >       
+                                <Box width={200} height={200}>
+                                    <Image id="qr" name="qr" src={qrDataUri} animationDuration={1500} />
+                                </Box>
+                            </Box>
                             <Box ml={3} mr={3}>
-                                <Typography variant="h5">Email</Typography>
+                                <Typography variant="h3">2. Enter the code from the app</Typography>
                             </Box>
                             <Box mt={1} ml={3} mr={3} mb={1}>
-                                <Field name="email" validate={composeValidators(isRequired, isValidEmail)} >
+                                <Field name="code" validate={composeValidators(isRequired, isValidCode)} >
                                     {props => (
                                         <TextField
-                                            id="email"
-                                            name="email"
-                                            placeholder="Email Address" 
+                                            id="code"
+                                            name="code"
+                                            placeholder="Enter code" 
                                             variant="outlined" 
                                             fullWidth
-                                        />
-                                    )}
-                                </Field>
-                            </Box>
-                            <Box mt={4} ml={3} mr={3}>
-                                <Typography variant="h5">Password</Typography>
-                            </Box>                            
-                            <Box mt={1} ml={3} mr={3} mb={3}>
-                                <Field name="password" validate={isRequired}>
-                                    {props => (
-                                        <TextField id="password" name="password" placeholder="Password" variant="outlined" fullWidth
-                                            type={showPassword ? 'text' : 'password'}
-                                            InputProps={{
-                                                endAdornment:
-                                                <InputAdornment position="end" >
-                                                    <IconButton
-                                                        aria-label="toggle password visibility"
-                                                        onClick={handleClickShowPassword}
-                                                        onMouseDown={handleMouseDownPassword}
-                                                        edge="end"
-                                                    >
-                                                        {showPassword ? <Visibility /> : <VisibilityOff />}
-                                                    </IconButton>
-                                                </InputAdornment>
-                                            }} 
                                         />
                                     )}
                                 </Field>
@@ -185,21 +167,19 @@ const LoginForm = (props) => {
                                         disabled={submitting}
                                         className={clsx({ [classes.buttonSuccess]: !submitting })}
                                 >
-                                    Sign In
+                                    Continue
                                 </Button>
                                 {submitting && <CircularProgress size={24} className={classes.buttonProgress} />}
                             </Box>
                             <Box display="flex" alignItems="center" justifyContent="center" mt={3} ml={3} mr={3} mb={3}>
-                                <Fields names={["email", "password"]}>
+                                <Fields names={["code"]}>
                                     {fieldsState => (
                                         <Field
                                             name="errorMessage"
                                             subscription={{ submitError: true, dirtySinceLastSubmit: true, values: true }}
                                         >
                                             {({ meta: { submitError, dirtySinceLastSubmit } }) =>
-                                                !fieldsState.email.meta.dirtySinceLastSubmit
-                                                &&
-                                                !fieldsState.password.meta.dirtySinceLastSubmit
+                                                !fieldsState.code.meta.dirtySinceLastSubmit
                                                 &&
                                                 submitError && !dirtySinceLastSubmit ?
                                                 <Alert severity="error">{submitError}</Alert> : null
@@ -209,7 +189,7 @@ const LoginForm = (props) => {
                                 </Fields>
                             </Box>
                             {/*<Box>
-                                <Fields names={["email", "password"]}>
+                                <Fields names={["code"]}>
                                     {fieldsState => (
                                         <pre>{JSON.stringify(fieldsState, undefined, 2)}</pre>
                                     )}
@@ -223,4 +203,4 @@ const LoginForm = (props) => {
     );
 }
 
-export default connect(mapStateToProps, null)(LoginForm);
+export default connect(mapStateToProps, null)(Setup2faForm);
