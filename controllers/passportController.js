@@ -9,33 +9,33 @@ const controller = {
         let { email, password } = req.body;
         try {
 
+            // validate email address and password are required
             if (!email || !password ) {
                 throw new BadRequestError('Email and password required.');
             }
 
-            // validate email address and password
+            // validate email address
             if (!PassportService.util.validateEmail(email)) {
                 throw new BadRequestError('Invalid email.');
             }
 
-            // must be 8 characters 1 uppercase 1 number 1 special character
+            // password must be 8 characters 1 uppercase 1 number 1 special character
             if (!PassportService.util.validatePassword(password)) {
                 throw new BadRequestError('Password must contain 1 Uppercase 1 Lowercase 1 Number 1 Special character.');
             }
 
-            // verify user with email exists
-            // when user already exists return error
-
-            // when user with enail does not exist create and save user record
-            const hash = await PassportService.util.encrypt(password);
+            // hash the password
+            const hash = await PassportService.util.hash(password);
             //console.log({hash});
             const userJSON = { email: email, password: hash };
+
+            // when user already exists will throw BadRequestError
+            // when user with enail does not exist create user record
             const user = await PassportService.db.createUser(userJSON);
             //console.log({user});
-            // respond to request indicating user was created
-            //const userId = result.id;
+            
             const token = PassportService.util.getJwt(user);
-            res.status(200).send({ appAuthToken: token });
+            res.status(200).send({ registered: true, appAuthToken: token });
         } catch (err) {
             //console.log({err});
             var status = 500; // default
@@ -46,16 +46,23 @@ const controller = {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
             }
-            res.status(status).send({ error: error });
+            res.status(status).send({ registered: false, error: error });
         }
     },
 
     // GET QR data
     getQrData: async (req, res) => {
-        //console.log({req});
+        console.log({req});
         
-        let { appAuthToken } = req.body;
+        //let appAuthToken = req.headers.authorization;
+        let { user } = req; // from passport
         try {
+            if (!user) {
+                // User is not found. It might be removed directly from the database.
+                req.logout();
+                throw new NotFoundError('User Not Found.');
+            }
+/*
             if(!appAuthToken) {
                 throw new UnauthorizedError('Invalid token.');
             }
@@ -64,11 +71,13 @@ const controller = {
 
             const payload = PassportService.util.getJwtPayload(appAuthToken);
             //console.log({ payload });
+
+            // verify the token is not expired
             const expiry = payload.exp;
             const timestamp = new Date().getTime();
             //console.log({timestamp});
             if (timestamp >= expiry) {
-                //throw new UnauthorizedError('Expired token.');
+                throw new UnauthorizedError('Expired token.');
             }
 
             const email = payload.sub;
@@ -77,23 +86,24 @@ const controller = {
                 throw new BadRequestError('Invalid token.');
             }
 
-            //const user = await PassportService.db.getUser(email);
+            // validate the token contains a valid user
+            const user = await PassportService.db.getUser(email);
 
-            // if (!user) {
-            //     // User is not found. It might be removed directly from the database.
-            //     req.logout();
-            //     throw new NotFoundError('User Not Found.');
-            // }
-
-            // get the QR data from Google Authenticator
-            const qrData = await PassportService.util.getQrData(email);
+            if (!user) {
+                // User is not found. It might be removed from the database.
+                req.logout();
+                throw new NotFoundError('Invalid token. User Not Found.');
+            }
+*/
+            // get the QR data based on the user data
+            const qrData = await PassportService.util.getQrData(user);
 
             //console.log({ qrData});
 
             const secret = qrData.secret;
             const qr = qrData.qr;
 
-            const updateResult = await PassportService.db.updateUserSecret(email, secret);
+            const updateResult = await PassportService.db.updateUserSecret(user, secret);
 
             res.status(200).send( { qr: qr } );
         } catch (err) {
@@ -113,62 +123,27 @@ const controller = {
         }
     },
 
-    // POST Setup 2FA verify 6 digit code sent with user secret
-    setup2fa: async (req, res) => {
-        console.log({ req });
-        let { appAuthToken } = req.body;
-        //let { email } = req.user.username; // from passport
-        let { code } = req.body; // from the form field
-        try {
-            if (!code) {
-                throw new BadRequestError('Code required.');
-            }
-            const user = await PassportService.db.getUser(email);
-
-            if (!user) {
-                // User is not found. It might be removed directly from the database.
-                req.logout();
-                throw new NotFoundError('User Not Found.');
-            }
-
-            const updateResult = await PassportService.db.updateUserSecret(email, secret);
-
-            res.status(200).send( { setup2fa: true } );
-        } catch (err) {
-            var status = 500; // default
-            var error = err.message;
-            if (err instanceof BadRequestError) {
-                status = 400;
-            } else if (err instanceof NotFoundError) {
-                status = 404;
-            } else if (err instanceof InternalServerError) {
-                status = 500;
-                error = `Internal Server Error: ${err.message}`;
-            }
-            res.status(status).send({ error: error });
-        }
-    },
-
     // POST Update User Secret from Google Authenticator
-    updateUserSecret: async (req, res) => {
-        let user = req.user; // from passport
-        let { email, secret } = req.body;
+    verify2fa: async (req, res) => {
+        let { user } = req; // from passport
+        let { code } = req.body;
         try {
-            if (!secret) {
-                throw new BadRequestError('Missing secret.');
-            }
-
-            const user = await PassportService.db.getUser(email);
-
             if (!user) {
                 // User is not found. It might be removed directly from the database.
                 req.logout();
                 throw new NotFoundError('User Not Found.');
             }
 
-            const updateResult = await PassportService.db.updateUserSecret(email,secret);
+            if (!user.secret) {
+                throw new BadRequestError("Google Authenticator is not setup yet.");
+            }
 
-            res.status(200).send({ });
+            if (!code) {
+                throw new BadRequestError('Missing code.');
+            }
+
+            const token = PassportService.util.getJwt(user);
+            res.status(200).send({ verified: true, appAuthToken: token });
         } catch (err) {
             var status = 500; // default
             var error = err.message;
@@ -180,7 +155,7 @@ const controller = {
                 status = 500;
                 error = `Internal Server Error: ${err.message}`;
             }
-            res.status(status).send({ error: error });
+            res.status(status).send({ verified: false, error: error });
         }
     },
 
@@ -188,11 +163,27 @@ const controller = {
     login: async (req, res) => {
         let user = req.user; // from passport
         try {
-            const jwt = PassportService.util.getJwt(user);
-            res.status(200).send({ appAuthToken: jwt });
+            if(user.setup2fa) {
+                // user needs to verify 2fa code
+                res.status(200).send({ isLoggedIn: true, appAuthToken: null });
+            } else {
+                const jwt = PassportService.util.getJwt(user);
+                res.status(200).send({ isLoggedIn: true, appAuthToken: jwt });
+            }
         } catch (err) {
             var status = 500; // default
-            res.status(status).send({ error: error });
+            var error = err.message;
+            if (err instanceof BadRequestError) {
+                status = 400;
+            } else if (err instanceof UnauthorizedError) {
+                status = 401;
+            } else if (err instanceof NotFoundError) {
+                status = 404;
+            } else if (err instanceof InternalServerError) {
+                status = 500;
+                error = `Internal Server Error: ${err.message}`;
+            }
+            res.status(status).send({ isLoggedIn: false, error: error });
         }
     },
 
@@ -200,10 +191,10 @@ const controller = {
     logout: async (req, res) => {
         try {
             req.logout();
-            res.status(200).send({});
+            res.status(200).send({ isLoggedOut: true });
         } catch (err) {
             var status = 500; // default
-            res.status(status).send({ error: error });
+            res.status(status).send({ isLoggedOut: false, error: error });
         }
     }
 

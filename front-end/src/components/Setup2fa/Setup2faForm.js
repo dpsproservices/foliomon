@@ -11,7 +11,7 @@ import { promiseListener } from '../../store';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import { TextField } from 'mui-rff';
+//import { TextField } from 'mui-rff';
 
 //import InputAdornment from '@material-ui/core/InputAdornment';
 
@@ -25,6 +25,8 @@ import Image from 'material-ui-image';
 import svgToMiniDataURI from 'mini-svg-data-uri';
 
 import { getQrData } from '../../modules/auth/api';
+
+import ReactCodeInput from 'react-code-input/dist/ReactCodeInput';
 
 const useStyles = makeStyles((theme) => ({
     buttonSuccess: {
@@ -107,7 +109,7 @@ const Setup2faForm = (props) => {
         const getQrDataUri = async () => {
             try {
                 if (appAuthToken) {
-                    const response = await getQrData({appAuthToken: appAuthToken});
+                    const response = await getQrData();
                     //console.log({ response });
                     const qrSvgString = response.data.qr;
                     //console.log({ qrSvgString });
@@ -150,8 +152,15 @@ const Setup2faForm = (props) => {
                                 <Typography variant="h3">2. Enter the code from the app</Typography>
                             </Box>
                             <Box mt={1} ml={3} mr={3} mb={1}>
-                                <Field name="code" validate={composeValidators(isRequired, isValidCode)} >
+                                <Field name="code" >
                                     {props => (
+                                        <ReactCodeInput id="code" name="code" type='number' fields={6} />
+                                    )}
+                                </Field>
+                                
+                                {/* <Field name="code" validate={composeValidators(isRequired, isValidCode)} >
+                                    {props => (
+                                        
                                         <TextField
                                             id="code"
                                             name="code"
@@ -160,7 +169,7 @@ const Setup2faForm = (props) => {
                                             fullWidth
                                         />
                                     )}
-                                </Field>
+                                </Field> */}
                             </Box>
                             <Box display="flex" alignItems="center" justifyContent="center" mt={7} ml={3} mr={3} mb={3}>
                                 <Button type="submit" variant="contained" color="primary" fullWidth size="large" height="50px" 

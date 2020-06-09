@@ -1,5 +1,5 @@
 const schedule = require('node-schedule');
-const config = require('../config/config');
+const config = require('../config');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const AuthController = require('./AuthController');
 const AccountController = require('./AccountController');

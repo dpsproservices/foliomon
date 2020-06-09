@@ -4,9 +4,7 @@
   "description": "Portfolio Monitor",
   "main": "app.js",
   "scripts": {
-    "server": "node app.js",
-    "client": "cd front-end && yarn start",
-    "start": "concurrently \"nodemon app.js\" \"npm run client\"",
+    "start": "nodemon app.js",
     "build": "cd front-end && yarn build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,8 +13,6 @@
     "url": "git+https://github.com/jskarulis/foliomon.git"
   },
   "keywords": [
-    "TD",
-    "Ameritrade",
     "API",
     "Portfolio",
     "RESTful"
@@ -28,32 +24,30 @@
   },
   "homepage": "https://github.com/jskarulis/foliomon#readme",
   "dependencies": {
+    "argon2": "^0.26.2",
     "axios": "^0.19.2",
-    "bcrypt": "^4.0.1",
-    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.5",
-    "cookie-session": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "fsevents": "^2.1.2",
-    "jwt-simple": "^0.5.6",
+    "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "mongoose": "^5.9.9",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.10.0",
     "node-schedule": "^1.3.2",
-    "nodemon": "^1.18.11",
+    "nodemon": "^1.19.4",
     "passport": "^0.4.1",
-    "passport-2fa-totp": "0.0.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "qrcode": "^1.4.4",
     "querystring": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "request-promise-native": "^1.0.7",
-    "selenium-webdriver": "^4.0.0-alpha.1",
+    "speakeasy": "^2.0.0",
     "util": "^0.11.1"
   },
   "devDependencies": {

@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-//import history from "./utils/history";
-
 import { ThemeProvider } from '@material-ui/core/styles';
 import theme from './theme';
 
@@ -19,7 +17,7 @@ class App extends Component {
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <Switch>
-            <Route path='/' exact={true} component={Login} />
+            <Route exact path='/' component={Login} />
             {/* <Redirect exact from="/" to="/overview" /> */}
 
             <Route exact path="/register" component={Register} />

@@ -1,4 +1,4 @@
-const config = require('../config/config.js');
+const config = require('../config');
 const axios = require('axios');
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('./errors/ServiceErrors');
 const Transaction = require('../models/Transaction');

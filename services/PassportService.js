@@ -1,15 +1,16 @@
 const { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, InternalServerError, ServiceUnavailableError } = require('../services/errors/ServiceErrors');
 const passport = require('passport');
 const User = require('../models/user/User');
-const config = require('../config/config.js');
-const bcrypt = require('bcrypt');
-
-const GoogleAuthenticator = require('passport-2fa-totp').GoogeAuthenticator;
-const TwoFAStrategy = require('passport-2fa-totp').Strategy;
+const config = require('../config');
+const argon2 = require('argon2');
 
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-const jwt = require('jwt-simple');
+//const jwt = require('jwt-simple');
+const jwt = require('jsonwebtoken');
+
+const qrcode = require('qrcode');
+const speakeasy = require('speakeasy');
 
 /*
 const LocalStrategy = require('passport-local');
@@ -47,155 +48,15 @@ const localStrategy = new LocalStrategy(
 passport.use(localStrategy);
 */
 
-const INVALID_LOGIN = 'Invalid email or password';
-
-/*
-// serializeUSer and deserializeUser are needed when using sessions
-// not needed for JWT
-passport.serializeUser(function (user, done) {
-    return done(null, user._id);
-});
-
-passport.deserializeUser(function (userId, done) {
-    User.findById(userId, function (err, user) {
-        if (err) {
-            return done(err);
-        } else if (user === null) {
-            return done(null, false);
-        } else {
-            return done(null, user);
-        }
-    });
-});
-*/
-
-
-const registerTwoFAoptions = {
-    usernameField: 'email',
-    passwordField: 'password',
-    codeField: 'code',
-    window: 6, // default 6 a window to generate TOTP code.
-    passReqToCallback: false, // Pass request object to callbacks if set true.
-    skipTotpVerification: true // TOTP code verification is skipped if set true.
-};
-
-const registerTwoFAStrategy = new TwoFAStrategy(
-    registerTwoFAoptions,
-    //function (req, email, password, done) {
-    function (email, password, done) {
-        // 1st step verification: validate input and create new user
-
-        // input validation in client side form
-        /*
-        if (!/^[A-Za-z0-9_]+$/g.test(req.body.email)) {
-            return done(null, false, { message: 'Invalid email' });
-        }
-
-        if (req.body.password.length === 0) {
-            return done(null, false, { message: 'Password is required' });
-        }
-
-        if (req.body.password !== req.body.confirmPassword) {
-            return done(null, false, { message: 'Passwords do not match' });
-        }
-        */
-
-        User.findOne({ email: email }, function (err, user) {
-            if (err) {
-                return done(err);
-            }
-
-            if (user !== null) {
-                //return done(null, false, { message: 'Invalid email' });
-                return done(null, false);
-            }
-            //const salt = await bcrypt.genSalt(10);
-            bcrypt.hash(password, null, null, function (err, hash) {
-                if (err) {
-                    return done(err);
-                }
-
-                const user = {
-                    email: email,
-                    password: hash
-                };
-
-                User.create(user, function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    return done(null, user);
-                });
-            });
-        });
-    });
-
-passport.use('register', registerTwoFAStrategy);
-
-const loginTwoFAoptions = {
-    usernameField: 'email',
-    passwordField: 'password',
-    codeField: 'code',
-    window: 6, // default 6 A window to generate TOTP code.
-    passReqToCallback: false, // Pass request object to callbacks if set true.
-    skipTotpVerification: false // TOTP code verification is skipped if set true.
-};
-
-const loginTwoFAStrategy = new TwoFAStrategy(
-    loginTwoFAoptions,
-    function (email, password, done) {
-        // 1st step verification: username and password
-        User.findOne({ email: email }, function (err, user) {
-            if (err) {
-                return done(err);
-            }
-            if (!user) {
-                //return done(null, false, { message: INVALID_LOGIN }); 
-                return done(null, false);
-            }
-
-            // compare password to user.password 
-            bcrypt.compare(password, user.password, function (err, result) {
-                if (err) {
-                    return done(err);
-                }
-                if (result === true) {
-                    return done(null, user);
-                } else {
-                    //return done(null, false, { message: INVALID_LOGIN });
-                    return done(null, false);
-                }
-            });
-        });
-
-    },
-    function (user, done) {
-        // 2nd step verification: TOTP code from Google Authenticator
-        if (!user.secret) {
-            done(new Error("Google Authenticator is not setup yet."));
-        } else {
-            // Google Authenticator uses 30 seconds key period
-            // https://github.com/google/google-authenticator/wiki/Key-Uri-Format
-
-            const secret = GoogleAuthenticator.decodeSecret(user.secret);
-            done(null, secret, 30);
-        }
-    }
-);
-
-passport.use('login', loginTwoFAStrategy);
-
-
 // Setup options for JWT strategy
 const jwtOptions = {
-    //jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    jwtFromRequest: ExtractJwt.fromHeader('Authorization'),
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    //jwtFromRequest: ExtractJwt.fromHeader('Authorization'),
     secretOrKey: config.auth.jwtSecret,
     //issuer: 'enter issuer here', // enter issuer here
     //audience: 'enter audience here', // enter audience here
-    algorithms: ['HS512'] //,
-    //ignoreExpiration: false,
+    algorithms: ['HS512'],
+    ignoreExpiration: false //,
     //passReqToCallback: false,
     /*jsonWebTokenOptions: {
         complete: false,
@@ -206,16 +67,18 @@ const jwtOptions = {
     } */   
 };
 
-// Create JWT strategy
+// Passport JWT strategy
+// Look up the User matching the sub in the JWT payload
 const jwtStrategy = new JwtStrategy(
     jwtOptions, 
     function(payload, done) {
     // See if user id in payload exists in db
     // call done with that user
     // otherwise call done without user object
-    //AuthService.util.getUser()
     User.findById(payload.sub, function(err, user) {
-        if (err) { return done(err,false); }
+        if (err) { 
+            return done(err,false); 
+        }
         if(user) {
             done(null,user);
         } else {
@@ -261,21 +124,59 @@ const util = {
     },
 
     // returns salted hashed text
-    encrypt: async (text) => {
-        return await bcrypt.hash(text, 10);
+    hash: async (text) => {
+        //return await bcrypt.hash(text, 12);
+        const argonOptions = {
+            type: argon2.argon2id,
+            memoryCost: 2 ** 16,
+            timeCost: 3,
+            parallelism: 1, // single thread
+            hashLength: 64,
+            raw: false,
+            saltLength: 16
+        };
+        return await argon2.hash(text, argonOptions);
     },
 
     // returns true when the hash was built from the text
-    hashMatch: async (text, hash) => {
-        return await bcrypt.compare(text, hash);
+    verify: async (hash, text) => {
+        //return await bcrypt.compare(text, hash);
+        return await argon2.verify(hash,text);
     },
 
+    getJwt: function (user) {
+        const timestamp = new Date().getTime();
+        // number of seconds to expire X 1000 mili seconds per second 
+        const millisecondsToExpire = (config.auth.jwtExpiry * 1000);
+        const expiry = timestamp + millisecondsToExpire;
+        const expiresIn = '1d'; // 1 day
+        const payload = {
+            sub: user._id, // Subject: unique user identifier
+            iat: timestamp, // Issued At Timestamp
+            exp: expiry
+        };
+
+        const signedToken = jwt.sign(
+            payload, 
+            config.auth.jwtSecret, 
+            { 
+                algorithm: 'HS512', 
+                expiresIn: expiresIn // if ommited, the token will not expire
+            }
+        );
+        // return {
+        //     token: "Bearer " + signedToken,
+        //     expires: expiresIn
+        // }
+        return "Bearer " + signedToken;
+    },
+/*
     getJwt: function (user) {
         const timestamp = new Date().getTime();
         // number of minutes to expire X 60000 mili seconds per minute 
         const expiry = timestamp + (config.auth.jwtExpiry * 60000);
         const payload = {
-            sub: user.email, // Subscriber: unique user identifier
+            sub: user.email, // Subject: unique user identifier
             iat: timestamp, // Issued At Timestamp
             exp: expiry // Expiration time number of minutes
         };
@@ -297,9 +198,12 @@ const util = {
     getJwtPayload: function (token) {
         return jwt.decode(token, config.auth.jwtSecret, 'HS512');
     },
+*/
 
-    getQrData: function (email) {
-        const data = GoogleAuthenticator.register(email);
+    getQrData: function (user) {
+        const userId = user._id;
+        //const email = user.email;
+        const data = GoogleAuthenticator.register(userId);
         //const secret = data.secret;
         //const qr = data.qr;
         return data;
@@ -312,7 +216,20 @@ database service methods
 
 const db = {
 
-    getUser: async (email) => {
+    getUserById: async (userId) => {
+        try {
+            let foundUser = await User.findById(userId);
+            if (foundUser) {
+                return foundUser;
+            } else {
+                throw new NotFoundError(`Error user Not Found in database.`);
+            }
+        } catch (err) {
+            throw err;
+        }
+    },
+
+    getUserByEmail: async (email) => {
         try {
             let foundUser = await User.findOne({ email: email });
             if (foundUser) {
@@ -340,10 +257,11 @@ const db = {
         }
     },
 
-    updateUserSecret: async (email,secret) => {
+    updateUserSecret: async (user,secret) => {
         try {
             let result = null;
-            return result = await User.updateOne({ email: email }, { secret: secret } );
+            let userId = user._id;
+            return result = await User.findByIdAndUpdate(userId, { secret: secret } );
         } catch (err) {
             if (err.name === 'ValidationError') {
                 throw new BadRequestError(`Error updating user: ${err.message}`);

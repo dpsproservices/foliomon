@@ -155,7 +155,7 @@ export const postForgotPassword = async (body) => {
 };
 
 // GET the QR secret and image data from passport
-export const getQrData = async (body) => {
+export const getQrData = async () => {
     try {
         const options = {
             headers: {
@@ -167,7 +167,7 @@ export const getQrData = async (body) => {
             }
         };
         const url = `${API_URL}/getQrData`;
-        const response = await axios.post(url, body, options);
+        const response = await axios.get(url, options);
         const status = response.status;
         //const message = response.data.error;
         if (status === 200) {

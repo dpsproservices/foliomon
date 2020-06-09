@@ -27,16 +27,16 @@ TD API Authentication routes
 =============================================================================*/
 
 // Get a new Access Token and new Refresh Token from TD using an auth code obtained after logging in
-router.get('/authorize', authController.postAccessToken);
+router.get('/authorize', requireJwt, authController.postAccessToken);
 
 // Get a new Access Token and new Refresh Token from TD using the valid Refresh Token from database
-router.get('/reauthorize', authController.postAccessToken);
+router.get('/reauthorize', requireJwt, authController.postAccessToken);
 
 // Get the Access Token stored in the database
-router.get('/accesstoken', authController.getAccessToken);
+router.get('/accesstoken', requireJwt, authController.getAccessToken);
 
 // Get the Refresh Token stored in the database for testing
-//router.get('/refreshtoken', authController.getRefreshToken);
+//router.get('/refreshtoken', requireJwt, authController.getRefreshToken);
 
 /*=============================================================================
 TD API Account routes
@@ -45,19 +45,19 @@ TD API Account routes
 // Get all of the user's linked accounts from TD API
 // Delete all accounts in the database
 // Save accounts from TD into the database and send them back on the response to the client
-router.post('/accounts/reset', accountController.resetAccounts);
+router.post('/accounts/reset', requireJwt, accountController.resetAccounts);
 
 // Get all accounts available from the TD api
-router.get('/accounts', accountController.getAccounts);
+router.get('/accounts', requireJwt, accountController.getAccounts);
 
 // Get one account from the TD api
-router.get('/accounts/:accountId', accountController.getAccount);
+router.get('/accounts/:accountId', requireJwt, accountController.getAccount);
 
 // Get one account with positions from TD api
-router.get('/accounts/:accountId/positions', accountController.getAccountPositions);
+router.get('/accounts/:accountId/positions', requireJwt, accountController.getAccountPositions);
 
 // Get one account with orders from TD api
-router.get('/accounts/:accountId/orders', accountController.getAccountOrders);
+router.get('/accounts/:accountId/orders', requireJwt, accountController.getAccountOrders);
 
 /*=============================================================================
 TD API Orders routes
@@ -66,25 +66,25 @@ TD API Orders routes
 // Get all orders of all of the user's linked accounts from TD API
 // Delete all orders in the database
 // Save orders from TD into the database and send them back on the response to the client
-router.post('/orders/reset', orderController.resetOrders);
+router.post('/orders/reset', requireJwt, orderController.resetOrders);
 
 // Get all orders of all of the user's linked accounts from TD API
-router.get('/orders', orderController.getOrders);
+router.get('/orders', requireJwt, orderController.getOrders);
 
 // Get all orders of one single account from TD API
-router.get('/orders/:accountId', orderController.getAccountOrders);
+router.get('/orders/:accountId', requireJwt, orderController.getAccountOrders);
 
 // Get Specific order of a specific account from TD API
-router.get('/orders/:accountId/:orderId', orderController.getOrder);
+router.get('/orders/:accountId/:orderId', requireJwt, orderController.getOrder);
 
 // Place a new order in a specific account with TD API
-router.post('/orders/:accountId', orderController.placeOrder);
+router.post('/orders/:accountId', requireJwt, orderController.placeOrder);
 
 // Replace an existing order in a specific account with TD API
-router.put('/orders/:accountId/:orderId', orderController.replaceOrder);
+router.put('/orders/:accountId/:orderId', requireJwt, orderController.replaceOrder);
 
 // Cancel an order of a specific account with TD API
-router.delete('/orders/:accountId/:orderId', orderController.cancelOrder);
+router.delete('/orders/:accountId/:orderId', requireJwt, orderController.cancelOrder);
 
 /*=============================================================================
 TD API Watchlist routes
@@ -93,81 +93,81 @@ TD API Watchlist routes
 // Get all watchlists of all of the user's linked accounts from TD API
 // Delete all watchlists in the database
 // Save watchlists from TD into the database and send them back on the response to the client
-router.post('/watchlists/reset', watchlistController.resetWatchlists);
+router.post('/watchlists/reset', requireJwt, watchlistController.resetWatchlists);
 
 // Get all watchlists of all of the user's linked accounts from TD API
-router.get('/watchlists', watchlistController.getWatchlists);
+router.get('/watchlists', requireJwt, watchlistController.getWatchlists);
 
 // Get all watchlists of one single account from TD API
-router.get('/watchlists/:accountId', watchlistController.getAccountWatchlists);
+router.get('/watchlists/:accountId', requireJwt, watchlistController.getAccountWatchlists);
 
 // Get Specific watchlist of a specific account from TD API
-router.get('/watchlists/:accountId/:watchlistId', watchlistController.getWatchlist);
+router.get('/watchlists/:accountId/:watchlistId', requireJwt, watchlistController.getWatchlist);
 
 // Create a new watchlist in a specific account with TD API
-router.post('/watchlists/:accountId', watchlistController.createWatchlist);
+router.post('/watchlists/:accountId', requireJwt, watchlistController.createWatchlist);
 
 // Replace an existing watchlist in a specific account with TD API
-router.put('/watchlists/:accountId/:watchlistId', watchlistController.replaceWatchlist);
+router.put('/watchlists/:accountId/:watchlistId', requireJwt, watchlistController.replaceWatchlist);
 
 // Partially update watchlist of a specific account with TD API
-router.patch('/watchlists/:accountId/:watchlistId', watchlistController.updateWatchlist);
+router.patch('/watchlists/:accountId/:watchlistId', requireJwt, watchlistController.updateWatchlist);
 
 // Delete specific watchlist of a specific account with TD API
-router.delete('/watchlists/:accountId/:watchlistId', watchlistController.deleteWatchlist);
+router.delete('/watchlists/:accountId/:watchlistId', requireJwt, watchlistController.deleteWatchlist);
 
 /*=============================================================================
 TD API User Info and Preferences routes
 =============================================================================*/
 
 // Get User Principals
-router.get('/user', userController.getUserPrincipals);
+router.get('/user', requireJwt, userController.getUserPrincipals);
 
 // Get Streamer Subscription Keys
-router.post('/user/sub', userController.getStreamerSubscriptionKeys);
+router.post('/user/sub', requireJwt, userController.getStreamerSubscriptionKeys);
 
 /*=============================================================================
 TD API Market Data routes
 =============================================================================*/
 
 // Get Todays Market Hours or one specific market e.g. 'EQUITY'
-router.get('/marketdata/hours/:market', marketDataController.getMarketHours);
+router.get('/marketdata/hours/:market', requireJwt, marketDataController.getMarketHours);
 
 // Search or retrieve instrument data, including fundamental data on multiple symbols
-router.post('/marketdata/instruments', marketDataController.getInstruments);
+router.post('/marketdata/instruments', requireJwt, marketDataController.getInstruments);
 
 // Get chart data, price history
-router.post('/marketdata/pricehistory', marketDataController.getPriceHistory);
+router.post('/marketdata/pricehistory', requireJwt, marketDataController.getPriceHistory);
 
 // Get all available daily price and volume OHLC chart data for 20 years including today 
-router.get('/marketdata/pricehistory/:symbol/daily', marketDataController.getDailyPriceHistory);
+router.get('/marketdata/pricehistory/:symbol/daily', requireJwt, marketDataController.getDailyPriceHistory);
 
 // Get all available minute price and volume OHLC chart data for 10 days including today 
-router.get('/marketdata/pricehistory/:symbol/minute', marketDataController.getMinutePriceHistory);
+router.get('/marketdata/pricehistory/:symbol/minute', requireJwt, marketDataController.getMinutePriceHistory);
 
 // Get top 10 (up or down) movers by value or percent for a particular market
-router.post('/marketdata/movers', marketDataController.getMovers);
+router.post('/marketdata/movers', requireJwt, marketDataController.getMovers);
 
 // Get realtime quote for one or more symbols
-router.post('/marketdata/quotes', marketDataController.getQuotes);
+router.post('/marketdata/quotes', requireJwt, marketDataController.getQuotes);
 
 // Get realtime quote for one symbol
-router.get('/marketdata/:symbol/quotes/', marketDataController.getQuote);
+router.get('/marketdata/:symbol/quotes/', requireJwt, marketDataController.getQuote);
 
 // Get delayed quote for one or more symbols
-router.post('/marketdata/delayed', marketDataController.getDelayedQuotes);
+router.post('/marketdata/delayed', requireJwt, marketDataController.getDelayedQuotes);
 
 // Get delayed quote for one symbol
-router.get('/marketdata/:symbol/delayed/', marketDataController.getDelayedQuote);
+router.get('/marketdata/:symbol/delayed/', requireJwt, marketDataController.getDelayedQuote);
 
 /*=============================================================================
 TD API Transaction History routes
 =============================================================================*/
 
 // Get transactions of one single account from TD API
-router.get('/transactions/:accountId/:months', transactionController.getAccountTransactions);
+router.get('/transactions/:accountId/:months', requireJwt, transactionController.getAccountTransactions);
 
 // Get one transaction of an account from TD API
-router.get('/transactions/:accountId/:transactionId', transactionController.getTransaction);
+router.get('/transactions/:accountId/:transactionId', requireJwt, transactionController.getTransaction);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const config = require('../config/config.js');
+const config = require('../config');
 const axios = require('axios');
 const qs = require('querystring')
 //const bcrypt = require('bcrypt');
